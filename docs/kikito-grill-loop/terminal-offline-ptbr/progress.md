@@ -615,3 +615,10 @@
 
 - Traduzi o botão de rejeitar alterações e o placeholder do campo de navegação para linha/coluna.
 - Preservei a ação de reversão e o separador `:` do formato.
+
+## Tradução — menu de contexto dos blocos de IA
+
+- Traduzi ações para copiar prompts, saídas, comandos, branches, horários e texto de conversa, além
+  de criar cópias e reverter até um ponto.
+- Mantive intactos os itens de compartilhamento que dependem do serviço remoto.
+- Preservei as ações internas e as condições de disponibilidade.
