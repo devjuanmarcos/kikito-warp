@@ -208,3 +208,10 @@
 - Traduzi os controles locais para abrir links no aplicativo de desktop e exibir dicas ao clicar em links.
 - Mantive actions, flags, destinos e comportamento.
 - Outros grupos locais da página de recursos continuam pendentes.
+
+
+## Tradução — cabeçalho fixo de comandos
+
+- Traduzi o rótulo local da opção que mantém o cabeçalho do comando visível nos blocos do terminal.
+- Mantive action, flag, link de documentação e comportamento.
+- A varredura de recursos locais continua.
