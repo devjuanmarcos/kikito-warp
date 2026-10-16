@@ -362,6 +362,11 @@
 - Traduzi a indicação de inicialização do shell e mantive o nome do shell selecionado.
 - Preservei as mensagens específicas de configuração remota e seus estados.
 
+## Tradução — busca global local
+
+- Traduzi busca, filtros regex/case sensitivity, contagem e avisos de resultados, além dos estados locais sem resultados ou sem sessão compatível.
+- Mantive `.gitignore`, Git Bash, WSL e os estados específicos de sessão remota.
+
 ## Tradução — diretório inicial de novas sessões
 
 - Traduzi as opções de diretório pessoal, sessão anterior e diretório personalizado.
