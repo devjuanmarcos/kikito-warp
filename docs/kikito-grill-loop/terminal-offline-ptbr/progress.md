@@ -377,6 +377,11 @@
 - Traduzi o aviso exibido quando não é possível continuar uma conversa local de agente.
 - Mantive a referência aos logs e o fluxo de recuperação.
 
+## Tradução — atalhos e terminal padrão
+
+- Traduzi ações locais para configurar o atalho global, habilitar Wayland e definir o terminal padrão.
+- Atualizei a ação para exibir Kikito Terminal, preservando suas actions e flags.
+
 ## Tradução — diretório inicial de novas sessões
 
 - Traduzi as opções de diretório pessoal, sessão anterior e diretório personalizado.
