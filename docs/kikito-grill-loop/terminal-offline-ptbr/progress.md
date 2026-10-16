@@ -340,3 +340,9 @@
 
 - Traduzi o cabeçalho do editor compartilhado de layout da barra de ferramentas dos agentes.
 - Mantive o editor, as actions e o comportamento.
+
+
+## Tradução - modos de exibição de segredos
+
+- Traduzi os nomes exibidos das opções Asteriscos, Tachado e Sempre mostrar segredos.
+- Mantive os variants, serialização e valores de configuração.
