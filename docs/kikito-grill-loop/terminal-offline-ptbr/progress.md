@@ -298,3 +298,9 @@
 
 - Traduzi o título da página, o modo de exibição visual, o botão de adicionar regex e a seção de regras recomendadas.
 - Mantive regexes, actions e comportamento.
+
+
+## Tradução - materiais de fundo da janela
+
+- Traduzi as opções Sem material e Acrílico no seletor de fundo da janela.
+- Mantive os nomes de plataforma Mica e Mica Alt, os valores e o comportamento.

@@ -2605,9 +2605,9 @@ impl AppearanceSettingsPageView {
 
     fn window_backdrop_dropdown_item_label(backdrop: WindowBackdrop) -> &'static str {
         match backdrop {
-            WindowBackdrop::None => "No material",
+            WindowBackdrop::None => "Sem material",
             WindowBackdrop::Mica => "Mica",
-            WindowBackdrop::Acrylic => "Acrylic",
+            WindowBackdrop::Acrylic => "Acrílico",
             WindowBackdrop::MicaAlt => "Mica Alt",
         }
     }
