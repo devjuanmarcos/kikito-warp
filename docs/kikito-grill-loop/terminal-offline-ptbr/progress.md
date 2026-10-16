@@ -636,3 +636,9 @@
   de criar cópias e reverter até um ponto.
 - Mantive intactos os itens de compartilhamento que dependem do serviço remoto.
 - Preservei as ações internas e as condições de disponibilidade.
+
+## Tradução — acessibilidade da paleta de comandos
+
+- Traduzi os rótulos acessíveis e as instruções para abrir configurações de inicialização e iniciar
+  sessões.
+- Preservei os itens selecionados, as ações e as configurações carregadas.

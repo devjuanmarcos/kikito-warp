@@ -71,10 +71,10 @@ impl crate::search::item::SearchItem for SearchItem {
     }
 
     fn accessibility_label(&self) -> String {
-        format!("Selected {}.", self.launch_config.name)
+        format!("Selecionado {}.", self.launch_config.name)
     }
 
     fn accessibility_help_message(&self) -> Option<String> {
-        Some("Press enter to use this launch configuration.".into())
+        Some("Pressione Enter para usar esta configuração de inicialização.".into())
     }
 }
