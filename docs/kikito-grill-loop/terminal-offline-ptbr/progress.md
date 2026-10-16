@@ -377,6 +377,11 @@
 - Traduzi o aviso exibido quando não é possível continuar uma conversa local de agente.
 - Mantive a referência aos logs e o fluxo de recuperação.
 
+## Tradução — divisores de sessão restaurada
+
+- Traduzi os rótulos de conversa restaurada e sessão anterior no histórico do terminal, incluindo a data associada.
+- Mantive a lógica e formatei a data como `dd/mm/aaaa às hh:mm`.
+
 ## Tradução — atalhos e terminal padrão
 
 - Traduzi ações locais para configurar o atalho global, habilitar Wayland e definir o terminal padrão.

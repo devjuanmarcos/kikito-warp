@@ -3442,16 +3442,16 @@ impl Element for BlockListElement {
                     // we want to show different text in the separator if this is an individual conversation
                     // restored from the command palette
                     let banner_intro_text = if is_historical_conversation_restoration {
-                        "Conversation restored".to_string()
+                        "Conversa restaurada".to_string()
                     } else {
-                        "Previous session".to_string()
+                        "Sessão anterior".to_string()
                     };
 
                     let separator_text =
                         if let Some(ts) = (*model).block_list().restored_session_ts() {
                             format!(
-                                "{banner_intro_text} from {}",
-                                ts.format("%a %b %-d at %-I:%M %p")
+                                "{banner_intro_text} de {}",
+                                ts.format("%d/%m/%Y às %H:%M")
                             )
                         } else {
                             banner_intro_text
