@@ -698,3 +698,8 @@
 
 - Traduzi o aviso sobre abrir arquivos e revisar diferenças de código exibido no cabeçalho do painel.
 - Preservei o fluxo de exibição e dispensa do aviso.
+
+## Tradução — tela inicial
+
+- Traduzi o título, a descrição e as ações para abrir uma sessão de terminal na tela de boas-vindas.
+- Atualizei a marca exibida para Kikito Terminal e preservei os atalhos e ações.

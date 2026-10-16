@@ -32,7 +32,7 @@ pub fn init(app: &mut AppContext) {
 
     app.register_editable_bindings([EditableBinding::new(
         "workspace:new_tab",
-        "Terminal session",
+        "Sessão de terminal",
         GetStartedAction::TerminalSession,
     )
     .with_context_predicate(id!("GetStartedView"))
@@ -60,7 +60,7 @@ pub struct GetStartedView {
 
 impl GetStartedView {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
-        let pane_configuration = ctx.add_model(|_ctx| PaneConfiguration::new("Get started"));
+        let pane_configuration = ctx.add_model(|_ctx| PaneConfiguration::new("Boas-vindas"));
         let project_buttons = ctx.add_typed_action_view(ProjectButtons::new);
         ctx.subscribe_to_view(&project_buttons, Self::handle_project_buttons_event);
 
@@ -223,7 +223,7 @@ impl GetStartedView {
                 .finish(),
                 appearance
                     .ui_builder()
-                    .paragraph("Welcome to Warp")
+                    .paragraph("Bem-vindo ao Kikito Terminal")
                     .with_style(UiComponentStyles {
                         font_size: Some(20.),
                         ..Default::default()
@@ -233,7 +233,7 @@ impl GetStartedView {
                 Container::new(
                     appearance
                         .ui_builder()
-                        .paragraph("The Agentic Development Environment")
+                        .paragraph("Ambiente de desenvolvimento com agentes de IA")
                         .with_style(UiComponentStyles {
                             font_size: Some(14.),
                             font_family_id: Some(appearance.monospace_font_family()),
@@ -273,7 +273,7 @@ impl GetStartedView {
                     .with_text_and_icon_label(TextAndIcon::new(
                         TextAndIconAlignment::IconFirst,
                         format!(
-                            " New session in {}  {}",
+                            " Nova sessão em {}  {}",
                             dirs::home_dir()
                                 .map(|dir| dir.display().to_string())
                                 .unwrap_or("~".to_string()),
@@ -361,7 +361,7 @@ impl BackingView for GetStartedView {
         _ctx: &view::HeaderRenderContext<'_>,
         _app: &AppContext,
     ) -> view::HeaderContent {
-        view::HeaderContent::simple("Get started")
+        view::HeaderContent::simple("Boas-vindas")
     }
 
     fn set_focus_handle(&mut self, focus_handle: PaneFocusHandle, _ctx: &mut ViewContext<Self>) {
