@@ -187,3 +187,10 @@
 - Traduzi opções locais de seleção inteligente, cópia ao selecionar e acesso de programas ao clipboard por OSC 52.
 - Mantive OSC 52, actions, flags, links e comportamento.
 - Ainda há outros grupos locais da página de recursos para revisar.
+
+
+## Tradução — entrada e sugestões do terminal
+
+- Traduzi rótulos de linha de mensagem, foco da entrada, dicas/botão de sugestões, comportamento da tecla Tab e mensagens de ajuda dos atalhos.
+- Mantive os nomes internos usados para localizar bindings, as teclas, actions, flags e comportamento.
+- A varredura da página de recursos continua nos grupos locais restantes.
