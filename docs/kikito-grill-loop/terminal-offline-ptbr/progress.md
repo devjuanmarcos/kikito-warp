@@ -89,3 +89,10 @@
 - Traduzi a orientação e as ações do bloco local que oferece instalação/ativação de servidores de linguagem para uma base de código.
 - Mantive as actions e o atalho Enter.
 - `git diff --check` passou neste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.
+
+
+## Tradução — editor de comandos secretos
+
+- Traduzi o rótulo, os campos de nome/comando e os botões do diálogo local de comandos secretos para variáveis de ambiente.
+- Mantive as actions e o salvamento do comando sem alterações.
+- `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.

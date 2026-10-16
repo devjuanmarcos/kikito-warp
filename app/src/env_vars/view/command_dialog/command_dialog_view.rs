@@ -27,11 +27,11 @@ const CONTAINER_PADDING: f32 = 25.;
 const ELEMENT_SPACING: f32 = 10.;
 const EDITOR_DIVIDE: f32 = 6.;
 
-const SECRET_SPAN: &str = "Secret command";
-const SAVE_BUTTON_LABEL: &str = "Save";
-const CANCEL_BUTTON_LABEL: &str = "Cancel";
-const NAME_PLACEHOLDER_TEXT: &str = "Name";
-const COMMAND_PLACEHOLDER_TEXT: &str = "Command";
+const SECRET_SPAN: &str = "Comando secreto";
+const SAVE_BUTTON_LABEL: &str = "Salvar";
+const CANCEL_BUTTON_LABEL: &str = "Cancelar";
+const NAME_PLACEHOLDER_TEXT: &str = "Nome";
+const COMMAND_PLACEHOLDER_TEXT: &str = "Comando";
 
 #[derive(Debug, Clone)]
 pub enum EnvVarCommandDialogAction {
