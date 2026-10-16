@@ -334,3 +334,9 @@
 
 - Traduzi o item Outro e o cabeçalho do seletor de agente de programação, mantendo o rótulo de seleção consistente.
 - Preservei o valor de agente desconhecido, actions e comportamento do seletor.
+
+
+## Tradução - layout da barra de ferramentas
+
+- Traduzi o cabeçalho do editor compartilhado de layout da barra de ferramentas dos agentes.
+- Mantive o editor, as actions e o comportamento.
