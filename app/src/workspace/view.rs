@@ -6467,7 +6467,7 @@ impl Workspace {
             return;
         }
         let items = vec![
-            MenuItemFields::new("Re-arrange toolbar items")
+            MenuItemFields::new("Reorganizar itens da barra de ferramentas")
                 .with_on_select_action(WorkspaceAction::OpenHeaderToolbarEditor)
                 .into_item(),
         ];

@@ -427,6 +427,11 @@
 - Traduzi cabeçalhos, detalhes e consequências exibidos quando o TOML tem erro de sintaxe ou valores inválidos.
 - Preservei as chaves das configurações e a lógica que aplica valores padrão.
 
+## Tradução — ação de reorganizar a barra de ferramentas
+
+- Traduzi a ação do menu de contexto do cabeçalho que abre o editor da barra de ferramentas.
+- Mantive a action de abertura do editor.
+
 ## Tradução — rótulo de agente CLI desconhecido
 
 - Traduzi o nome exibido para agentes CLI personalizados ou não reconhecidos.
