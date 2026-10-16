@@ -71,7 +71,7 @@ impl ScriptingSettingsPageView {
             vec![Box::new(LocalControlModeWidget)];
 
         Self {
-            page: PageType::new_uncategorized(widgets, Some(PageTitle::new("Scripting"))),
+            page: PageType::new_uncategorized(widgets, Some(PageTitle::new("Automação"))),
             local_only_icon_tooltip_states: RefCell::new(HashMap::new()),
             local_control_mode_dropdown,
             #[cfg(target_os = "macos")]
@@ -121,7 +121,7 @@ impl ScriptingSettingsPageView {
                     Ok(()) => {
                         let command_name = ChannelState::channel().warpctrl_command_name();
                         let message = format!(
-                            "Successfully installed the Warp Control CLI! You can now run '{command_name}' from the command line."
+                            "A CLI de controle foi instalada. Agora você pode executar '{command_name}' no terminal."
                         );
                         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                             toast_stack.add_ephemeral_toast(
@@ -132,7 +132,7 @@ impl ScriptingSettingsPageView {
                         });
                     }
                     Err(error) => {
-                        let message = format!("Failed to install Warp Control command: {error}");
+                        let message = format!("Falha ao instalar o comando de controle: {error}");
                         log::warn!("{message}");
                         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                             toast_stack.add_persistent_toast(
@@ -231,11 +231,11 @@ impl SettingsWidget for WarpControlCliInstallWidget {
         let installed = cli_install::is_warpctrl_installed();
         let disabled = view.warpctrl_installing || installed;
         let label = if view.warpctrl_installing {
-            "Installing…"
+            "Instalando…"
         } else if installed {
-            "Installed"
+            "Instalado"
         } else {
-            "Install"
+            "Instalar"
         };
         let mut button = appearance
             .ui_builder()
@@ -259,13 +259,13 @@ impl SettingsWidget for WarpControlCliInstallWidget {
         };
 
         render_body_item::<ScriptingSettingsPageAction>(
-            "Warp Control CLI command".into(),
+            "Comando da CLI de controle".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
             appearance,
             button,
-            Some("Install the warpctrl command for scripting Warp from your terminal.".to_owned()),
+            Some("Instale o comando warpctrl para automatizar o Kikito Terminal pelo terminal.".to_owned()),
         )
     }
 }
@@ -285,7 +285,7 @@ impl SettingsWidget for LocalControlModeWidget {
         app: &AppContext,
     ) -> Box<dyn Element> {
         render_body_item::<ScriptingSettingsPageAction>(
-            "warpctrl CLI".into(),
+            "CLI warpctrl".into(),
             None,
             LocalOnlyIconState::for_setting(
                 LocalControlModeSetting::storage_key(),
@@ -296,7 +296,7 @@ impl SettingsWidget for LocalControlModeWidget {
             ToggleState::Enabled,
             appearance,
             ChildView::new(&view.local_control_mode_dropdown).finish(),
-            Some("warpctrl allows for scripting Warp's UI. Use with care.".to_owned()),
+            Some("O warpctrl permite automatizar a interface do Kikito Terminal. Use com cuidado.".to_owned()),
         )
     }
 }

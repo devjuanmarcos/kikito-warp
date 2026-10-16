@@ -124,3 +124,10 @@
 - Traduzi os estados locais de encerramento/falha ao iniciar o shell, a explicação da falha de inicialização e os rótulos dos botões.
 - Preservei actions, URLs e o texto de erro bruto fornecido pelo sistema operacional.
 - Permanecem outras superfícies locais da GUI a localizar; este lote cobriu apenas o banner de encerramento do shell.
+
+
+## Tradução — configurações de automação local
+
+- Traduzi o título da página, estados de instalação, mensagens e descrições da CLI de controle local.
+- Mantive `warpctrl` e `{command_name}` como literais técnicos, além de actions e comportamento.
+- Este lote cobre apenas a página de automação; outras superfícies locais da GUI ainda precisam de varredura.
