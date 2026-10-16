@@ -230,3 +230,9 @@
 - Traduzi a descrição do uso de Wayland e seu aviso sobre atalhos globais e escala fracionária; atualizei a referência de marca para Kikito Terminal.
 - Mantive os nomes técnicos dos backends, actions, flags e comportamento.
 - A auditoria da página de recursos continua.
+
+
+## Tradução - busca assíncrona
+
+- Traduzi o nome da busca assíncrona e a explicação sobre manter a interface responsiva em saídas extensas.
+- Mantive a flag, action, status beta e comportamento da configuração.

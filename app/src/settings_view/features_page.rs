@@ -7850,7 +7850,7 @@ impl SettingsWidget for AsyncFindWidget {
         let ui_builder = appearance.ui_builder();
 
         let label = render_body_item_label::<FeaturesPageAction>(
-            "Asynchronous find".into(),
+            "Busca assíncrona".into(),
             None,
             None,
             LocalOnlyIconState::for_setting(
@@ -7886,7 +7886,7 @@ impl SettingsWidget for AsyncFindWidget {
             switch,
             appearance,
             Some(
-                "Use an improved implementation of find to keep the UI responsive while searching for matches on large outputs."
+                "Use uma implementação aprimorada da busca para manter a interface responsiva ao procurar correspondências em saídas extensas."
                     .into(),
             ),
         )
