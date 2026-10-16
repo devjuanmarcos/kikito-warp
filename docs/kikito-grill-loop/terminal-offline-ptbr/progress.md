@@ -509,3 +509,8 @@
 - Traduzi as descrições de shell inicial, shell para novas sessões, prompt PS1 e confirmação ao fechar
   sessão.
 - Preservei os campos e caminhos TOML.
+
+## Tradução — opções de shell
+
+- Traduzi descrições dos tipos de shell para novas sessões e das opções de shell de inicialização.
+- Preservei os valores `bash`, `zsh`, `fish`, `pwsh`, `null` e a estrutura serializada.

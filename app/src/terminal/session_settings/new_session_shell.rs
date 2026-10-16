@@ -17,20 +17,20 @@ use warpui::platform::OperatingSystem;
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Shell to use when opening new sessions.",
+    description = "Shell usado ao abrir novas sessões.",
     rename_all = "snake_case"
 )]
 pub enum NewSessionShell {
     #[default]
-    #[schemars(description = "Use the operating system's default shell.")]
+    #[schemars(description = "Usar o shell padrão do sistema operacional.")]
     SystemDefault,
-    #[schemars(description = "A shell executable path.")]
+    #[schemars(description = "Caminho para um executável de shell.")]
     Executable(String),
-    #[schemars(description = "An MSYS2 shell environment.")]
+    #[schemars(description = "Ambiente de shell do MSYS2.")]
     MSYS2(String),
-    #[schemars(description = "A Windows Subsystem for Linux distribution.")]
+    #[schemars(description = "Distribuição do Subsistema do Windows para Linux (WSL).")]
     WSL(String),
-    #[schemars(description = "A custom shell command.")]
+    #[schemars(description = "Comando de shell personalizado.")]
     Custom(String),
 }
 
