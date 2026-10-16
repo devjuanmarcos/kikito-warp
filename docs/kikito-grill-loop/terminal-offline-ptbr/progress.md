@@ -466,3 +466,8 @@
 
 - Traduzi as descrições de encerramento, restauração de sessão, inicialização, dicas de links e revisão de código.
 - Preservei as chaves TOML e o comportamento de cada configuração.
+
+## Tradução — eventos em tela cheia
+
+- Traduzi as descrições de encaminhamento de eventos do mouse, rolagem e foco para aplicativos de terminal em tela cheia.
+- Mantive as chaves TOML e o comportamento das opções.

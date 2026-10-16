@@ -10,7 +10,7 @@ define_settings_group!(AltScreenReporting, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "terminal.mouse_reporting_enabled",
-        description: "Whether to forward mouse events to full-screen terminal applications.",
+        description: "Define se os eventos do mouse serão encaminhados para aplicativos de terminal em tela cheia.",
     },
     scroll_reporting_enabled: ScrollReportingEnabled {
         type: bool,
@@ -20,7 +20,7 @@ define_settings_group!(AltScreenReporting, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "terminal.scroll_reporting_enabled",
-        description: "Whether to forward scroll events to full-screen terminal applications.",
+        description: "Define se os eventos de rolagem serão encaminhados para aplicativos de terminal em tela cheia.",
     },
     focus_reporting_enabled: FocusReportingEnabled {
         type: bool,
@@ -30,6 +30,6 @@ define_settings_group!(AltScreenReporting, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "terminal.focus_reporting_enabled",
-        description: "Whether to forward focus and blur events to full-screen terminal applications.",
+        description: "Define se os eventos de foco e perda de foco serão encaminhados para aplicativos de terminal em tela cheia.",
     },
 ]);
