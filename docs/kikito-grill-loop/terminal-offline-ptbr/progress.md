@@ -261,3 +261,9 @@
 
 - Traduzi a opção para mostrar as notas da versão após atualizações.
 - Mantive a configuração local, action e comportamento.
+
+
+## Tradução - navegação das configurações
+
+- Traduzi os nomes locais das seções Recursos e Privacidade na navegação das configurações.
+- Mantive os identificadores de seção, slugs e comportamento.

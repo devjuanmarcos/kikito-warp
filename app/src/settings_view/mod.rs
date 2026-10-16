@@ -346,6 +346,8 @@ impl Display for SettingsSection {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SettingsSection::About => write!(f, "Sobre o Kikito Terminal"),
+            SettingsSection::Features => write!(f, "Recursos"),
+            SettingsSection::Privacy => write!(f, "Privacidade"),
             SettingsSection::Appearance => write!(f, "Aparência"),
             SettingsSection::BillingAndUsage => write!(f, "Faturamento e uso"),
             SettingsSection::Keybindings => write!(f, "Atalhos de teclado"),
