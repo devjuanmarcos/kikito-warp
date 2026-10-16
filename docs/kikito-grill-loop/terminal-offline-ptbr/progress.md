@@ -131,3 +131,10 @@
 - Traduzi o título da página, estados de instalação, mensagens e descrições da CLI de controle local.
 - Mantive `warpctrl` e `{command_name}` como literais técnicos, além de actions e comportamento.
 - Este lote cobre apenas a página de automação; outras superfícies locais da GUI ainda precisam de varredura.
+
+
+## Tradução — atalhos de visibilidade da barra de abas
+
+- Traduzi os nomes dos três comandos de aparência que controlam quando a barra de abas fica visível.
+- Mantive os bindings, actions e flags originais.
+- Outras strings ligadas a recursos remotos da mesma página ficaram fora deste lote.
