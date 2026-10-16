@@ -538,3 +538,9 @@
 - Traduzi tooltips de opções/configuração, o estado vazio sem abas e os rótulos padrão de aba e
   sessão.
 - Preservei atalhos, ações e valores internos.
+
+## Tradução — busca e criação de abas
+
+- Traduzi os textos de orientação da busca de repositórios e abas, além dos tooltips para nova aba e
+  configurações de abas.
+- Preservei atalhos e ações.
