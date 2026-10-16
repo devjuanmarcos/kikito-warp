@@ -138,3 +138,10 @@
 - Traduzi os nomes dos três comandos de aparência que controlam quando a barra de abas fica visível.
 - Mantive os bindings, actions e flags originais.
 - Outras strings ligadas a recursos remotos da mesma página ficaram fora deste lote.
+
+
+## Tradução — banner de arquivos no terminal
+
+- Traduzi as mensagens e ações do banner local de visualização de Markdown e edição de arquivos de código no terminal.
+- Atualizei os nomes visíveis para Kikito Terminal; actions, identificadores e destinos das URLs foram preservados.
+- Outras superfícies locais da GUI ainda precisam de varredura.
