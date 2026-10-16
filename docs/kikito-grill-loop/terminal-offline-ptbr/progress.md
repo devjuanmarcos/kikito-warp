@@ -456,3 +456,8 @@
 
 - Traduzi as descrições de desfoque, fundo, opacidade, tamanho, painel e zoom da janela.
 - Preservei as chaves TOML, os valores e as opções técnicas.
+
+## Tradução — menu local de depuração
+
+- Traduzi os rótulos locais de depuração do shell, gravação PTY, blocos e exportação CSV.
+- Mantive atalhos, siglas e o identificador técnico `warp.pty.recording`.
