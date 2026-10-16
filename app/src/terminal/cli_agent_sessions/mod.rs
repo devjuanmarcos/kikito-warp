@@ -20,7 +20,7 @@ use crate::ai::blocklist::InputConfig;
 /// interrupt silently cancelled the session. See `observe_ctrl_c_write`.
 pub const CTRL_C_CANCEL_WINDOW: Duration = Duration::from_secs(2);
 
-const NEEDS_INPUT_STATUS_MESSAGE: &str = "Agent requires user input";
+const NEEDS_INPUT_STATUS_MESSAGE: &str = "O agente precisa de uma resposta";
 
 /// What caused a session to become [`CLIAgentSessionStatus::Blocked`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -279,7 +279,7 @@ impl CLIAgentSession {
                     .payload
                     .summary
                     .clone()
-                    .or_else(|| Some("Waiting for your answer".to_owned())),
+                    .or_else(|| Some("Aguardando sua resposta".to_owned())),
                 source: BlockedSource::QuestionAsked,
             },
             CLIAgentEventType::NeedsInput => CLIAgentSessionStatus::Blocked {

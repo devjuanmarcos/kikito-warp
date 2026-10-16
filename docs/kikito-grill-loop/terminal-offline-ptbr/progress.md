@@ -682,3 +682,8 @@
 
 - Traduzi o rótulo do seletor e substituí a marca antiga no nome da opção de agente por “Agente”.
 - Preservei os tipos de sessão e a seleção correspondente.
+
+## Tradução — estados de espera de agentes locais
+
+- Traduzi as mensagens padrão exibidas quando um agente CLI aguarda resposta ou precisa de interação.
+- Preservei os estados, eventos e a mensagem fornecida pelo próprio agente quando disponível.

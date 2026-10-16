@@ -744,7 +744,7 @@ fn needs_input_without_a_summary_blocks_session_with_the_generic_message() {
     let new_status = session.apply_event(&rich_event(CLIAgentEventType::NeedsInput));
 
     let expected = CLIAgentSessionStatus::Blocked {
-        message: Some("Agent requires user input".to_owned()),
+        message: Some("O agente precisa de uma resposta".to_owned()),
         source: BlockedSource::NeedsInput,
     };
     assert_eq!(new_status, Some(expected));
