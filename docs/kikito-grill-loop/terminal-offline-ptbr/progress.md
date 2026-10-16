@@ -514,3 +514,9 @@
 
 - Traduzi descrições dos tipos de shell para novas sessões e das opções de shell de inicialização.
 - Preservei os valores `bash`, `zsh`, `fish`, `pwsh`, `null` e a estrutura serializada.
+
+## Tradução — menus de contexto do terminal
+
+- Traduzi ações locais de copiar/colar, selecionar texto, copiar caminhos e URLs, abrir links e
+  inserir texto na entrada.
+- Preservei actions, atalhos e o comportamento de abertura de arquivos.

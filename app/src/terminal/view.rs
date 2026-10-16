@@ -17488,7 +17488,7 @@ impl TerminalView {
                         url_content
                             .map(|url_content| {
                                 vec![
-                                    MenuItemFields::new("Copy URL")
+                                    MenuItemFields::new("Copiar URL")
                                         .with_on_select_action(TerminalAction::ContextMenu(
                                             ContextMenuAction::CopyUrl { url_content },
                                         ))
@@ -17501,13 +17501,13 @@ impl TerminalView {
                     GridHighlightedLink::File(file_link) => {
                         let path = file_link.get_inner().absolute_path();
                         let show_in_file_explorer_menu_item_label = if cfg!(target_os = "macos") {
-                            "Show in Finder"
+                            "Mostrar no Finder"
                         } else {
-                            "Show containing folder"
+                            "Mostrar pasta que contém o arquivo"
                         };
                         path.map(|path| {
                             let mut items = vec![
-                                MenuItemFields::new("Copy path")
+                                MenuItemFields::new("Copiar caminho")
                                     .with_on_select_action(TerminalAction::ContextMenu(
                                         ContextMenuAction::CopyUrl {
                                             url_content: path.to_string_lossy().into(),
@@ -17523,14 +17523,14 @@ impl TerminalView {
 
                             if renders_in_warp_notebook_viewer(&path) {
                                 items.push(
-                                    MenuItemFields::new("Open in Warp")
+                                    MenuItemFields::new("Abrir no Kikito Terminal")
                                         .with_on_select_action(TerminalAction::OpenFileInWarp(path))
                                         .into_item(),
                                 );
                                 // Because the default for cmd-click is to open in Warp, we also
                                 // have an open-in-editor option.
                                 items.push(
-                                    MenuItemFields::new("Open in editor")
+                                    MenuItemFields::new("Abrir no editor")
                                         .with_on_select_action(TerminalAction::OpenGridLink(
                                             highlighted_link.clone(),
                                         ))
@@ -17547,12 +17547,12 @@ impl TerminalView {
                         // URI verbatim; "Open link" dispatches through
                         // `OpenGridLink`.
                         vec![
-                            MenuItemFields::new("Open link")
+                            MenuItemFields::new("Abrir link")
                                 .with_on_select_action(TerminalAction::OpenGridLink(
                                     highlighted_link.clone(),
                                 ))
                                 .into_item(),
-                            MenuItemFields::new("Copy link")
+                            MenuItemFields::new("Copiar link")
                                 .with_on_select_action(TerminalAction::ContextMenu(
                                     ContextMenuAction::CopyUrl {
                                         url_content: uri.clone(),
@@ -17577,7 +17577,7 @@ impl TerminalView {
                 true,
             ) => {
                 let mut fields = vec![
-                    MenuItemFields::new("Copy")
+                    MenuItemFields::new("Copiar")
                         .with_on_select_action(TerminalAction::ContextMenu(
                             ContextMenuAction::CopySelectedText,
                         ))
@@ -17586,7 +17586,7 @@ impl TerminalView {
                             ctx,
                         ))
                         .into_item(),
-                    MenuItemFields::new("Insert into input")
+                    MenuItemFields::new("Inserir na entrada")
                         .with_on_select_action(TerminalAction::ContextMenu(
                             ContextMenuAction::InsertSelectedText,
                         ))
@@ -18400,12 +18400,12 @@ impl TerminalView {
 
         if !selected_input_text.is_empty() {
             items.extend([
-                MenuItemFields::new("Cut")
+                MenuItemFields::new("Recortar")
                     .with_on_select_action(TerminalAction::InputContextMenuItem(
                         InputContextMenuAction::CutSelectedText,
                     ))
                     .into_item(),
-                MenuItemFields::new("Copy")
+                MenuItemFields::new("Copiar")
                     .with_on_select_action(TerminalAction::InputContextMenuItem(
                         InputContextMenuAction::CopySelectedText,
                     ))
@@ -18419,7 +18419,7 @@ impl TerminalView {
 
         if !all_current_input_text.is_empty() & selected_input_text.is_empty() {
             items.push(
-                MenuItemFields::new("Select all")
+                MenuItemFields::new("Selecionar tudo")
                     .with_on_select_action(TerminalAction::InputContextMenuItem(
                         InputContextMenuAction::SelectAll,
                     ))
@@ -18433,7 +18433,7 @@ impl TerminalView {
         }
 
         items.push(
-            MenuItemFields::new("Paste")
+            MenuItemFields::new("Colar")
                 .with_on_select_action(TerminalAction::InputContextMenuItem(
                     InputContextMenuAction::Paste,
                 ))
