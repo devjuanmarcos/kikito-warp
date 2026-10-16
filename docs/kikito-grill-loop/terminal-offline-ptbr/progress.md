@@ -96,3 +96,10 @@
 - Traduzi o rótulo, os campos de nome/comando e os botões do diálogo local de comandos secretos para variáveis de ambiente.
 - Mantive as actions e o salvamento do comando sem alterações.
 - `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.
+
+
+## Tradução — banner do modo Vim
+
+- Traduzi a pergunta e a ação do banner local que oferece ativar os atalhos de teclado do Vim.
+- Mantive actions, estado do banner e comportamento de ativação/dispensa.
+- `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.
