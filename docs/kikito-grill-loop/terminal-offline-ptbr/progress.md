@@ -660,3 +660,8 @@
 - Traduzi rótulos, dicas, estados sem resultados ou em busca e mensagens acessíveis das barras de
   busca em notebooks e no editor de código.
 - Preservei IDs de ações, atalhos, estado da busca e comportamento de substituição.
+
+## Tradução — seletor de versões do Node.js
+
+- Traduzi os estados vazios, as instruções e o título da lista de versões instaladas.
+- Mantive os nomes `Node.js` e `nvm` e o comando exibido para instalar a versão mais recente.
