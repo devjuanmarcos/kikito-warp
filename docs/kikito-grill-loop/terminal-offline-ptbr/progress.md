@@ -75,3 +75,10 @@
 - Traduzi os rótulos, o exemplo de nome, o estado de validação e as ações do modal local que adiciona uma regra de expressão regular.
 - Preservei a sintaxe do campo de expressão regular, as actions e os atalhos de navegação/fechamento.
 - `git diff --check` passou neste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.
+
+
+## Tradução — seletor de cores por diretório
+
+- Traduzi os rótulos do seletor local que adiciona diretórios à configuração de cores das abas.
+- Mantive o fluxo de seleção e abertura do seletor nativo de pastas sem alterações.
+- `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.
