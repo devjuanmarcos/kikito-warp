@@ -51,7 +51,7 @@ use crate::view_components::dropdown::DropdownAction;
 use crate::view_components::{Dropdown, SubmittableTextInput, SubmittableTextInputEvent};
 use crate::{TelemetryEvent, send_telemetry_from_ctx};
 
-const PAGE_TITLE: &str = "Third party CLI agents";
+const PAGE_TITLE: &str = "Agentes de CLI de terceiros";
 
 pub struct CLIAgentsPageView {
     page: PageType<Self>,
@@ -67,7 +67,7 @@ impl CLIAgentsPageView {
         let cli_agent_footer_command_editor = ctx.add_typed_action_view(|ctx| {
             let mut input =
                 SubmittableTextInput::new(ctx).validate_on_edit(|s| Regex::new(s).is_ok());
-            input.set_placeholder_text("command (supports regex)", ctx);
+            input.set_placeholder_text("comando (aceita regex)", ctx);
             input
         });
         update_editor_interaction_state(
@@ -684,7 +684,7 @@ impl SettingsWidget for CLIAgentCommandsWidget {
         list_column.add_child(
             appearance
                 .ui_builder()
-                .span("Commands that enable the toolbar".to_string())
+                .span("Comandos que ativam a barra de ferramentas".to_string())
                 .with_style(UiComponentStyles {
                     font_size: Some(CONTENT_FONT_SIZE),
                     ..Default::default()
@@ -767,7 +767,10 @@ impl SettingsWidget for CLIAgentCommandsWidget {
 
         let description = appearance
             .ui_builder()
-            .paragraph("Add regex patterns to show the coding agent toolbar for matching commands.")
+            .paragraph(
+                "Adicione padrões regex para mostrar a barra de ferramentas do agente de programação \
+                 nos comandos correspondentes.",
+            )
             .with_style(UiComponentStyles {
                 font_size: Some(appearance.ui_font_size()),
                 font_color: Some(styles::description_font_color(true, app).into()),

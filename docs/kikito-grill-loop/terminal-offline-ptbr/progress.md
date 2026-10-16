@@ -316,3 +316,9 @@
 
 - Traduzi os comandos locais para iniciar a entrada no topo e fixar nas bordas superior e inferior.
 - Mantive actions, modos e comportamento.
+
+
+## Tradução - comandos da barra de ferramentas de agentes CLI
+
+- Traduzi o título da página e os textos para configurar comandos regex que exibem a barra de ferramentas.
+- Mantive `CLI`, regex, nomes de agentes, actions e comportamento.
