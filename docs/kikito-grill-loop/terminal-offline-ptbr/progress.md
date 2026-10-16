@@ -687,3 +687,9 @@
 
 - Traduzi as mensagens padrão exibidas quando um agente CLI aguarda resposta ou precisa de interação.
 - Preservei os estados, eventos e a mensagem fornecida pelo próprio agente quando disponível.
+
+## Tradução — descrições das configurações de abas verticais
+
+- Traduzi descrições de layout, conteúdo e comportamento das abas verticais e da barra de ferramentas.
+- Mantive sem alteração as descrições relacionadas a revisão de código e links de pull request.
+- Preservei chaves, enums e valores das configurações.

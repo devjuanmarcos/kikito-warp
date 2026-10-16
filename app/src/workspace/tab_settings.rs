@@ -249,7 +249,7 @@ pub fn canonical_directory_key(path: &Path) -> String {
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Configuration for the header toolbar chips in the vertical tab panel header.",
+    description = "Itens da barra de ferramentas no cabeçalho das abas verticais.",
     rename_all = "snake_case"
 )]
 pub enum HeaderToolbarChipSelection {
@@ -291,7 +291,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.tabs.header_toolbar_chip_selection",
-    description: "Configuration for the header toolbar chips in the vertical tab panel header.",
+    description: "Itens da barra de ferramentas no cabeçalho das abas verticais.",
 );
 
 #[derive(
@@ -306,7 +306,7 @@ settings::macros::implement_setting_for_enum!(
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Display mode for the vertical tab bar.",
+    description = "Modo de exibição da barra de abas verticais.",
     rename_all = "snake_case"
 )]
 pub enum VerticalTabsViewMode {
@@ -323,7 +323,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.vertical_tabs.view_mode",
-    description: "Display mode for the vertical tab bar.",
+    description: "Modo de exibição da barra de abas verticais.",
 );
 
 #[derive(
@@ -338,7 +338,7 @@ settings::macros::implement_setting_for_enum!(
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Granularity of rows displayed in the vertical tabs panel.",
+    description = "Nível de detalhamento das linhas exibidas no painel de abas verticais.",
     rename_all = "snake_case"
 )]
 pub enum VerticalTabsDisplayGranularity {
@@ -355,7 +355,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.vertical_tabs.display_granularity",
-    description: "Granularity of rows displayed in the vertical tabs panel.",
+    description: "Nível de detalhamento das linhas exibidas no painel de abas verticais.",
 );
 
 #[derive(
@@ -370,7 +370,7 @@ settings::macros::implement_setting_for_enum!(
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Tab item display mode in vertical tabs.",
+    description = "Modo de exibição dos itens de aba nas abas verticais.",
     rename_all = "snake_case"
 )]
 pub enum VerticalTabsTabItemMode {
@@ -387,7 +387,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.vertical_tabs.tab_item_mode",
-    description: "Tab item display mode in vertical tabs.",
+    description: "Modo de exibição dos itens de aba nas abas verticais.",
 );
 
 #[derive(
@@ -402,7 +402,7 @@ settings::macros::implement_setting_for_enum!(
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Primary information displayed on vertical tabs.",
+    description = "Informação principal exibida nas abas verticais.",
     rename_all = "snake_case"
 )]
 pub enum VerticalTabsPrimaryInfo {
@@ -420,7 +420,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.vertical_tabs.primary_info",
-    description: "The primary information displayed on vertical tabs.",
+    description: "Informação principal exibida nas abas verticais.",
 );
 
 #[derive(
@@ -435,7 +435,7 @@ settings::macros::implement_setting_for_enum!(
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Subtitle shown on compact vertical tabs.",
+    description = "Subtítulo exibido nas abas verticais compactas.",
     rename_all = "snake_case"
 )]
 pub enum VerticalTabsCompactSubtitle {
@@ -453,7 +453,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.vertical_tabs.compact_subtitle",
-    description: "Subtitle shown on compact vertical tabs.",
+    description: "Subtítulo exibido nas abas verticais compactas.",
 );
 
 define_settings_group!(TabSettings, settings: [
@@ -465,7 +465,7 @@ define_settings_group!(TabSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.tabs.show_indicators_button",
-        description: "Whether to show activity indicators on tabs.",
+        description: "Exibe indicadores de atividade nas abas.",
     },
     show_code_review_button: ShowCodeReviewButton {
         type: bool,
@@ -495,7 +495,7 @@ define_settings_group!(TabSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.tabs.preserve_active_tab_color",
-        description: "Whether to preserve the active tab's color when switching tabs.",
+        description: "Preserva a cor da aba ativa ao alternar entre abas.",
     },
     use_vertical_tabs: UseVerticalTabs {
         type: bool,
@@ -505,7 +505,7 @@ define_settings_group!(TabSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.vertical_tabs.enabled",
-        description: "Whether to display tabs vertically instead of horizontally.",
+        description: "Exibe as abas na vertical em vez de na horizontal.",
     },
     show_vertical_tab_panel_in_restored_windows: ShowVerticalTabPanelInRestoredWindows {
         type: bool,
@@ -515,7 +515,8 @@ define_settings_group!(TabSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.vertical_tabs.show_panel_in_restored_windows",
-        description: "When restoring a window, open the vertical tabs panel even if it was closed when the session was saved.",
+        description: "Ao restaurar uma janela, abre o painel de abas verticais mesmo que ele estivesse \
+            fechado quando a sessão foi salva.",
     },
     hide_title_bar_search_bar_in_vertical_tabs: HideTitleBarSearchBarInVerticalTabs {
         type: bool,
@@ -525,7 +526,8 @@ define_settings_group!(TabSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.vertical_tabs.hide_title_bar_search_bar",
-        description: "When using the vertical tab layout, hide the search bar in the title bar. Search stays available via the command palette and keyboard shortcuts.",
+        description: "No layout vertical, oculta a barra de busca do título. A busca continua disponível \
+            pela paleta de comandos e pelos atalhos de teclado.",
     },
     use_latest_user_prompt_as_conversation_title_in_tab_names: UseLatestUserPromptAsConversationTitleInTabNames {
         type: bool,
@@ -535,7 +537,8 @@ define_settings_group!(TabSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.vertical_tabs.use_latest_prompt_as_title",
-        description: "Whether vertical tab names for agent conversations use the latest user prompt.",
+        description: "Usa o prompt mais recente do usuário como título das abas de conversas com \
+            agentes.",
     },
     vertical_tabs_display_granularity: VerticalTabsDisplayGranularity,
     vertical_tabs_tab_item_mode: VerticalTabsTabItemMode,
@@ -570,7 +573,7 @@ define_settings_group!(TabSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.vertical_tabs.show_details_on_hover",
-        description: "Whether to show a details sidecar when hovering over a vertical tab.",
+        description: "Mostra detalhes ao passar o cursor sobre a aba vertical.",
     },
     header_toolbar_chip_selection: HeaderToolbarChipSelection,
     new_tab_placement: NewTabPlacement,
