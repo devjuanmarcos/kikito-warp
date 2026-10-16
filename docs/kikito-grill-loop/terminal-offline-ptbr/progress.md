@@ -310,3 +310,9 @@
 
 - Traduzi os nomes descritivos das variantes de ícone, incluindo Clássico, Cometas, Brilho, Holográfico e Adesivo.
 - Atualizei o nome visível Warp 1 para Kikito 1 e mantive intactas as variantes e os valores internos.
+
+
+## Tradução - comandos de posição da entrada
+
+- Traduzi os comandos locais para iniciar a entrada no topo e fixar nas bordas superior e inferior.
+- Mantive actions, modos e comportamento.

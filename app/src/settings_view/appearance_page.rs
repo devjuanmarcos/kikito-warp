@@ -208,7 +208,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     app.register_fixed_bindings(vec![
         FixedBinding::empty(
-            "Start Input at the Top".to_string(),
+            "Começar no topo (modo clássico)".to_string(),
             builder(SettingsAction::AppearancePageToggle(
                 AppearancePageAction::SetInputMode {
                     new_mode: InputMode::Waterfall,
@@ -222,7 +222,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     app.register_fixed_bindings(vec![
         FixedBinding::empty(
-            "Pin Input to the Top".to_string(),
+            "Fixar entrada na parte superior".to_string(),
             builder(SettingsAction::AppearancePageToggle(
                 AppearancePageAction::SetInputMode {
                     new_mode: InputMode::PinnedToTop,
@@ -235,7 +235,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     ]);
 
     app.register_fixed_bindings(vec![FixedBinding::empty(
-        "Pin Input to the Bottom".to_string(),
+        "Fixar entrada na parte inferior".to_string(),
         builder(SettingsAction::AppearancePageToggle(
             AppearancePageAction::SetInputMode {
                 new_mode: InputMode::PinnedToBottom,
