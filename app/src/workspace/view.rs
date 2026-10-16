@@ -18142,7 +18142,9 @@ impl Workspace {
         if !ContextFlag::CreateNewSession.is_enabled() {
             self.toast_stack.update(ctx, |toast_stack, ctx| {
                 let toast =
-                    DismissibleToast::error("Cannot open a new terminal session".to_string());
+                    DismissibleToast::error(
+                        "Não foi possível abrir uma nova sessão de terminal".to_string(),
+                    );
                 toast_stack.add_ephemeral_toast(toast, ctx);
             });
             return None;

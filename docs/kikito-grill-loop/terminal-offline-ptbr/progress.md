@@ -575,3 +575,8 @@
 - Traduzi notificações locais de falha ao carregar, copiar e excluir conversas, incluindo o título
   padrão de conversa.
 - Preservei as ações e os IDs; as mensagens não alteram o fluxo de dados.
+
+## Tradução — falha ao abrir sessão
+
+- Traduzi o aviso exibido quando o Kikito Terminal não pode criar uma nova sessão de terminal.
+- Preservei a condição, o fluxo e a ação que apresentam a notificação.
