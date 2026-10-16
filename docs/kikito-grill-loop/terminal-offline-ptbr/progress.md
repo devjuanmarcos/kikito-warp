@@ -648,3 +648,9 @@
 - Traduzi as ações acessíveis para iniciar uma sessão no diretório vinculado e abrir arquivos
   Markdown no editor.
 - Preservei os destinos e o comportamento de abertura dos links.
+
+## Tradução — erros de resolução de links
+
+- Traduzi as mensagens exibidas quando o arquivo vinculado não existe, falta o diretório base ou o
+  link está inválido.
+- Preservei as variantes e a lógica de resolução.
