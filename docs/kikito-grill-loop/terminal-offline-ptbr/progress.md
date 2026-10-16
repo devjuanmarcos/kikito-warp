@@ -497,3 +497,9 @@
 - Traduzi os estados e as descrições de notificações para eventos do terminal, como comandos
   demorados, solicitações de senha e tarefas do agente.
 - Preservei enums, campos, valores e o limite em segundos.
+
+## Tradução — layout das barras de ferramentas de agentes
+
+- Traduzi descrições das opções de layout padrão ou personalizado para as barras do Agent Mode e de
+  agentes CLI.
+- Preservei os enums e as listas serializadas de itens à esquerda e à direita.

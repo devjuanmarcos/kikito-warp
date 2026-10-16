@@ -199,14 +199,17 @@ pub trait ToolbarChipSelection {
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Agent toolbar layout configuration.",
+    description = "Configuração do layout da barra de ferramentas do Agent Mode.",
     rename_all = "snake_case"
 )]
 pub enum AgentToolbarChipSelection {
     #[default]
-    #[schemars(description = "Use the default toolbar layout.")]
+    #[schemars(description = "Usar o layout padrão da barra de ferramentas.")]
     Default,
-    #[schemars(description = "Use a custom arrangement of toolbar items.")]
+    #[schemars(
+        description = "Usar uma organização personalizada dos itens da barra de \
+            ferramentas."
+    )]
     Custom {
         left: Vec<AgentToolbarItemKind>,
         right: Vec<AgentToolbarItemKind>,
@@ -249,14 +252,17 @@ impl ToolbarChipSelection for AgentToolbarChipSelection {
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "CLI agent toolbar layout configuration.",
+    description = "Configuração do layout da barra de ferramentas do agente CLI.",
     rename_all = "snake_case"
 )]
 pub enum CLIAgentToolbarChipSelection {
     #[default]
-    #[schemars(description = "Use the default toolbar layout.")]
+    #[schemars(description = "Usar o layout padrão da barra de ferramentas.")]
     Default,
-    #[schemars(description = "Use a custom arrangement of toolbar items.")]
+    #[schemars(
+        description = "Usar uma organização personalizada dos itens da barra de \
+            ferramentas."
+    )]
     Custom {
         left: Vec<AgentToolbarItemKind>,
         right: Vec<AgentToolbarItemKind>,
