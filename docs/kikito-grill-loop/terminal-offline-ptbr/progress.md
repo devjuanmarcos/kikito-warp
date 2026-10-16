@@ -222,3 +222,11 @@
 - Traduzi os rótulos e opções de posição de novas abas, comportamento de Ctrl+Tab e comportamento da tecla Tab para sugestões.
 - Mantive variantes/enums, actions, atalhos e valores de configuração.
 - Outros grupos locais da página de recursos continuam pendentes.
+
+
+## Tradução - renderização e sistema de janelas
+
+- Traduzi os controles de GPU integrada e backend gráfico, incluindo o aviso de aplicação em novas janelas.
+- Traduzi a descrição do uso de Wayland e seu aviso sobre atalhos globais e escala fracionária; atualizei a referência de marca para Kikito Terminal.
+- Mantive os nomes técnicos dos backends, actions, flags e comportamento.
+- A auditoria da página de recursos continua.
