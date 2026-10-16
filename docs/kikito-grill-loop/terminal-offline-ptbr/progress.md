@@ -580,3 +580,10 @@
 
 - Traduzi o aviso exibido quando o Kikito Terminal não pode criar uma nova sessão de terminal.
 - Preservei a condição, o fluxo e a ação que apresentam a notificação.
+
+## Tradução — menu de contexto do explorador de arquivos
+
+- Traduzi ações para abrir, criar, renomear e excluir arquivos, navegar até diretórios, anexar
+  contexto e copiar caminhos.
+- Traduzi os rótulos para exibir itens no Finder, Explorador de Arquivos ou gerenciador de arquivos.
+- Preservei as ações internas e as condições de disponibilidade.
