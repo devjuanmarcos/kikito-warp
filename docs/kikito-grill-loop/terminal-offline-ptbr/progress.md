@@ -411,3 +411,8 @@
 
 - Traduzi as ações visíveis para pedir ajuda ao agente, anexar contexto e perguntar à IA do Kikito Terminal.
 - Mantive as actions e o comportamento dos botões.
+
+## Tradução — mensagens de coleta de amostras
+
+- Traduzi o sucesso e as falhas da coleta local de amostras de processo.
+- Mantive o caminho do arquivo gerado e a indicação para consultar os logs.

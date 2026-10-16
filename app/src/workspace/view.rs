@@ -26398,7 +26398,7 @@ impl TypedActionView for Workspace {
                                     }
                                 }
 
-                                format!("Process sample saved to {output_path}")
+                                format!("Amostra do processo salva em {output_path}")
                             }
                             Ok(Ok(output)) => {
                                 let stderr = String::from_utf8_lossy(&output.stderr);
@@ -26407,19 +26407,25 @@ impl TypedActionView for Workspace {
                                     "sample command failed",
                                     extra: { "status" => %output.status }
                                 );
-                                "Failed to sample process (check logs)".to_string()
+                                "Falha ao coletar a amostra do processo \
+                                 (consulte os logs)"
+                                    .to_string()
                             }
                             Ok(Err(io_err)) => {
                                 report_error!(
                                     anyhow::Error::new(io_err).context("Failed to run sample command")
                                 );
-                                "Failed to sample process (check logs)".to_string()
+                                "Falha ao coletar a amostra do processo \
+                                 (consulte os logs)"
+                                    .to_string()
                             }
                             Err(join_err) => {
                                 report_error!(
                                     anyhow::Error::new(join_err).context("Sample task panicked")
                                 );
-                                "Failed to sample process (check logs)".to_string()
+                                "Falha ao coletar a amostra do processo \
+                                 (consulte os logs)"
+                                    .to_string()
                             }
                         };
                         me.toast_stack.update(ctx, |view, ctx| {
