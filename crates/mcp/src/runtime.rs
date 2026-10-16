@@ -17,6 +17,7 @@ use rmcp::transport::ConfigureCommandExt as _;
 use simple_logger::SimpleLogger;
 use tokio::io::AsyncBufReadExt as _;
 use uuid::Uuid;
+use warp_core::channel::{Channel, ChannelState};
 use warp_errors::report_error;
 
 use super::TemplatableMCPServerInfo;
@@ -194,6 +195,12 @@ pub async fn spawn_server(
     logger: SimpleLogger,
     auth_context: Option<crate::oauth::AuthContext>,
 ) -> Result<TemplatableMCPServerInfo, rmcp::RmcpError> {
+    if ChannelState::channel() == Channel::Oss {
+        return Err(rmcp::RmcpError::transport_creation::<ReqwestHttpTransport>(
+            "MCP server connections are disabled in the local Kikito Terminal build".to_string(),
+        ));
+    }
+
     logger.log("[note] Attention! There may be sensitive information (such as API keys) in these logs. Make sure to redact any secrets before sharing with others.".to_string());
 
     let mut is_authenticated_transport = false;

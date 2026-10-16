@@ -45,13 +45,13 @@ const ROW_LEFT_MARGIN: f32 = 20.0;
 const ROW_HEIGHT: f32 = 28.;
 const EDIT_BUTTONS_BORDER_RADIUS: f32 = 4.0;
 
-pub const SEARCH_PLACEHOLDER: &str = "Search by name or by keys (ex. \"cmd d\")";
-const SHORTCUT_CONFLICT_WARNING_TEXT: &str = "This shortcut conflicts with other keybinds";
+pub const SEARCH_PLACEHOLDER: &str = "Buscar por nome ou atalho (ex.: \"cmd d\")";
+const SHORTCUT_CONFLICT_WARNING_TEXT: &str = "Este atalho entra em conflito com outro";
 const KEYBINDINGS_PAGE_SHORTCUT: &str = "workspace:toggle_keybindings_page";
-const RESET_BUTTON_TEXT: &str = "Default";
-const CANCEL_BUTTON_TEXT: &str = "Cancel";
-const CLEAR_BUTTON_TEXT: &str = "Clear";
-const SAVE_BUTTON_TEXT: &str = "Save";
+const RESET_BUTTON_TEXT: &str = "Restaurar padrão";
+const CANCEL_BUTTON_TEXT: &str = "Cancelar";
+const CLEAR_BUTTON_TEXT: &str = "Limpar";
+const SAVE_BUTTON_TEXT: &str = "Salvar";
 
 /// Notifier for custom keybinding changed. Views could subscribe to this for
 /// KeybindingChangedEvent.
@@ -324,7 +324,8 @@ impl KeybindingRow {
             Empty::new().finish()
         };
 
-        let press_new_shortcut_text = render_text("Press new keyboard shortcut", None, appearance);
+        let press_new_shortcut_text =
+            render_text("Pressione o novo atalho de teclado", None, appearance);
 
         let new_shortcut_element = Container::new(press_new_shortcut_text)
             .with_margin_left(ROW_LEFT_MARGIN)
@@ -448,7 +449,7 @@ impl KeybindingRow {
                         )
                         .finish()
                     } else {
-                        render_button("Cancel", appearance, cancel_button_color)
+                        render_button(CANCEL_BUTTON_TEXT, appearance, cancel_button_color)
                     }
                 },
             )
@@ -971,7 +972,7 @@ impl KeybindingsWidget {
     ) -> Box<dyn Element> {
         let font_size = appearance.ui_font_size() + FONT_DELTA;
         let mut description = Flex::column().with_child(render_text(
-            "Add your own custom keybindings to existing actions below.",
+            "Adicione atalhos personalizados às ações disponíveis abaixo.",
             Some(UiComponentStyles {
                 font_size: Some(font_size),
                 font_color: Some(
@@ -997,7 +998,7 @@ impl KeybindingsWidget {
                 Wrap::row()
                     .with_child(
                         Container::new(render_text(
-                            "Use",
+                            "Use o atalho",
                             Some(UiComponentStyles {
                                 font_size: Some(font_size),
                                 font_color: Some(
@@ -1026,7 +1027,7 @@ impl KeybindingsWidget {
                     )
                     .with_child(
                         Container::new(render_text(
-                            "to reference these keybindings in a side pane at anytime.",
+                            "para consultar estes atalhos no painel lateral a qualquer momento.",
                             Some(UiComponentStyles {
                                 font_size: Some(font_size),
                                 font_color: Some(
@@ -1093,7 +1094,7 @@ impl SettingsWidget for KeybindingsWidget {
     type View = KeybindingsView;
 
     fn search_terms(&self) -> &str {
-        "keybindings keyboard shortcuts hotkeys"
+        "atalhos de teclado combinações teclas comandos"
     }
 
     fn render(
@@ -1106,7 +1107,7 @@ impl SettingsWidget for KeybindingsWidget {
         {
             Some(LocalOnlyIconState::Visible {
                 mouse_state: self.local_only_icon_mouse_state.clone(),
-                custom_tooltip: Some("Keyboard shortcuts are not synced to the cloud".to_string()),
+                custom_tooltip: Some("Os atalhos de teclado não são sincronizados".to_string()),
             })
         } else {
             None
@@ -1114,7 +1115,7 @@ impl SettingsWidget for KeybindingsWidget {
 
         let subheader = render_sub_header(
             appearance,
-            "Configure keyboard shortcuts",
+            "Configurar atalhos de teclado",
             local_only_icon_state,
         );
         let description = self.render_description(view.bindings.as_ref(), appearance);
@@ -1124,7 +1125,7 @@ impl SettingsWidget for KeybindingsWidget {
             .with_child(description)
             .with_child(render_columns(
                 Container::new(render_text(
-                    "Command",
+                    "Comando",
                     Some(UiComponentStyles {
                         font_size: Some(appearance.ui_font_size() + FONT_DELTA),
                         ..Default::default()

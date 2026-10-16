@@ -2997,6 +2997,7 @@ impl Input {
                 | AgentInputFooterEvent::InsertIntoCLIRichInput(_)
                 | AgentInputFooterEvent::ToggleCodeReviewPane(_)
                 | AgentInputFooterEvent::ToggleFileExplorer(_)
+                | AgentInputFooterEvent::PasteImagePathFromClipboard
                 | AgentInputFooterEvent::OpenRichInput
                 | AgentInputFooterEvent::HideRichInput => {}
                 AgentInputFooterEvent::ToggledChipMenu { open } => {

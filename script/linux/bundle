@@ -226,11 +226,14 @@ elif [[ $RELEASE_CHANNEL = "stable" ]]; then
 elif [[ $RELEASE_CHANNEL = "oss" ]]; then
   WARP_BIN="warp-oss"
   BINARY_NAME="warp-oss"
-  APP_NAME="WarpOss"
+  APP_NAME="KikitoTerminal"
+  APP_DISPLAY_NAME="Kikito Terminal"
   # The OSS channel does not ship Sentry, so drop the crash_reporting feature
   # (which would otherwise pull in the Sentry SDK as a dependency).
   FEATURES="release_bundle"
 fi
+
+APP_DISPLAY_NAME="${APP_DISPLAY_NAME:-$APP_NAME}"
 
 # Artifact-specific binary naming
 if [[ "$ARTIFACT" == "cli" ]]; then
@@ -303,7 +306,7 @@ fi
 
 # Build the binary.
 if [[ "$BUILD" == "true" ]]; then
-  echo "Building and bundling Warp for channel $RELEASE_CHANNEL and bundle id $BUNDLE_ID"
+  echo "Building and bundling $APP_DISPLAY_NAME for channel $RELEASE_CHANNEL and bundle id $BUNDLE_ID"
   if [[ "$ARTIFACT" == "tui" ]]; then
     cargo build -p warp_tui --profile "$CARGO_PROFILE" --bin "$WARP_BIN" --features "$WARP_TUI_FEATURES"
   else

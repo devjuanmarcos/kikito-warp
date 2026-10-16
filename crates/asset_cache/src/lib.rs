@@ -2,11 +2,12 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 use base64::Engine as _;
 use base64::prelude::BASE64_STANDARD;
 use bytes::Bytes;
 use reqwest::Url;
+use warp_core::channel::{Channel, ChannelState};
 use warpui_core::assets::asset_cache::{
     Asset, AssetCache, AssetSource, AssetState, AsyncAssetId, AsyncAssetType,
 };
@@ -142,6 +143,10 @@ impl AssetCacheExt for AssetCache {
 
 /// Fetches a file from the given `url` to memory.
 async fn fetch_file_to_memory(url: Url) -> Result<Bytes, anyhow::Error> {
+    if ChannelState::channel() == Channel::Oss && !is_loopback_url(&url) {
+        bail!("Kikito Terminal blocks remote asset downloads in offline mode");
+    }
+
     cfg_if::cfg_if! {
         if #[cfg(target_family = "wasm")] {
             let response = reqwest::get(url).await?;
@@ -154,6 +159,16 @@ async fn fetch_file_to_memory(url: Url) -> Result<Bytes, anyhow::Error> {
     }
     let content = response.error_for_status()?.bytes().await?;
     Ok(content)
+}
+
+fn is_loopback_url(url: &Url) -> bool {
+    url.host_str().is_some_and(|host| {
+        host == "localhost"
+            || host.ends_with(".localhost")
+            || host
+                .parse::<std::net::IpAddr>()
+                .is_ok_and(|address| address.is_loopback())
+    })
 }
 
 /// Given a url and a directory where cached artifacts are stored, returns a unique

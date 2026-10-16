@@ -202,12 +202,12 @@ impl Entity for NewSessionDataSource {
 type SearcherAction = <NewSessionDataSource as SyncDataSource>::Action;
 
 const SEARCHER_BASE_STRINGS: [&str; 6] = [
-    "Create New Tab",
-    "Create New Window",
-    "Split Pane Down",
-    "Split Pane Right",
-    "Split Pane Up",
-    "Split Pane Left",
+    "Criar nova aba",
+    "Criar nova janela",
+    "Dividir painel para baixo",
+    "Dividir painel à direita",
+    "Dividir painel para cima",
+    "Dividir painel à esquerda",
 ];
 
 trait NewSessionSearcher {

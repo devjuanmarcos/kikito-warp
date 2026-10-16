@@ -8770,7 +8770,7 @@ fn drag_drop_image_in_cli_agent_long_running_command_pastes_via_clipboard() {
 }
 
 #[test]
-fn paste_raw_image_clipboard_in_cli_agent_sends_correct_bytes() {
+fn paste_raw_image_clipboard_in_cli_agent_inserts_local_path() {
     fn run_for_agent(agent: CLIAgent) {
         App::test((), move |mut app| async move {
             initialize_app_for_terminal_view(&mut app);
@@ -8828,26 +8828,27 @@ fn paste_raw_image_clipboard_in_cli_agent_sends_correct_bytes() {
                 view.handle_action(&TerminalAction::Paste, ctx);
             });
 
-            let writes = pty_writes.borrow();
-            assert_eq!(
-                writes.len(),
-                1,
-                "expected 1 PTY write, got {}",
-                writes.len()
+            assert_eventually!(
+                pty_writes.borrow().len() == 1
+                    && String::from_utf8_lossy(&pty_writes.borrow()[0])
+                        .contains("clipboard-images"),
+                "expected image path to be inserted into the CLI prompt; got {:?}",
+                pty_writes.borrow()
             );
 
-            if cfg!(windows) {
-                if agent == CLIAgent::Claude {
-                    assert_eq!(writes[0], vec![C0::ESC, b'v']);
-                } else {
-                    let mut expected = Vec::new();
-                    expected.extend_from_slice(BRACKETED_PASTE_START);
-                    expected.extend_from_slice(BRACKETED_PASTE_END);
-                    assert_eq!(writes[0], expected);
-                }
-            } else {
-                assert_eq!(writes[0], vec![C0::SYN]);
-            }
+            let write = pty_writes.borrow()[0].clone();
+            let text = String::from_utf8(write).expect("inserted path should be UTF-8");
+            assert!(
+                text.contains(".png\" "),
+                "expected quoted PNG path, got {text:?}"
+            );
+            let path = text
+                .split_once('"')
+                .and_then(|(_, remainder)| remainder.split_once('"'))
+                .map(|(path, _)| std::path::PathBuf::from(path))
+                .expect("inserted image path should be quoted");
+            assert_eq!(std::fs::read(&path).unwrap(), [0x89, 0x50, 0x4E, 0x47]);
+            std::fs::remove_file(path).ok();
         })
     }
 

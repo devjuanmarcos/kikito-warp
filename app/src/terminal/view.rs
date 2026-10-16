@@ -4015,7 +4015,7 @@ impl TerminalView {
         let incompatible_configuration_banner = ctx.add_typed_action_view(|_| {
             Banner::new(BannerTextContent::formatted_text(vec![
                 FormattedTextFragment::plain_text(
-                    "Your shell configuration is incompatible with Warp...  ",
+                    "A configuração do shell é incompatível com o Kikito Terminal...  ",
                 ),
                 FormattedTextFragment::hyperlink("More info", KNOWN_ISSUES_URL),
             ]))
@@ -17302,8 +17302,18 @@ impl TerminalView {
             )
         };
 
-        let is_cli_agent_paste =
-            !should_paste_in_input && !middle_click && self.has_active_cli_agent_session(ctx);
+        let registered_cli_agent = CLIAgentSessionsModel::as_ref(ctx)
+            .session(self.view_id)
+            .map(|session| session.agent);
+        let detected_cli_agent = if !should_paste_in_input && !middle_click {
+            let model = self.model.lock();
+            self.detect_cli_agent_from_model(&model, ctx)
+                .map(|(agent, _)| agent)
+        } else {
+            None
+        };
+        let cli_agent = registered_cli_agent.or(detected_cli_agent);
+        let is_cli_agent_paste = !should_paste_in_input && !middle_click && cli_agent.is_some();
 
         // If we're pasting into a CLI coding agent (e.g. Claude Code) that has its own native
         // handling for pasted file paths and images, skip shell-escaping and let the agent
@@ -17318,25 +17328,12 @@ impl TerminalView {
         } else {
             let clipboard_content = ctx.clipboard().read();
 
-            if is_cli_agent_paste && clipboard_content.has_image_data() {
-                if !cfg!(windows) {
-                    self.write_user_bytes_to_pty(vec![escape_sequences::C0::SYN], ctx);
-                    return;
-                }
-
-                // On Windows, Claude Code uses Alt+V for native image paste.
-                let is_claude = CLIAgentSessionsModel::as_ref(ctx)
-                    .session(self.view_id)
-                    .is_some_and(|s| s.agent == CLIAgent::Claude);
-                if is_claude {
-                    self.write_user_bytes_to_pty(vec![escape_sequences::C0::ESC, b'v'], ctx);
-                    return;
-                }
-
-                // For all other agents on Windows, fall through to the normal paste path. When
-                // bracketed paste is enabled (true for TUI-based CLI agents), the empty-text paste
-                // sends \x1b[200~\x1b[201~ to the PTY. The agent interprets this as a "paste
-                // happened" signal and reads the Windows clipboard directly for image data.
+            if !middle_click
+                && (is_cli_agent_paste
+                    || (should_paste_in_input && self.has_active_cli_agent_input_session(ctx)))
+                && self.paste_image_path_from_clipboard(&clipboard_content, ctx)
+            {
+                return;
             }
 
             clipboard_content_with_escaped_paths(clipboard_content, shell_family, false)
@@ -18182,7 +18179,7 @@ impl TerminalView {
 
         if is_on_git_branch {
             items.push(
-                MenuItemFields::new("Copy git branch")
+                MenuItemFields::new("Copiar branch do Git")
                     .with_on_select_action(TerminalAction::ContextMenu(
                         ContextMenuAction::CopyPrompt {
                             position,
@@ -18204,28 +18201,28 @@ impl TerminalView {
 
         if ContextFlag::CreateNewSession.is_enabled() {
             items.extend(vec![
-                MenuItemFields::new("Split pane right")
+                MenuItemFields::new("Dividir painel à direita")
                     .with_on_select_action(TerminalAction::SplitRight(shell.clone()))
                     .with_key_shortcut_label(keybinding_name_to_display_string(
                         "pane_group:add_right",
                         ctx,
                     ))
                     .into_item(),
-                MenuItemFields::new("Split pane left")
+                MenuItemFields::new("Dividir painel à esquerda")
                     .with_on_select_action(TerminalAction::SplitLeft(shell.clone()))
                     .with_key_shortcut_label(keybinding_name_to_display_string(
                         "pane_group:add_left",
                         ctx,
                     ))
                     .into_item(),
-                MenuItemFields::new("Split pane down")
+                MenuItemFields::new("Dividir painel abaixo")
                     .with_on_select_action(TerminalAction::SplitDown(shell.clone()))
                     .with_key_shortcut_label(keybinding_name_to_display_string(
                         "pane_group:add_down",
                         ctx,
                     ))
                     .into_item(),
-                MenuItemFields::new("Split pane up")
+                MenuItemFields::new("Dividir painel acima")
                     .with_on_select_action(TerminalAction::SplitUp(shell))
                     .with_key_shortcut_label(keybinding_name_to_display_string(
                         "pane_group:add_up",
@@ -18249,7 +18246,7 @@ impl TerminalView {
             );
 
             items.push(
-                MenuItemFields::new("Close pane")
+                MenuItemFields::new("Fechar painel")
                     .with_on_select_action(TerminalAction::Close)
                     .with_key_shortcut_label(
                         custom_tag_to_keystroke(CustomAction::CloseCurrentSession.into())
@@ -26951,7 +26948,12 @@ impl TerminalView {
             && self.has_active_cli_agent_session(ctx)
             && !CLIAgentSessionsModel::as_ref(ctx).is_input_open(self.view_id)
         {
-            self.paste_dropped_images_to_cli_agent(image_filepaths, ctx);
+            if let Some(cli_agent) = CLIAgentSessionsModel::as_ref(ctx)
+                .session(self.view_id)
+                .map(|session| session.agent)
+            {
+                self.paste_dropped_images_to_cli_agent(image_filepaths, cli_agent, ctx);
+            }
             return;
         }
 

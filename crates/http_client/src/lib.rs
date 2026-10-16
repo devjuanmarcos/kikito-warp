@@ -397,6 +397,13 @@ impl Client {
             prevent_sleep_reason,
         } = request;
 
+        if ChannelState::channel() == Channel::Oss && !is_loopback_url(request.url()) {
+            return Err(reqwest::Client::new()
+                .get("not a valid URL")
+                .build()
+                .expect_err("an invalid URL must produce a request build error"));
+        }
+
         if let Some(before_response_send_fn) = &self.before_request_sent {
             before_response_send_fn(&request, &serialized_payload);
         }
@@ -421,6 +428,16 @@ impl Client {
 
         Ok(Response(result))
     }
+}
+
+fn is_loopback_url(url: &reqwest::Url) -> bool {
+    url.host_str().is_some_and(|host| {
+        host == "localhost"
+            || host.ends_with(".localhost")
+            || host
+                .parse::<std::net::IpAddr>()
+                .is_ok_and(|address| address.is_loopback())
+    })
 }
 
 fn is_warp_server_origin(url: &reqwest::Url) -> bool {

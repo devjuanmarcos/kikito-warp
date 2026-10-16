@@ -639,7 +639,7 @@ pub fn render_info_icon<T: Clone + Action>(
 ) -> Box<dyn Element> {
     let tooltip_text = additional_info
         .tooltip_override_text
-        .unwrap_or("Click to learn more in docs".to_owned());
+        .unwrap_or("Clique para saber mais na documentação".to_owned());
     let icon = Container::new(
         ConstrainedBox::new(
             Icon::Info
@@ -697,7 +697,9 @@ pub fn render_local_only_icon(
         .ui_builder()
         .local_only_icon_with_tooltip(
             13.,
-            custom_tooltip.unwrap_or("This setting is not synced to your other devices".to_owned()),
+            custom_tooltip.unwrap_or(
+                "Esta configuração não é sincronizada com seus outros dispositivos".to_owned(),
+            ),
             mouse_state.clone(),
         )
         .finish();
@@ -1160,7 +1162,7 @@ pub(crate) fn render_settings_info_banner(
 }
 
 const WORKSPACE_OVERRIDE_TOOLTIP_TEXT: &str =
-    "This option is enforced by your organization's settings and cannot be customized.";
+    "Esta opção é definida pelas configurações da sua organização e não pode ser personalizada.";
 
 pub struct InputListItem<SettingsPageAction: Action + Clone> {
     pub item: String,
@@ -2209,5 +2211,5 @@ pub(super) fn build_reset_button(
             font_size: Some(appearance.ui_font_size() * 0.8),
             ..Default::default()
         })
-        .with_text_label("Reset to default".to_owned())
+        .with_text_label("Restaurar padrão".to_owned())
 }

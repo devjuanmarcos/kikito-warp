@@ -18,12 +18,14 @@ use crate::terminal::shared_session::{
 use crate::util::image::{MAX_IMAGE_SIZE_BYTES_FOR_CLI_AGENT, MIME_SNIFF_BYTES, infer_mime_type};
 mod warpify_footer;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 
+use itertools::Itertools;
 use parking_lot::FairMutex;
 use pathfinder_color::ColorU;
+use uuid::Uuid;
 use warp_core::features::FeatureFlag;
 use warp_core::send_telemetry_from_ctx;
 use warp_core::settings::Setting;
@@ -37,6 +39,7 @@ use warp_errors::report_error;
 use warp_terminal::model::escape_sequences::{BRACKETED_PASTE_END, BRACKETED_PASTE_START};
 use warpify_footer::{WarpifyFooterView, WarpifyFooterViewEvent};
 use warpui::r#async::Timer;
+use warpui::clipboard_utils::get_image_filepaths_from_paths;
 use warpui::elements::{
     ChildView, Container, CrossAxisAlignment, Empty, Expanded, Flex, MainAxisSize, ParentElement,
 };
@@ -87,12 +90,20 @@ const CLI_AGENT_IMAGE_PASTE_DELAY: Duration = Duration::from_millis(300);
 const CLI_AGENT_MODE_SWITCH_PREFIXES: &[u8] = &[b'!', b'&'];
 
 /// Bytes that simulate a "paste image from clipboard" keystroke for the
-/// foreground CLI agent. `0x16` is `Ctrl+V` (SYN); on Windows Claude Code
-/// listens for `Alt+V` (`ESC` + `'v'`) instead. Mirrored from the equivalent
-/// branch in `TerminalView::paste`.
-fn cli_agent_paste_keystroke_bytes() -> Vec<u8> {
+/// foreground CLI agent. `0x16` is `Ctrl+V` (SYN); on Windows Codex and Claude
+/// Code listen for `Alt+V` (`ESC` + `'v'`). Mirrored from the equivalent branch
+/// in `TerminalView::paste`.
+fn cli_agent_paste_keystroke_bytes(agent: CLIAgent) -> Vec<u8> {
     if cfg!(windows) {
-        vec![0x1b, b'v']
+        if matches!(agent, CLIAgent::Claude | CLIAgent::Codex) {
+            vec![0x1b, b'v']
+        } else {
+            let mut bytes =
+                Vec::with_capacity(BRACKETED_PASTE_START.len() + BRACKETED_PASTE_END.len());
+            bytes.extend_from_slice(BRACKETED_PASTE_START);
+            bytes.extend_from_slice(BRACKETED_PASTE_END);
+            bytes
+        }
     } else {
         vec![0x16]
     }
@@ -249,6 +260,10 @@ impl TerminalView {
                 };
                 self.toggle_file_tree(source, *cli_agent, ctx);
             }
+            UseAgentToolbarEvent::PasteImagePathFromClipboard => {
+                let clipboard_content = ctx.clipboard().read();
+                self.paste_image_path_from_clipboard(&clipboard_content, ctx);
+            }
             UseAgentToolbarEvent::StartRemoteControl { scrollback_type } => {
                 self.auto_stop_sharing_on_cli_end =
                     *scrollback_type == SharedSessionScrollbackType::None;
@@ -379,7 +394,7 @@ impl TerminalView {
 
         let command = active_block.command_with_secrets_obfuscated(false);
 
-        let detected = self.active_block_session_id().and_then(|session_id| {
+        let detected = active_block.session_id().and_then(|session_id| {
             self.sessions.read(ctx, |sessions, _| {
                 let session = sessions.get(session_id)?;
                 CLIAgent::detect(
@@ -662,18 +677,19 @@ impl TerminalView {
         }
 
         let prompt_length = text.chars().count();
-        let cli_agent = CLIAgentSessionsModel::as_ref(ctx)
+        let Some(cli_agent) = CLIAgentSessionsModel::as_ref(ctx)
             .session(self.view_id)
-            .map(|s| s.agent);
-        if let Some(cli_agent) = cli_agent {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::CLIAgentRichInputSubmitted {
-                    cli_agent,
-                    prompt_length,
-                },
-                ctx
-            );
-        }
+            .map(|s| s.agent)
+        else {
+            return;
+        };
+        send_telemetry_from_ctx!(
+            TelemetryEvent::CLIAgentRichInputSubmitted {
+                cli_agent,
+                prompt_length,
+            },
+            ctx
+        );
 
         // Clear any saved draft so submitted text isn't restored on the next open.
         let view_id = self.view_id;
@@ -681,10 +697,7 @@ impl TerminalView {
             sessions_model.clear_draft(view_id);
         });
 
-        let strategy = CLIAgentSessionsModel::as_ref(ctx)
-            .session(self.view_id)
-            .map(|s| rich_input_submit_strategy(s.agent))
-            .unwrap_or(RichInputSubmitStrategy::Inline);
+        let strategy = rich_input_submit_strategy(cli_agent);
 
         let text_bytes = text.into_bytes();
 
@@ -724,11 +737,11 @@ impl TerminalView {
             ctx.spawn(
                 Timer::after(CLI_AGENT_PTY_WRITE_DELAY),
                 move |me, _, ctx| {
-                    me.paste_images_then_submit_text(images, rest, strategy, ctx);
+                    me.paste_images_then_submit_text(images, rest, cli_agent, strategy, ctx);
                 },
             );
         } else {
-            self.paste_images_then_submit_text(images, text_bytes, strategy, ctx);
+            self.paste_images_then_submit_text(images, text_bytes, cli_agent, strategy, ctx);
         }
     }
 
@@ -837,6 +850,7 @@ impl TerminalView {
         &mut self,
         images: Vec<ImageContext>,
         text_bytes: Vec<u8>,
+        cli_agent: CLIAgent,
         strategy: RichInputSubmitStrategy,
         ctx: &mut ViewContext<Self>,
     ) {
@@ -883,7 +897,10 @@ impl TerminalView {
                                 }]),
                                 ..Default::default()
                             });
-                            me.write_user_bytes_to_pty(cli_agent_paste_keystroke_bytes(), ctx);
+                            me.write_user_bytes_to_pty(
+                                cli_agent_paste_keystroke_bytes(cli_agent),
+                                ctx,
+                            );
                             true
                         })
                         .await;
@@ -916,6 +933,7 @@ impl TerminalView {
     pub(super) fn paste_dropped_images_to_cli_agent(
         &mut self,
         image_filepaths: Vec<String>,
+        cli_agent: CLIAgent,
         ctx: &mut ViewContext<Self>,
     ) {
         if image_filepaths.is_empty() {
@@ -979,18 +997,24 @@ impl TerminalView {
                     // foreground block.
                     let should_continue = spawner
                         .spawn(move |me, ctx| {
-                            if !me.has_active_cli_agent_session(ctx) {
-                                return false;
-                            }
-                            let still_long_running = me
-                                .model
-                                .lock()
+                            let model = me.model.lock();
+                            if !model
                                 .block_list()
                                 .active_block()
-                                .is_active_and_long_running();
-                            if !still_long_running {
+                                .is_active_and_long_running()
+                            {
                                 return false;
                             }
+                            let registered_agent = CLIAgentSessionsModel::as_ref(ctx)
+                                .session(me.view_id)
+                                .map(|session| session.agent);
+                            let detected_agent = me
+                                .detect_cli_agent_from_model(&model, ctx)
+                                .map(|(agent, _)| agent);
+                            if registered_agent.or(detected_agent) != Some(cli_agent) {
+                                return false;
+                            }
+                            drop(model);
                             ctx.clipboard().write(ClipboardContent {
                                 images: Some(vec![ImageData {
                                     data: bytes,
@@ -999,7 +1023,10 @@ impl TerminalView {
                                 }]),
                                 ..Default::default()
                             });
-                            me.write_user_bytes_to_pty(cli_agent_paste_keystroke_bytes(), ctx);
+                            me.write_user_bytes_to_pty(
+                                cli_agent_paste_keystroke_bytes(cli_agent),
+                                ctx,
+                            );
                             true
                         })
                         .await;
@@ -1015,6 +1042,118 @@ impl TerminalView {
             },
             |_, _, _| {},
         );
+    }
+
+    pub(super) fn paste_image_path_from_clipboard(
+        &mut self,
+        clipboard_content: &ClipboardContent,
+        ctx: &mut ViewContext<Self>,
+    ) -> bool {
+        let image_paths = clipboard_content
+            .paths
+            .as_ref()
+            .map(|paths| get_image_filepaths_from_paths(paths))
+            .unwrap_or_default();
+        if !image_paths.is_empty()
+            && clipboard_content
+                .paths
+                .as_ref()
+                .is_some_and(|paths| image_paths.len() == paths.len())
+        {
+            self.insert_clipboard_image_paths(
+                image_paths.into_iter().map(PathBuf::from).collect(),
+                self.has_active_cli_agent_input_session(ctx),
+                ctx,
+            );
+            return true;
+        }
+
+        let Some(images) = clipboard_content
+            .images
+            .as_ref()
+            .filter(|images| !images.is_empty())
+        else {
+            return false;
+        };
+        if images
+            .iter()
+            .any(|image| image.data.len() > MAX_IMAGE_SIZE_BYTES_FOR_CLI_AGENT)
+        {
+            self.show_error_toast(
+                "A imagem da area de transferencia excede o limite de 500 MB.".to_owned(),
+                ctx,
+            );
+            return true;
+        }
+
+        let destination = std::env::temp_dir()
+            .join("Kikito Terminal")
+            .join("clipboard-images");
+        let files = images
+            .iter()
+            .map(|image| {
+                let extension = match image.mime_type.as_str() {
+                    "image/jpeg" | "image/jpg" => "jpg",
+                    "image/gif" => "gif",
+                    "image/webp" => "webp",
+                    _ => "png",
+                };
+                (
+                    destination.join(format!("{}.{}", Uuid::new_v4(), extension)),
+                    image.data.clone(),
+                )
+            })
+            .collect::<Vec<_>>();
+        let insert_into_rich_input = self.has_active_cli_agent_input_session(ctx);
+
+        ctx.spawn(
+            async move {
+                async_fs::create_dir_all(&destination).await?;
+                for (path, bytes) in &files {
+                    async_fs::write(path, bytes).await?;
+                }
+                Ok::<_, std::io::Error>(files.into_iter().map(|(path, _)| path).collect())
+            },
+            move |me, result, ctx| match result {
+                Ok(paths) => me.insert_clipboard_image_paths(paths, insert_into_rich_input, ctx),
+                Err(error) => me.show_error_toast(
+                    format!("Nao foi possivel salvar a imagem temporaria: {error}"),
+                    ctx,
+                ),
+            },
+        );
+        true
+    }
+
+    fn insert_clipboard_image_paths(
+        &mut self,
+        paths: Vec<PathBuf>,
+        insert_into_rich_input: bool,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        if paths.is_empty() {
+            return;
+        }
+        let text = format!(
+            "{} ",
+            paths
+                .iter()
+                .map(|path| format!("\"{}\"", path.display()))
+                .join(" ")
+        );
+
+        if insert_into_rich_input {
+            if self.has_active_cli_agent_input_session(ctx) {
+                self.input.update(ctx, |input, ctx| {
+                    input.insert_into_cli_agent_rich_input(&text, ctx);
+                });
+            }
+        } else if CLIAgentSessionsModel::as_ref(ctx)
+            .session(self.view_id)
+            .is_some()
+        {
+            self.insert_text_into_cli_agent_pty(&text, ctx);
+        }
     }
 
     /// Writes the input text to the PTY and then sends a carriage return to
@@ -1265,6 +1404,9 @@ impl UseAgentToolbar {
             AgentInputFooterEvent::ToggleFileExplorer(agent) => {
                 ctx.emit(UseAgentToolbarEvent::ToggleFileExplorer(*agent));
             }
+            AgentInputFooterEvent::PasteImagePathFromClipboard => {
+                ctx.emit(UseAgentToolbarEvent::PasteImagePathFromClipboard);
+            }
             AgentInputFooterEvent::StartRemoteControl => {
                 let scrollback_type = if self.cli_agent(ctx).is_some() {
                     SharedSessionScrollbackType::None
@@ -1372,6 +1514,8 @@ pub enum UseAgentToolbarEvent {
     /// Toggle the file explorer. `None` when no CLI agent session is attached
     /// to this pane.
     ToggleFileExplorer(Option<CLIAgent>),
+    /// Insert a local image path from the system clipboard into the prompt.
+    PasteImagePathFromClipboard,
     /// Start remote control (one-click share without modal).
     StartRemoteControl {
         scrollback_type: SharedSessionScrollbackType,

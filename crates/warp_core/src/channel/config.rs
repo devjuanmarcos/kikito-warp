@@ -54,6 +54,16 @@ pub struct WarpServerConfig {
 }
 
 impl WarpServerConfig {
+    pub fn local() -> Self {
+        Self {
+            server_root_url: "http://127.0.0.1:0".into(),
+            rtc_server_url: "ws://127.0.0.1:0/graphql/v2".into(),
+            session_sharing_server_url: None,
+            firebase_auth_api_key: "".into(),
+            iap_config: None,
+        }
+    }
+
     pub fn production() -> Self {
         Self {
             server_root_url: "https://app.warp.dev".into(),
@@ -77,6 +87,13 @@ pub struct OzConfig {
 }
 
 impl OzConfig {
+    pub fn local() -> Self {
+        Self {
+            oz_root_url: "http://127.0.0.1:0".into(),
+            workload_audience_url: None,
+        }
+    }
+
     pub fn production() -> Self {
         Self {
             oz_root_url: "https://oz.warp.dev".into(),

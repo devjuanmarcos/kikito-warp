@@ -10,7 +10,7 @@ use settings::Setting as _;
 #[cfg(target_family = "wasm")]
 use url::Url;
 use uuid::Uuid;
-use warp_core::channel::ChannelState;
+use warp_core::channel::{Channel, ChannelState};
 use warp_core::features::FeatureFlag;
 use warp_errors::{report_error, report_if_error};
 use warp_graphql::mutations::create_anonymous_user::{
@@ -733,6 +733,9 @@ impl AuthManager {
         auth_view_variant: AuthViewVariant,
         ctx: &mut ModelContext<Self>,
     ) {
+        if ChannelState::channel() == Channel::Oss {
+            return;
+        }
         if self.auth_state.is_anonymous_or_logged_out() {
             send_telemetry_from_ctx!(
                 TelemetryEvent::AnonymousUserAttemptLoginGatedFeature { feature },

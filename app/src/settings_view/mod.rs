@@ -345,20 +345,22 @@ use crate::util::bindings::custom_tag_to_keystroke;
 impl Display for SettingsSection {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SettingsSection::BillingAndUsage => write!(f, "Billing and usage"),
-            SettingsSection::Keybindings => write!(f, "Keyboard shortcuts"),
-            SettingsSection::SharedBlocks => write!(f, "Shared blocks"),
-            SettingsSection::Scripting => write!(f, "Scripting"),
-            SettingsSection::WarpDrive => write!(f, "Warp Drive"),
-            SettingsSection::WarpAgent => write!(f, "Warp Agent"),
-            SettingsSection::AgentProfiles => write!(f, "Profiles"),
-            SettingsSection::AgentMCPServers => write!(f, "MCP servers"),
-            SettingsSection::Knowledge => write!(f, "Knowledge"),
-            SettingsSection::ThirdPartyCLIAgents => write!(f, "Third party CLI agents"),
-            SettingsSection::CodeIndexing => write!(f, "Indexing and projects"),
-            SettingsSection::EditorAndCodeReview => write!(f, "Editor and Code Review"),
-            SettingsSection::CloudEnvironments => write!(f, "Environments"),
-            SettingsSection::WarpCloudAgentAPIKeys => write!(f, "API keys"),
+            SettingsSection::About => write!(f, "Sobre o Kikito Terminal"),
+            SettingsSection::Appearance => write!(f, "Aparência"),
+            SettingsSection::BillingAndUsage => write!(f, "Faturamento e uso"),
+            SettingsSection::Keybindings => write!(f, "Atalhos de teclado"),
+            SettingsSection::SharedBlocks => write!(f, "Blocos compartilhados"),
+            SettingsSection::Scripting => write!(f, "Automação"),
+            SettingsSection::WarpDrive => write!(f, "Drive"),
+            SettingsSection::WarpAgent => write!(f, "Agente de IA"),
+            SettingsSection::AgentProfiles => write!(f, "Perfis"),
+            SettingsSection::AgentMCPServers => write!(f, "Servidores MCP"),
+            SettingsSection::Knowledge => write!(f, "Conhecimento"),
+            SettingsSection::ThirdPartyCLIAgents => write!(f, "Agentes de CLI de terceiros"),
+            SettingsSection::CodeIndexing => write!(f, "Indexação e projetos"),
+            SettingsSection::EditorAndCodeReview => write!(f, "Editor e revisão de código"),
+            SettingsSection::CloudEnvironments => write!(f, "Ambientes"),
+            SettingsSection::WarpCloudAgentAPIKeys => write!(f, "Chaves de API"),
             _ => write!(f, "{self:?}"),
         }
     }
@@ -697,8 +699,8 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             vec![
                 ToggleSettingActionPair::custom(
                     SettingActionPairDescriptions::new(
-                        "Show initialization block",
-                        "Hide initialization block",
+                        "Mostrar bloco de inicialização",
+                        "Ocultar bloco de inicialização",
                     ),
                     builder(SettingsAction::Debug(
                         DebugSettingsAction::ToggleInitializationBlock,
@@ -711,8 +713,8 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 ),
                 ToggleSettingActionPair::custom(
                     SettingActionPairDescriptions::new(
-                        "Show in-band command blocks",
-                        "Hide in-band command blocks",
+                        "Mostrar blocos de comando integrados",
+                        "Ocultar blocos de comando integrados",
                     ),
                     builder(SettingsAction::Debug(
                         DebugSettingsAction::ToggleInBandCommandBlocks,
@@ -732,25 +734,25 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(
             vec![
                 ToggleSettingActionPair::new(
-                    "recording mode",
+                    "modo de gravação",
                     WorkspaceAction::ToggleRecordingMode,
                     &id!("Workspace"),
                     flags::RECORDING_MODE_FLAG,
                 ),
                 ToggleSettingActionPair::new(
-                    "in-band generators for new sessions",
+                    "geradores integrados para novas sessões",
                     WorkspaceAction::ToggleInBandGenerators,
                     &id!("Workspace"),
                     flags::IN_BAND_GENERATORS_FLAG,
                 ),
                 ToggleSettingActionPair::new(
-                    "debug network status",
+                    "status de rede para depuração",
                     WorkspaceAction::ToggleDebugNetworkStatus,
                     &id!("Workspace"),
                     flags::DEBUG_NETWORK_ONLINE_FLAG,
                 ),
                 ToggleSettingActionPair::new(
-                    "memory statistics",
+                    "estatísticas de memória",
                     WorkspaceAction::ToggleShowMemoryStats,
                     &id!("Workspace"),
                     flags::DEBUG_SHOW_MEMORY_STATS_FLAG,
@@ -830,7 +832,7 @@ pub struct ToggleSettingActionPair<T: Action + Clone> {
 
 impl<T: Action + Clone> ToggleSettingActionPair<T> {
     /// `description_suffix` will be visible to the user,
-    /// e.g. `Enable {description_suffix}` or `Disable {description_suffix}`.
+    /// e.g. `Ativar {description_suffix}` or `Desativar {description_suffix}`.
     /// We use contexts to decide if we show the user the enable or disable
     /// version of this action pair.
     /// `context_prefix` is logically ANDed with context_boolean_flag,
@@ -850,8 +852,8 @@ impl<T: Action + Clone> ToggleSettingActionPair<T> {
 
         ToggleSettingActionPair {
             descriptions: SettingActionPairDescriptions {
-                enable: format!("Enable {description_suffix}"),
-                disable: format!("Disable {description_suffix}"),
+                enable: format!("Ativar {description_suffix}"),
+                disable: format!("Desativar {description_suffix}"),
             },
             contexts: SettingActionPairContexts {
                 enable_predicate: context_prefix.to_owned() & !id!(context_boolean_flag),
@@ -1356,7 +1358,7 @@ impl SettingsView {
                 ..Default::default()
             };
             let mut editor = EditorView::single_line(options, ctx);
-            editor.set_placeholder_text("Search", ctx);
+            editor.set_placeholder_text("Buscar", ctx);
             editor
         });
 
@@ -1402,48 +1404,68 @@ impl SettingsView {
             SettingsPage::new(about_page_handle),
         ]);
 
+        let is_local_build = ChannelState::channel() == warp_core::channel::Channel::Oss;
+        if is_local_build {
+            settings_pages.retain(|page| {
+                matches!(
+                    page.section,
+                    SettingsSection::Appearance
+                        | SettingsSection::Keybindings
+                        | SettingsSection::About
+                )
+            });
+        }
+
         // Build sidebar nav items. Umbrellas group their subpages here and
         // nowhere else, so this list is the only place membership is declared.
-        let mut nav_items = vec![
-            SettingsNavItem::Page(SettingsSection::Account),
-            SettingsNavItem::Umbrella(SettingsUmbrella::new(
-                "Agents",
-                vec![
-                    SettingsSection::WarpAgent,
-                    SettingsSection::AgentProfiles,
-                    SettingsSection::AgentMCPServers,
-                    SettingsSection::Knowledge,
-                    SettingsSection::ThirdPartyCLIAgents,
-                ],
-            )),
-            SettingsNavItem::Page(SettingsSection::BillingAndUsage),
-            SettingsNavItem::Umbrella(SettingsUmbrella::new(
-                "Code",
-                vec![
-                    SettingsSection::CodeIndexing,
-                    SettingsSection::EditorAndCodeReview,
-                ],
-            )),
-            SettingsNavItem::Umbrella(SettingsUmbrella::new(
-                "Cloud platform",
-                vec![
-                    SettingsSection::CloudEnvironments,
-                    SettingsSection::WarpCloudAgentAPIKeys,
-                ],
-            )),
-            SettingsNavItem::Page(SettingsSection::Teams),
-            SettingsNavItem::Page(SettingsSection::Appearance),
-            SettingsNavItem::Page(SettingsSection::Features),
-            SettingsNavItem::Page(SettingsSection::Keybindings),
-            SettingsNavItem::Page(SettingsSection::Warpify),
-            SettingsNavItem::Page(SettingsSection::Referrals),
-            SettingsNavItem::Page(SettingsSection::SharedBlocks),
-            SettingsNavItem::Page(SettingsSection::WarpDrive),
-            SettingsNavItem::Page(SettingsSection::Privacy),
-            SettingsNavItem::Page(SettingsSection::About),
-        ];
+        let mut nav_items = if is_local_build {
+            vec![
+                SettingsNavItem::Page(SettingsSection::Appearance),
+                SettingsNavItem::Page(SettingsSection::Keybindings),
+                SettingsNavItem::Page(SettingsSection::About),
+            ]
+        } else {
+            vec![
+                SettingsNavItem::Page(SettingsSection::Account),
+                SettingsNavItem::Umbrella(SettingsUmbrella::new(
+                    "Agents",
+                    vec![
+                        SettingsSection::WarpAgent,
+                        SettingsSection::AgentProfiles,
+                        SettingsSection::AgentMCPServers,
+                        SettingsSection::Knowledge,
+                        SettingsSection::ThirdPartyCLIAgents,
+                    ],
+                )),
+                SettingsNavItem::Page(SettingsSection::BillingAndUsage),
+                SettingsNavItem::Umbrella(SettingsUmbrella::new(
+                    "Code",
+                    vec![
+                        SettingsSection::CodeIndexing,
+                        SettingsSection::EditorAndCodeReview,
+                    ],
+                )),
+                SettingsNavItem::Umbrella(SettingsUmbrella::new(
+                    "Cloud platform",
+                    vec![
+                        SettingsSection::CloudEnvironments,
+                        SettingsSection::WarpCloudAgentAPIKeys,
+                    ],
+                )),
+                SettingsNavItem::Page(SettingsSection::Teams),
+                SettingsNavItem::Page(SettingsSection::Appearance),
+                SettingsNavItem::Page(SettingsSection::Features),
+                SettingsNavItem::Page(SettingsSection::Keybindings),
+                SettingsNavItem::Page(SettingsSection::Warpify),
+                SettingsNavItem::Page(SettingsSection::Referrals),
+                SettingsNavItem::Page(SettingsSection::SharedBlocks),
+                SettingsNavItem::Page(SettingsSection::WarpDrive),
+                SettingsNavItem::Page(SettingsSection::Privacy),
+                SettingsNavItem::Page(SettingsSection::About),
+            ]
+        };
 
-        if FeatureFlag::WarpControlCli.is_enabled() {
+        if FeatureFlag::WarpControlCli.is_enabled() && !is_local_build {
             let shared_blocks_index = nav_items
                 .iter()
                 .position(|item| {
@@ -1456,11 +1478,23 @@ impl SettingsView {
             );
         }
 
-        let initial_page = match page {
-            Some(SettingsSection::Scripting) if !FeatureFlag::WarpControlCli.is_enabled() => {
-                SettingsSection::Account
+        let initial_page = if is_local_build {
+            page.filter(|section| {
+                matches!(
+                    section,
+                    SettingsSection::Appearance
+                        | SettingsSection::Keybindings
+                        | SettingsSection::About
+                )
+            })
+            .unwrap_or(SettingsSection::Appearance)
+        } else {
+            match page {
+                Some(SettingsSection::Scripting) if !FeatureFlag::WarpControlCli.is_enabled() => {
+                    SettingsSection::Account
+                }
+                other => other.unwrap_or_default(),
             }
-            other => other.unwrap_or_default(),
         };
 
         // Auto-expand the umbrella if the initial page is one of its subpages.
@@ -1702,7 +1736,7 @@ impl SettingsView {
             );
 
             items.push(
-                MenuItemFields::new("Close pane")
+                MenuItemFields::new("Fechar painel")
                     .with_on_select_action(SettingsAction::Close)
                     .with_key_shortcut_label(
                         custom_tag_to_keystroke(CustomAction::CloseCurrentSession.into())
@@ -2417,7 +2451,7 @@ impl SettingsView {
                 .with_cross_axis_alignment(CrossAxisAlignment::Center)
                     .with_children([
                         Text::new(
-                            "No settings match your search.",
+                            "Nenhuma configuração corresponde à busca.",
                             appearance.ui_font_family(),
                             appearance.ui_font_size(),
                         )
@@ -2425,7 +2459,7 @@ impl SettingsView {
                         .with_color(theme.sub_text_color(theme.background()).into_solid())
                         .finish(),
                         Text::new(
-                            "You may want to try using different keywords or checking for any possible typos.",
+                            "Tente usar outras palavras-chave ou confira se há algum erro de digitação.",
                             appearance.ui_font_family(),
                             appearance.ui_font_size(),
                         )
@@ -2898,7 +2932,7 @@ impl BackingView for SettingsView {
         _ctx: &view::HeaderRenderContext<'_>,
         _app: &AppContext,
     ) -> view::HeaderContent {
-        view::HeaderContent::simple("Settings")
+        view::HeaderContent::simple("Configurações")
     }
 
     fn set_focus_handle(&mut self, focus_handle: PaneFocusHandle, _ctx: &mut ViewContext<Self>) {

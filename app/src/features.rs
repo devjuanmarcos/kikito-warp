@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use warp_core::channel::ChannelState;
+use warp_core::channel::{Channel, ChannelState};
 pub use warp_core::features::*;
 
 /// Mark all features which should be enabled on the current channel as enabled.
@@ -8,6 +8,33 @@ pub use warp_core::features::*;
 pub fn init_feature_flags() {
     for flag in enabled_features() {
         flag.set_enabled(true);
+    }
+    if ChannelState::channel() == Channel::Oss {
+        for flag in [
+            FeatureFlag::Autoupdate,
+            FeatureFlag::CrashReporting,
+            FeatureFlag::WithSandboxTelemetry,
+            FeatureFlag::SendTelemetryToFile,
+            FeatureFlag::GlobalAIAnalyticsCollection,
+            FeatureFlag::McpServer,
+            FeatureFlag::ForceLogin,
+            FeatureFlag::CreatingSharedSessions,
+            FeatureFlag::ViewingSharedSessions,
+            FeatureFlag::AgentSharedSessions,
+            FeatureFlag::CloudEnvironments,
+            FeatureFlag::CloudRunners,
+            FeatureFlag::CloudAgentRunners,
+            FeatureFlag::RemoteCodebaseIndexing,
+            FeatureFlag::CloudObjects,
+            FeatureFlag::CloudMode,
+            FeatureFlag::CloudConversations,
+            FeatureFlag::CloudModeFromLocalSession,
+            FeatureFlag::CloudModeImageContext,
+            FeatureFlag::CloudAgentShellRespawn,
+            FeatureFlag::AgentMode,
+        ] {
+            flag.set_user_preference(false);
+        }
     }
     mark_initialized();
 }

@@ -142,6 +142,13 @@ done
 export FEATURES
 export WARP_BIN_NAME
 export WARP_CHANNEL
+export CARGO_BIN_NAME="${WARP_CHANNEL}"
+
+if [[ "${WARP_CHANNEL}" = "oss" ]]; then
+  export WARP_APP_NAME="Kikito Terminal"
+else
+  export WARP_APP_NAME="WarpLocal"
+fi
 
 if [[ "$OS_TYPE" = "Darwin" ]]; then
   if [[ ${#WARP_ARGS[@]} -gt 0 ]]; then

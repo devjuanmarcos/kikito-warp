@@ -20,6 +20,7 @@ use telemetry::{
 };
 use url::Url;
 pub use user_info::{TuiUserInfoManager, TuiUserInfoManagerEvent, TuiUserInfoSnapshot};
+use warp_core::channel::{Channel, ChannelState};
 use warp_core::telemetry::TelemetryEvent as _;
 use warpui::{AppContext, Entity, SingletonEntity};
 
@@ -207,8 +208,13 @@ impl SingletonEntity for TuiLoginModel {}
 /// Registers the [`TuiLoginModel`], mounts the TUI immediately, and shows an
 /// explicit welcome screen when the user isn't already logged in.
 pub(crate) fn init(mount: TuiMountFn, ctx: &mut AppContext) {
-    let initial_phase = initial_login_phase(AuthStateProvider::as_ref(ctx).get());
-    let logged_in = matches!(&initial_phase, TuiLoginPhase::LoggedIn);
+    let is_local_build = ChannelState::channel() == Channel::Oss;
+    let initial_phase = if is_local_build {
+        TuiLoginPhase::LoggedIn
+    } else {
+        initial_login_phase(AuthStateProvider::as_ref(ctx).get())
+    };
+    let logged_in = !is_local_build && matches!(&initial_phase, TuiLoginPhase::LoggedIn);
     ctx.add_singleton_model(move |_| TuiLoginModel {
         phase: initial_phase,
         browser_flow: TuiAuthBrowserFlow::DirectDeviceAuthorization,
@@ -250,6 +256,9 @@ fn initial_login_phase(auth_state: &AuthState) -> TuiLoginPhase {
 }
 
 fn handle_auth_manager_event(event: &AuthManagerEvent, ctx: &mut AppContext) {
+    if ChannelState::channel() == Channel::Oss {
+        return;
+    }
     match event {
         AuthManagerEvent::ReceivedDeviceAuthorizationCode {
             verification_url,
@@ -358,6 +367,9 @@ fn activate_global_mcp_servers(ctx: &mut AppContext) {
 
 /// Starts device authorization from a signed-out screen, preserving any required web logout.
 pub fn start_tui_device_login(ctx: &mut AppContext) {
+    if ChannelState::channel() == Channel::Oss {
+        return;
+    }
     start_tui_device_login_with_entrypoint(AuthenticationEntrypoint::OpenBrowser, ctx);
 }
 
@@ -365,6 +377,9 @@ fn start_tui_device_login_with_entrypoint(
     entrypoint: AuthenticationEntrypoint,
     ctx: &mut AppContext,
 ) {
+    if ChannelState::channel() == Channel::Oss {
+        return;
+    }
     let (should_authorize, event) = TuiLoginModel::handle(ctx).update(ctx, |model, ctx| {
         match model.phase {
             TuiLoginPhase::SignedOutWelcome => {
@@ -388,6 +403,9 @@ fn start_tui_device_login_with_entrypoint(
 }
 /// Logs out the current TUI user and sends them to Warp web's logged-out flow.
 pub fn log_out_tui(ctx: &mut AppContext) {
+    if ChannelState::channel() == Channel::Oss {
+        return;
+    }
     auth::log_out(ctx);
     TuiOnboardingMarkers::handle(ctx).update(ctx, |markers, ctx| {
         markers.reset_for_account_transition(ctx);

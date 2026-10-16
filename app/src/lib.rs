@@ -205,7 +205,7 @@ use ::settings::{Setting, ToggleableSetting};
 use anyhow::Context;
 use anyhow::{Result, anyhow};
 use appearance::{Appearance, AppearanceManager};
-use channel::ChannelState;
+use channel::{Channel, ChannelState};
 use interval_timer::IntervalTimer;
 use itertools::Itertools;
 #[cfg(feature = "integration_tests")]
@@ -1019,7 +1019,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
     features::init_feature_flags();
 
     #[cfg(feature = "crash_reporting")]
-    if launch_mode.needs_crash_reporting() {
+    if launch_mode.needs_crash_reporting() && ChannelState::channel() != Channel::Oss {
         // Ensure that the main/root Sentry hub is initialized on the main
         // thread.  PtySpawner creates a background thread to receive logs from
         // the terminal server process, and we don't want it to be the host of
@@ -1532,12 +1532,16 @@ pub(crate) fn initialize_app(
         ctx.set_zoom_factor(WindowSettings::as_ref(ctx).zoom_level.as_zoom_factor());
     }
 
-    let (auth_state, pending_api_key) = match launch_mode.auth_initialization() {
-        AuthInitialization::Persisted => (AuthState::initialize(ctx), None),
-        AuthInitialization::PendingApiKey(api_key) => (
-            AuthState::initialize_for_credential_validation(ctx),
-            Some(api_key),
-        ),
+    let (auth_state, pending_api_key) = if ChannelState::channel() == Channel::Oss {
+        (AuthState::initialize_local(ctx), None)
+    } else {
+        match launch_mode.auth_initialization() {
+            AuthInitialization::Persisted => (AuthState::initialize(ctx), None),
+            AuthInitialization::PendingApiKey(api_key) => (
+                AuthState::initialize_for_credential_validation(ctx),
+                Some(api_key),
+            ),
+        }
     };
     let auth_state = Arc::new(auth_state);
     timer.mark_interval_end("AUTH_MANAGER_SET_USER");
@@ -1589,10 +1593,12 @@ pub(crate) fn initialize_app(
     #[cfg(not(target_family = "wasm"))]
     // Refresh starts only after the authenticated server client exists; tracing initialization
     // remains responsible for deciding whether this process opted in to cloud-agent export.
-    tracing::start_auth_refresh(
-        server_api_provider.as_ref(ctx).get_managed_secrets_client(),
-        ctx,
-    );
+    if ChannelState::channel() != Channel::Oss {
+        tracing::start_auth_refresh(
+            server_api_provider.as_ref(ctx).get_managed_secrets_client(),
+            ctx,
+        );
+    }
 
     ctx.add_singleton_model(|_ctx| AuthStateProvider::new(auth_state.clone()));
 
@@ -1842,15 +1848,18 @@ pub(crate) fn initialize_app(
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "crash_reporting")] {
-            let is_crash_reporting_enabled = crash_reporting::init(ctx);
+            let is_crash_reporting_enabled =
+                ChannelState::channel() != Channel::Oss && crash_reporting::init(ctx);
         } else {
             let is_crash_reporting_enabled = false;
         }
     }
     // Send buffered pre-init errors to Sentry now that the client is ready.
     #[cfg(feature = "crash_reporting")]
-    for err in _pre_sentry_errors {
-        sentry::integrations::anyhow::capture_anyhow(&err);
+    if ChannelState::channel() != Channel::Oss {
+        for err in _pre_sentry_errors {
+            sentry::integrations::anyhow::capture_anyhow(&err);
+        }
     }
     timer.mark_interval_end("INIT_CRASH_REPORTING");
 
@@ -1940,13 +1949,27 @@ pub(crate) fn initialize_app(
         apply_scroll_multiplier(event, ctx);
     });
 
-    // Rewrite recognized Warp web URLs (sessions, Drive, settings, home) into local
-    // intent URLs when possible so they open directly in the desktop app.
+    // Rewrite supported web URLs into local intent URLs and keep the OSS profile offline.
     ctx.set_before_open_url(|url_str, _ctx| {
-        if let Ok(url) = Url::parse(url_str)
-            && let Some(intent) = maybe_rewrite_web_url_to_intent(&url)
-        {
-            return intent.to_string();
+        if let Ok(url) = Url::parse(url_str) {
+            if ChannelState::channel() == Channel::Oss && matches!(url.scheme(), "http" | "https") {
+                let is_loopback_host = match url.host() {
+                    Some(url::Host::Ipv4(ip)) => ip.is_loopback(),
+                    Some(url::Host::Ipv6(ip)) => ip.is_loopback(),
+                    Some(url::Host::Domain(host)) => {
+                        host == "localhost" || host.ends_with(".localhost")
+                    }
+                    None => false,
+                };
+                if !is_loopback_host {
+                    log::debug!("Blocked opening an external website in Kikito Terminal");
+                    return String::new();
+                }
+            }
+
+            if let Some(intent) = maybe_rewrite_web_url_to_intent(&url) {
+                return intent.to_string();
+            }
         }
         url_str.to_owned()
     });

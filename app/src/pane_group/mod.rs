@@ -348,14 +348,14 @@ pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "pane_group:close_current_session",
-            "Close Current Session",
+            "Fechar sessão atual",
             PaneGroupAction::RemoveActive,
         )
         .with_custom_action(CustomAction::CloseCurrentSession)
         .with_context_predicate(id!("PaneGroup")),
         EditableBinding::new(
             "pane_group:add_left",
-            "Split pane left",
+            "Dividir painel à esquerda",
             PaneGroupAction::Add(Direction::Left),
         )
         .with_context_predicate(id!("PaneGroup") & !id!("PaneGroup_PaneDragging"))
@@ -363,7 +363,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| ContextFlag::CreateNewSession.is_enabled()),
         EditableBinding::new(
             "pane_group:add_up",
-            "Split pane up",
+            "Dividir painel acima",
             PaneGroupAction::Add(Direction::Up),
         )
         .with_context_predicate(id!("PaneGroup") & !id!("PaneGroup_PaneDragging"))
@@ -371,7 +371,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| ContextFlag::CreateNewSession.is_enabled()),
         EditableBinding::new(
             "pane_group:navigate_left",
-            "Switch panes left",
+            "Mover o foco para o painel à esquerda",
             PaneGroupAction::NavigateLeft,
         )
         .with_context_predicate(
@@ -380,7 +380,7 @@ pub fn init(app: &mut AppContext) {
         .with_key_binding("cmdorctrl-alt-left"),
         EditableBinding::new(
             "pane_group:navigate_right",
-            "Switch panes right",
+            "Mover o foco para o painel à direita",
             PaneGroupAction::NavigateRight,
         )
         .with_context_predicate(
@@ -389,7 +389,7 @@ pub fn init(app: &mut AppContext) {
         .with_key_binding("cmdorctrl-alt-right"),
         EditableBinding::new(
             "pane_group:navigate_up",
-            "Switch panes up",
+            "Mover o foco para o painel acima",
             PaneGroupAction::NavigateUp,
         )
         .with_context_predicate(
@@ -398,7 +398,7 @@ pub fn init(app: &mut AppContext) {
         .with_key_binding("cmdorctrl-alt-up"),
         EditableBinding::new(
             "pane_group:navigate_down",
-            "Switch panes down",
+            "Mover o foco para o painel abaixo",
             PaneGroupAction::NavigateDown,
         )
         .with_context_predicate(
@@ -413,7 +413,7 @@ pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "pane_group:resize_left",
-            "Resize pane > Move divider left",
+            "Redimensionar painel > Mover divisor à esquerda",
             PaneGroupAction::ResizeLeft,
         )
         .with_context_predicate(
@@ -422,7 +422,7 @@ pub fn init(app: &mut AppContext) {
         .with_mac_key_binding("cmd-ctrl-left"),
         EditableBinding::new(
             "pane_group:resize_right",
-            "Resize pane > Move divider right",
+            "Redimensionar painel > Mover divisor à direita",
             PaneGroupAction::ResizeRight,
         )
         .with_context_predicate(
@@ -431,7 +431,7 @@ pub fn init(app: &mut AppContext) {
         .with_mac_key_binding("cmd-ctrl-right"),
         EditableBinding::new(
             "pane_group:resize_up",
-            "Resize pane > Move divider up",
+            "Redimensionar painel > Mover divisor para cima",
             PaneGroupAction::ResizeUp,
         )
         .with_context_predicate(
@@ -440,7 +440,7 @@ pub fn init(app: &mut AppContext) {
         .with_mac_key_binding("cmd-ctrl-up"),
         EditableBinding::new(
             "pane_group:resize_down",
-            "Resize pane > Move divider down",
+            "Redimensionar painel > Mover divisor para baixo",
             PaneGroupAction::ResizeDown,
         )
         .with_context_predicate(
@@ -452,7 +452,7 @@ pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "pane_group:add_down",
-            "Split pane down",
+            "Dividir painel abaixo",
             PaneGroupAction::Add(Direction::Down),
         )
         .with_context_predicate(id!("PaneGroup") & !id!("PaneGroup_PaneDragging"))
@@ -460,7 +460,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| ContextFlag::CreateNewSession.is_enabled()),
         EditableBinding::new(
             "pane_group:add_right",
-            "Split pane right",
+            "Dividir painel à direita",
             PaneGroupAction::Add(Direction::Right),
         )
         .with_context_predicate(id!("PaneGroup") & !id!("PaneGroup_PaneDragging"))
@@ -468,7 +468,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| ContextFlag::CreateNewSession.is_enabled()),
         EditableBinding::new(
             TOGGLE_MAXIMIZE_PANE_BINDING_NAME,
-            "Toggle Maximize Active Pane",
+            "Alternar maximização do painel ativo",
             PaneGroupAction::ToggleMaximizePane,
         )
         .with_context_predicate(id!("PaneGroup") & !id!("PaneGroup_PaneDragging"))
@@ -3101,7 +3101,7 @@ impl PaneGroup {
             Banner::<PaneGroupAction>::new_permanently_dismissible(
                 BannerTextContent::formatted_text(vec![
                     FormattedTextFragment::plain_text(
-                        "Warp doesn't currently support your default shell, falling back to zsh.  ",
+                        "O Kikito Terminal ainda não oferece suporte ao shell padrão e usará o zsh.  ",
                     ),
                     FormattedTextFragment::hyperlink("Learn more", WARP_SHELL_COMPATIBILITY_DOCS),
                 ]),

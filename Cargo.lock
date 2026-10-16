@@ -1249,6 +1249,7 @@ dependencies = [
  "log",
  "reqwest",
  "url",
+ "warp_core",
  "warp_errors",
  "warpui_core",
 ]

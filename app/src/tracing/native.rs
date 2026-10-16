@@ -70,7 +70,7 @@ use warpui::AppContext;
 use super::Initialization;
 use super::child_process::ChildProcessTracingConfig;
 use super::cloud_agent_auth::{self, AuthContext};
-use crate::channel::ChannelState;
+use crate::channel::{Channel, ChannelState};
 use crate::server::server_api::managed_secrets::AppManagedSecretsClient;
 use crate::tracing::install_no_subscriber;
 
@@ -103,6 +103,11 @@ struct ParentTracingContext {
 /// is installed so tracing instrumentation remains safe without producing output or partially
 /// initializing export.
 pub fn init() -> anyhow::Result<Initialization> {
+    if ChannelState::channel() == Channel::Oss {
+        install_no_subscriber()?;
+        return Ok(Initialization::default());
+    }
+
     let Some(base_endpoint) = std::env::var(CLOUD_AGENT_OTLP_ENDPOINT)
         .ok()
         .filter(|endpoint| !endpoint.trim().is_empty())
@@ -136,6 +141,11 @@ pub(super) fn child_process_snapshot() -> Option<ChildProcessTracingConfig> {
 pub(super) fn init_child_process(
     config: Option<ChildProcessTracingConfig>,
 ) -> anyhow::Result<(Initialization, OtelContext)> {
+    if ChannelState::channel() == Channel::Oss {
+        install_no_subscriber()?;
+        return Ok((Initialization::default(), OtelContext::new()));
+    }
+
     if let Some(config) = config {
         let parent_context = config.parent_context();
         if let Ok(auth_context) = AuthContext::from_snapshot(config.credential) {

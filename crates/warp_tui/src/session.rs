@@ -49,7 +49,7 @@ const CLI_VERSION: &str = match option_env!("GIT_RELEASE_TAG") {
 };
 
 #[derive(Debug, Parser)]
-#[command(name = "warp", version = CLI_VERSION)]
+#[command(name = "kikito-terminal", version = CLI_VERSION)]
 struct TuiArgs {
     #[command(subcommand)]
     command: Option<TuiCommand>,
@@ -256,7 +256,9 @@ fn init(
     // Kick off the background auto-updater (its polling loop only runs for
     // release builds installed via the managed versioned layout; see the
     // `autoupdate` module docs).
-    crate::autoupdate::TuiAutoupdater::register(ctx);
+    if ChannelState::channel() != warp_core::channel::Channel::Oss {
+        crate::autoupdate::TuiAutoupdater::register(ctx);
+    }
     crate::zero_state_animation::ZeroStateAnimationConfig::register(ctx);
 
     // Honor an explicit TUI theme or match the host terminal automatically.

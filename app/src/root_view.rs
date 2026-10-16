@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 use session_sharing_protocol::common::SessionId;
 use settings::Setting as _;
 use url::Url;
+use warp_core::channel::Channel;
 use warp_core::context_flag::ContextFlag;
 use warp_core::safe_error;
 use warp_core::user_preferences::GetUserPreferences as _;
@@ -116,7 +117,7 @@ use crate::{
     send_telemetry_from_app_ctx, send_telemetry_from_ctx,
 };
 
-const WINDOW_TITLE: &str = "Warp";
+const WINDOW_TITLE: &str = "Kikito Terminal";
 
 lazy_static! {
     static ref FALLBACK_WINDOW_SIZE: Vector2F = vec2f(800.0, 600.0);
@@ -636,7 +637,8 @@ fn requires_post_onboarding_login(
     ai_enabled: bool,
     warp_drive_enabled: bool,
 ) -> bool {
-    !is_logged_in
+    ChannelState::channel() != Channel::Oss
+        && !is_logged_in
         && (FeatureFlag::AccountFirstOnboarding.is_enabled() || ai_enabled || warp_drive_enabled)
 }
 
@@ -798,7 +800,7 @@ fn open_from_restored(arg: &OpenFromRestoredArg, ctx: &mut AppContext) {
                         AddWindowOptions {
                             window_style: WindowStyle::Pin,
                             window_bounds: WindowBounds::ExactPosition(frame_args.window_bounds),
-                            title: Some("Warp".to_owned()),
+                            title: Some("Kikito Terminal".to_owned()),
                             fullscreen_state: window.fullscreen_state,
                             background_blur_radius_pixels,
                             background_backdrop,
@@ -841,7 +843,7 @@ fn open_from_restored(arg: &OpenFromRestoredArg, ctx: &mut AppContext) {
                         ctx.add_window(
                             AddWindowOptions {
                                 window_bounds: WindowBounds::new(window.bounds),
-                                title: Some("Warp".to_owned()),
+                                title: Some("Kikito Terminal".to_owned()),
                                 fullscreen_state: window.fullscreen_state,
                                 background_blur_radius_pixels,
                                 background_backdrop,
@@ -893,7 +895,7 @@ fn open_from_restored(arg: &OpenFromRestoredArg, ctx: &mut AppContext) {
                 ctx.add_window(
                     AddWindowOptions {
                         window_bounds: WindowBounds::new(window.bounds),
-                        title: Some("Warp".to_owned()),
+                        title: Some("Kikito Terminal".to_owned()),
                         fullscreen_state: window.fullscreen_state,
                         background_blur_radius_pixels,
                         background_backdrop,
@@ -1296,7 +1298,7 @@ fn default_window_options(window_settings: &WindowSettings, ctx: &AppContext) ->
     AddWindowOptions {
         window_style,
         window_bounds: next_bounds,
-        title: Some("Warp".to_owned()),
+        title: Some("Kikito Terminal".to_owned()),
         background_blur_radius_pixels: Some(*window_settings.background_blur_radius),
         background_backdrop: *window_settings.background_backdrop,
         on_gpu_driver_selected: on_gpu_driver_selected_callback(),
@@ -1481,7 +1483,7 @@ fn toggle_quake_mode_window(global_resource_handles: &GlobalResourceHandles, ctx
                 AddWindowOptions {
                     window_style: WindowStyle::Pin,
                     window_bounds: WindowBounds::ExactPosition(config.window_bounds),
-                    title: Some("Warp".to_owned()),
+                    title: Some("Kikito Terminal".to_owned()),
                     background_blur_radius_pixels: Some(*window_settings.background_blur_radius),
                     background_backdrop: *window_settings.background_backdrop,
                     // Ignore the quake window for positioning the next window
@@ -1934,10 +1936,11 @@ impl RootView {
                     AuthOnboardingState::WebImport(AuthOnboardingTarget::Workspace(workspace_args.into()))
                 } else {
 
-                    if FeatureFlag::ForceLogin.is_enabled() {
+                    if ChannelState::channel() != Channel::Oss && FeatureFlag::ForceLogin.is_enabled() {
                         // ForceLogin is true for Preview
                         AuthOnboardingState::Auth(workspace_args.into())
-                    } else if FeatureFlag::AgentOnboarding.is_enabled()
+                    } else if ChannelState::channel() != Channel::Oss
+                        && FeatureFlag::AgentOnboarding.is_enabled()
                         && !has_completed_local_onboarding(ctx)
                         && !workspace_args.workspace_setting.is_content_deep_link()
                     {
@@ -1950,7 +1953,9 @@ impl RootView {
                             onboarding_view,
                             target: AuthOnboardingTarget::Workspace(workspace_args_box),
                         }
-                    } else if FeatureFlag::SkipFirebaseAnonymousUser.is_enabled() {
+                    } else if ChannelState::channel() == Channel::Oss
+                        || FeatureFlag::SkipFirebaseAnonymousUser.is_enabled()
+                    {
                         // When SkipFirebaseAnonymousUser is enabled, skip the login screen
                         // entirely and go directly into the workspace.
                         AuthOnboardingState::Terminal(workspace_args.create_workspace(ctx))

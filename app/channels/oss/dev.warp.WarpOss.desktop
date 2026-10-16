@@ -4,8 +4,8 @@ Version=1.0
 
 Type=Application
 
-Name=WarpOss
-GenericName=TerminalEmulator
+Name=Kikito Terminal
+GenericName=Emulador de terminal
 
 Exec=warp-terminal-oss %U
 StartupWMClass=dev.warp.WarpOss

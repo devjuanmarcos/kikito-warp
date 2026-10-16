@@ -6974,7 +6974,7 @@ impl Workspace {
 
         // 1. Agent (if AI enabled)
         if is_any_ai_enabled {
-            let mut agent_item = MenuItemFields::new("Agent")
+            let mut agent_item = MenuItemFields::new("Agente")
                 .with_on_select_action(WorkspaceAction::AddAgentTab)
                 .with_icon(icons::Icon::LayoutAlt01);
             if effective_default == DefaultSessionMode::Agent {
@@ -7044,7 +7044,7 @@ impl Workspace {
             && FeatureFlag::AgentView.is_enabled()
             && FeatureFlag::CloudMode.is_enabled()
         {
-            let mut cloud_item = MenuItemFields::new("Cloud Agent")
+            let mut cloud_item = MenuItemFields::new("Agente na nuvem")
                 .with_on_select_action(WorkspaceAction::AddAmbientAgentTab)
                 .with_icon(icons::Icon::LayoutAlt01);
             if effective_default == DefaultSessionMode::CloudAgent {
@@ -7055,7 +7055,7 @@ impl Workspace {
 
         // 3b. Local Docker Sandbox
         if FeatureFlag::LocalDockerSandbox.is_enabled() {
-            let mut docker_item = MenuItemFields::new("Local Docker Sandbox")
+            let mut docker_item = MenuItemFields::new("Ambiente Docker local")
                 .with_on_select_action(WorkspaceAction::AddDockerSandboxTab)
                 .with_icon(icons::Icon::Docker);
             if effective_default == DefaultSessionMode::DockerSandbox {
@@ -7115,14 +7115,14 @@ impl Workspace {
         if FeatureFlag::TabConfigs.is_enabled() {
             menu_items.push(MenuItem::Separator);
             menu_items.push(
-                MenuItemFields::new_submenu("New worktree config")
+                MenuItemFields::new_submenu("Nova configuração de worktree")
                     .with_icon(icons::Icon::Dataflow02)
                     .into_item(),
             );
 
             // 6. New tab config — V0: opens the TOML template.
             menu_items.push(
-                MenuItemFields::new("New tab config")
+                MenuItemFields::new("Nova configuração de aba")
                     .with_on_select_action(WorkspaceAction::SelectNewSessionMenuItem(
                         NewSessionMenuItem::CreateNewTabConfig,
                     ))
@@ -7136,7 +7136,7 @@ impl Workspace {
         if FeatureFlag::GroupedTabs.is_enabled() {
             menu_items.push(MenuItem::Separator);
             menu_items.push(
-                MenuItemFields::new("New tab group")
+                MenuItemFields::new("Novo grupo de abas")
                     .with_on_select_action(WorkspaceAction::SelectNewSessionMenuItem(
                         NewSessionMenuItem::CreateNewTabGroup,
                     ))
@@ -7147,7 +7147,7 @@ impl Workspace {
 
         menu_items.push(MenuItem::Separator);
         menu_items.push(
-            MenuItemFields::new("Reopen closed session")
+            MenuItemFields::new("Reabrir sessão fechada")
                 .with_on_select_action(WorkspaceAction::ReopenClosedSession)
                 .with_key_shortcut_label(reopen_closed_session_shortcut_label)
                 .with_disabled(UndoCloseStack::handle(ctx).as_ref(ctx).is_empty())
@@ -8194,13 +8194,13 @@ impl Workspace {
         let pane_name_target = match target {
             VerticalTabsPaneContextMenuTarget::ClickedPane(locator) => PaneNameMenuTarget {
                 locator,
-                rename_label: "Rename pane",
-                reset_label: "Reset pane name",
+                rename_label: "Renomear painel",
+                reset_label: "Restaurar nome do painel",
             },
             VerticalTabsPaneContextMenuTarget::ActivePane(locator) => PaneNameMenuTarget {
                 locator,
-                rename_label: "Rename active pane",
-                reset_label: "Reset active pane name",
+                rename_label: "Renomear painel ativo",
+                reset_label: "Restaurar nome do painel ativo",
             },
         };
         let can_move_left = self.can_move_tab(tab_index, TabMovement::Left);
@@ -10003,8 +10003,9 @@ impl Workspace {
     }
 
     fn user_menu_items(&self, app: &AppContext) -> Vec<MenuItem<WorkspaceAction>> {
+        let is_local_build = ChannelState::channel() == Channel::Oss;
         let mut items = Vec::new();
-        if !self.auth_state.is_anonymous_or_logged_out() {
+        if !is_local_build && !self.auth_state.is_anonymous_or_logged_out() {
             let name = self.auth_state.username_for_display().unwrap_or_default();
             items.push(MenuItemFields::new(name).with_disabled(true).into_item())
         }
@@ -10012,7 +10013,8 @@ impl Workspace {
         let appearance = Appearance::as_ref(app);
 
         // Render the subtle autoupdate UI if autoupdate is ready and there is no incoming prominent update version.
-        if FeatureFlag::Autoupdate.is_enabled()
+        if !is_local_build
+            && FeatureFlag::Autoupdate.is_enabled()
             && FeatureFlag::AutoupdateUIRevamp.is_enabled()
             && ChannelState::show_autoupdate_menu_items()
         {
@@ -10057,81 +10059,86 @@ impl Workspace {
             }
         }
 
-        items.extend([
-            MenuItemFields::new("What's new")
-                .with_on_select_action(WorkspaceAction::ViewLatestChangelog)
-                .into_item(),
-            MenuItemFields::new("Settings")
+        items.push(
+            MenuItemFields::new("Configurações")
                 .with_on_select_action(WorkspaceAction::ShowSettings)
                 .into_item(),
-            MenuItemFields::new("Keyboard shortcuts")
+        );
+        items.push(
+            MenuItemFields::new("Atalhos de teclado")
                 .with_on_select_action(WorkspaceAction::ToggleKeybindingsPage)
                 .into_item(),
-            MenuItem::Separator,
-            MenuItemFields::new("Documentation")
-                .with_on_select_action(WorkspaceAction::ViewUserDocs)
-                .into_item(),
-            MenuItemFields::new("Feedback")
-                .with_on_select_action(WorkspaceAction::SendFeedback)
-                .into_item(),
-        ]);
+        );
+
+        if !is_local_build {
+            items.extend([
+                MenuItem::Separator,
+                MenuItemFields::new("What's new")
+                    .with_on_select_action(WorkspaceAction::ViewLatestChangelog)
+                    .into_item(),
+                MenuItemFields::new("Documentation")
+                    .with_on_select_action(WorkspaceAction::ViewUserDocs)
+                    .into_item(),
+                MenuItemFields::new("Feedback")
+                    .with_on_select_action(WorkspaceAction::SendFeedback)
+                    .into_item(),
+            ]);
+        }
 
         #[cfg(not(target_family = "wasm"))]
         items.push(
-            MenuItemFields::new("View Warp logs")
+            MenuItemFields::new("Ver logs do Kikito Terminal")
                 .with_on_select_action(WorkspaceAction::ViewLogs)
                 .into_item(),
         );
 
-        items.extend([
-            MenuItemFields::new("Join our Slack community")
-                .with_on_select_action(WorkspaceAction::JoinSlack)
-                .into_item(),
-            MenuItem::Separator,
-        ]);
-
-        if self.auth_state.is_anonymous_or_logged_out() {
-            items.push(
-                MenuItemFields::new("Sign up")
-                    .with_on_select_action(WorkspaceAction::SignupAnonymousUser)
+        if !is_local_build {
+            items.extend([
+                MenuItemFields::new("Join our Slack community")
+                    .with_on_select_action(WorkspaceAction::JoinSlack)
                     .into_item(),
-            );
-        }
+                MenuItem::Separator,
+            ]);
 
-        // Check if the user is on any paid plan to determine whether to show "Billing and Usage" or "Upgrade"
-        let is_on_paid_plan = UserWorkspaces::as_ref(app)
-            .current_workspace()
-            .map(|workspace| workspace.billing_metadata.is_user_on_paid_plan())
-            .unwrap_or(false);
+            if self.auth_state.is_anonymous_or_logged_out() {
+                items.push(
+                    MenuItemFields::new("Sign up")
+                        .with_on_select_action(WorkspaceAction::SignupAnonymousUser)
+                        .into_item(),
+                );
+            }
 
-        if is_on_paid_plan {
-            items.push(
+            // Check if the user is on any paid plan to determine whether to show "Billing and Usage" or "Upgrade"
+            let is_on_paid_plan = UserWorkspaces::as_ref(app)
+                .current_workspace()
+                .map(|workspace| workspace.billing_metadata.is_user_on_paid_plan())
+                .unwrap_or(false);
+
+            items.push(if is_on_paid_plan {
                 MenuItemFields::new("Billing and usage")
                     .with_on_select_action(WorkspaceAction::ShowSettingsPage(
                         SettingsSection::BillingAndUsage,
                     ))
-                    .into_item(),
-            );
-        } else {
-            items.push(
+                    .into_item()
+            } else {
                 MenuItemFields::new("Upgrade")
                     .with_on_select_action(WorkspaceAction::ShowUpgrade)
-                    .into_item(),
-            );
-        }
+                    .into_item()
+            });
 
-        items.push(
-            MenuItemFields::new("Invite a friend")
-                .with_on_select_action(WorkspaceAction::ShowReferralSettingsPage)
-                .into_item(),
-        );
-
-        if !self.auth_state.is_anonymous_or_logged_out() {
             items.push(
-                MenuItemFields::new("Log out")
-                    .with_on_select_action(WorkspaceAction::LogOut)
+                MenuItemFields::new("Invite a friend")
+                    .with_on_select_action(WorkspaceAction::ShowReferralSettingsPage)
                     .into_item(),
             );
+
+            if !self.auth_state.is_anonymous_or_logged_out() {
+                items.push(
+                    MenuItemFields::new("Log out")
+                        .with_on_select_action(WorkspaceAction::LogOut)
+                        .into_item(),
+                );
+            }
         }
         items
     }
@@ -10270,9 +10277,9 @@ impl Workspace {
             let mut items = vec![];
             if can_move_up {
                 let label = if is_vertical {
-                    "Move group up"
+                    "Mover grupo para cima"
                 } else {
-                    "Move group left"
+                    "Mover grupo para a esquerda"
                 };
                 items.push(
                     MenuItemFields::new(label)
@@ -10282,9 +10289,9 @@ impl Workspace {
             }
             if can_move_down {
                 let label = if is_vertical {
-                    "Move group down"
+                    "Mover grupo para baixo"
                 } else {
-                    "Move group right"
+                    "Mover grupo para a direita"
                 };
                 items.push(
                     MenuItemFields::new(label)
@@ -10297,22 +10304,22 @@ impl Workspace {
 
         let close_section = {
             let mut items = vec![
-                MenuItemFields::new("Close all tabs in group")
+                MenuItemFields::new("Fechar todas as abas do grupo")
                     .with_on_select_action(WorkspaceAction::CloseTabGroup(group_id))
                     .into_item(),
             ];
             if has_tabs_outside {
                 items.push(
-                    MenuItemFields::new("Close other tabs")
+                    MenuItemFields::new("Fechar outras abas")
                         .with_on_select_action(WorkspaceAction::CloseTabsOutsideGroup(group_id))
                         .into_item(),
                 );
             }
             if has_tabs_above {
                 let label = if is_vertical {
-                    "Close tabs above"
+                    "Fechar abas acima"
                 } else {
-                    "Close tabs to the left"
+                    "Fechar abas à esquerda"
                 };
                 items.push(
                     MenuItemFields::new(label)
@@ -10322,9 +10329,9 @@ impl Workspace {
             }
             if has_tabs_below {
                 let label = if is_vertical {
-                    "Close tabs below"
+                    "Fechar abas abaixo"
                 } else {
-                    "Close tabs to the right"
+                    "Fechar abas à direita"
                 };
                 items.push(
                     MenuItemFields::new(label)
@@ -10337,9 +10344,9 @@ impl Workspace {
 
         let pin_section = if FeatureFlag::PinnedTabs.is_enabled() {
             let (label, action) = if self.tab_groups.get(&group_id).is_some_and(|g| g.pinned) {
-                ("Unpin group", WorkspaceAction::UnpinTabGroup(group_id))
+                ("Desafixar grupo", WorkspaceAction::UnpinTabGroup(group_id))
             } else {
-                ("Pin group", WorkspaceAction::PinTabGroup(group_id))
+                ("Fixar grupo", WorkspaceAction::PinTabGroup(group_id))
             };
             vec![
                 MenuItemFields::new(label)
@@ -10368,16 +10375,16 @@ impl Workspace {
         for section_items in [
             pin_section,
             vec![
-                MenuItemFields::new("Ungroup tabs")
+                MenuItemFields::new("Desagrupar abas")
                     .with_on_select_action(WorkspaceAction::UngroupTabs(group_id))
                     .into_item(),
-                MenuItemFields::new("New tab in group")
+                MenuItemFields::new("Nova aba no grupo")
                     .with_on_select_action(WorkspaceAction::NewTabInGroup(group_id))
                     .into_item(),
             ],
             move_section,
             vec![
-                MenuItemFields::new("Rename")
+                MenuItemFields::new("Renomear")
                     .with_on_select_action(WorkspaceAction::RenameTabGroup(group_id))
                     .into_item(),
             ],
@@ -20804,7 +20811,7 @@ impl Workspace {
             if vertical_tabs_active {
                 (
                     self.vertical_tabs_panel_open,
-                    "Tabs panel",
+                    "Painel de abas",
                     WorkspaceAction::ToggleVerticalTabsPanel,
                     "workspace:toggle_vertical_tabs_panel",
                     "workspace:toggle_vertical_tabs_panel",
@@ -20817,13 +20824,13 @@ impl Workspace {
                         .copied()
                         .unwrap_or(ToolPanelView::WarpDrive)
                     {
-                        ToolPanelView::ProjectExplorer => "Project explorer",
-                        ToolPanelView::GlobalSearch { .. } => "Global search",
+                        ToolPanelView::ProjectExplorer => "Explorador de projetos",
+                        ToolPanelView::GlobalSearch { .. } => "Busca global",
                         ToolPanelView::WarpDrive => "Warp Drive",
-                        ToolPanelView::ConversationListView => "Agent conversations",
+                        ToolPanelView::ConversationListView => "Conversas do agente",
                     }
                 } else {
-                    "Tools panel"
+                    "Painel de ferramentas"
                 };
                 (
                     self.active_tab_pane_group().as_ref(ctx).left_panel_open,
@@ -20871,13 +20878,13 @@ impl Workspace {
                 .copied()
                 .unwrap_or(ToolPanelView::WarpDrive)
             {
-                ToolPanelView::ProjectExplorer => "Project explorer",
-                ToolPanelView::GlobalSearch { .. } => "Global search",
+                ToolPanelView::ProjectExplorer => "Explorador de projetos",
+                ToolPanelView::GlobalSearch { .. } => "Busca global",
                 ToolPanelView::WarpDrive => "Warp Drive",
-                ToolPanelView::ConversationListView => "Agent conversations",
+                ToolPanelView::ConversationListView => "Conversas do agente",
             }
         } else {
-            "Tools panel"
+            "Painel de ferramentas"
         };
 
         SavePosition::new(

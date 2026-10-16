@@ -226,6 +226,7 @@ pub struct AgentInputFooter {
     /// Opens the file explorer side panel. Available in both footers, but only
     /// present in the CLI agent toolbar by default.
     file_explorer_button: ViewHandle<ActionButton>,
+    paste_image_path_button: ViewHandle<ActionButton>,
 
     // CLI agent-specific buttons (rendered when a CLI agent session is active).
     rich_input_button: ViewHandle<ActionButton>,
@@ -485,6 +486,16 @@ impl AgentInputFooter {
                 .with_compact_keybinding(true)
                 .on_click(|ctx| {
                     ctx.dispatch_typed_action(AgentInputFooterAction::ToggleFileExplorer);
+                })
+        });
+        let paste_image_path_button = ctx.add_typed_action_view(|_ctx| {
+            ActionButton::new("Colar caminho da imagem", AgentInputButtonTheme)
+                .with_icon(Icon::Image)
+                .with_tooltip("Inserir no prompt o caminho da imagem da área de transferência")
+                .with_size(cli_button_size)
+                .with_tooltip_alignment(TooltipAlignment::Left)
+                .on_click(|ctx| {
+                    ctx.dispatch_typed_action(AgentInputFooterAction::PasteImagePathFromClipboard);
                 })
         });
         // CLI agent-specific buttons (only rendered when a CLI agent session is active).
@@ -970,6 +981,7 @@ impl AgentInputFooter {
             mic_button,
             file_button,
             file_explorer_button,
+            paste_image_path_button,
             rich_input_button,
             settings_button,
             start_remote_control_button,
@@ -1786,6 +1798,10 @@ impl AgentInputFooter {
             ) {
                 right_buttons.add_child(element);
             }
+        }
+
+        if self.has_active_cli_agent_input_session(app) {
+            right_buttons.add_child(ChildView::new(&self.paste_image_path_button).finish());
         }
 
         let content = Wrap::row()
@@ -2656,6 +2672,7 @@ pub enum AgentInputFooterAction {
     InsertFilePath(String),
     ToggleCodeReview,
     ToggleFileExplorer,
+    PasteImagePathFromClipboard,
     ToggleRichInput,
     ToggleAutodetectionSetting,
     InstallPlugin,
@@ -2721,6 +2738,9 @@ impl TypedActionView for AgentInputFooter {
                 ctx.emit(AgentInputFooterEvent::ToggleFileExplorer(
                     self.cli_agent(ctx),
                 ));
+            }
+            AgentInputFooterAction::PasteImagePathFromClipboard => {
+                ctx.emit(AgentInputFooterEvent::PasteImagePathFromClipboard);
             }
             AgentInputFooterAction::ToggleRichInput => {
                 if self.has_active_cli_agent_input_session(ctx) {
@@ -2905,6 +2925,7 @@ pub enum AgentInputFooterEvent {
     /// Toggle the file explorer side panel. `None` when no CLI agent session is
     /// attached to this pane.
     ToggleFileExplorer(Option<CLIAgent>),
+    PasteImagePathFromClipboard,
     StartRemoteControl,
     StopRemoteControl,
     OpenRichInput,

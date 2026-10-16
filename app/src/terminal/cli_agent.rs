@@ -464,6 +464,13 @@ impl CLIAgent {
         };
         let basename = first_word.rsplit(['/', '\\']).next().unwrap_or(&first_word);
         self.command_prefixes().contains(&basename)
+            || match self {
+                // Personal shell wrappers commonly use names such as
+                // `codex-keener` and `claude-pessoal`.
+                CLIAgent::Codex => basename.starts_with("codex-"),
+                CLIAgent::Claude => basename.starts_with("claude-"),
+                _ => false,
+            }
     }
 
     /// Detects the CLI agent from a command string.

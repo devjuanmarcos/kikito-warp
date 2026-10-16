@@ -2619,7 +2619,7 @@ fn test_selecting_rename_from_tab_context_menu_preserves_editor_focus() {
         });
 
         menu.update(&mut app, |menu, ctx| {
-            assert!(menu.set_selected_by_name("Rename tab", ctx));
+            assert!(menu.set_selected_by_name("Renomear aba", ctx));
             menu.handle_action(&MenuAction::Enter, ctx);
         });
 

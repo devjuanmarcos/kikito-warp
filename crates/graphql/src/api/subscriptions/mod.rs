@@ -8,6 +8,7 @@ use cynic::{QueryFragment, QueryVariables, StreamingOperation as CynicStreamingO
 use futures::StreamExt as _;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+use warp_core::channel::{Channel, ChannelState};
 
 const PROTOCOL: &str = "graphql-transport-ws";
 
@@ -43,6 +44,12 @@ where
     F: Fn(Option<Q>) -> Result<T> + Unpin + Send,
     V: QueryVariables + Serialize + Unpin + Send + 'static,
 {
+    if ChannelState::channel() == Channel::Oss {
+        return Err(anyhow!(
+            "Remote GraphQL subscriptions are disabled in Kikito Terminal"
+        ));
+    }
+
     // TODO: eventually, we might want to explore re-using the client. But for now,
     // we only have one subscription so let's just create a new one (we have to
     // anyways for retry logic).

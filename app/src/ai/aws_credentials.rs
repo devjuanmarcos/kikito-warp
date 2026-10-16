@@ -15,6 +15,7 @@ use warp_errors::report_error;
 use warp_managed_secrets::client::IdentityTokenOptions;
 use warpui::{ModelContext, ModelHandle, SingletonEntity};
 
+use crate::channel::{Channel, ChannelState};
 use crate::server::server_api::managed_secrets::{
     AppManagedSecretManager as ManagedSecretManager, IdentityTokenUserFacingError,
 };
@@ -157,6 +158,10 @@ fn aws_credentials_state_for_error(err: LoadAwsCredentialsError) -> AwsCredentia
 pub async fn load_aws_credentials_from_sdk(
     profile: &str,
 ) -> Result<AwsCredentials, LoadAwsCredentialsError> {
+    if ChannelState::channel() == Channel::Oss {
+        return Err(LoadAwsCredentialsError::NotConfigured);
+    }
+
     let region_provider = aws_config::meta::region::RegionProviderChain::default_provider();
     let loader =
         aws_config::defaults(aws_config::BehaviorVersion::latest()).region(region_provider);
@@ -279,6 +284,11 @@ pub(crate) fn refresh_local_chain_aws_credentials(
     manager: &mut ApiKeyManager,
     ctx: &mut ModelContext<ApiKeyManager>,
 ) {
+    if ChannelState::channel() == Channel::Oss {
+        manager.set_aws_credentials_state(AwsCredentialsState::Disabled, ctx);
+        return;
+    }
+
     if manager.aws_credentials_refresh_strategy() == AwsCredentialsRefreshStrategy::OidcManaged {
         return;
     }
@@ -327,6 +337,11 @@ pub(crate) fn refresh_aws_credentials_oidc(
     manager: &mut ApiKeyManager,
     ctx: &mut ModelContext<ApiKeyManager>,
 ) -> BoxFuture<'static, Result<(), String>> {
+    if ChannelState::channel() == Channel::Oss {
+        manager.set_aws_credentials_state(AwsCredentialsState::Disabled, ctx);
+        return Box::pin(async { Err("Credenciais AWS externas estão desativadas".to_string()) });
+    }
+
     // Skip if credentials are already loaded and have not yet expired.
     if let AwsCredentialsState::Loaded { credentials, .. } = manager.aws_credentials_state() {
         let still_valid = credentials

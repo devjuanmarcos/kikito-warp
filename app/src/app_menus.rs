@@ -22,6 +22,7 @@ use warpui::{AppContext, SingletonEntity};
 use crate::ai::persisted_workspace::PersistedWorkspace;
 use crate::auth;
 use crate::auth::AuthStateProvider;
+use crate::channel::{Channel, ChannelState};
 use crate::default_terminal::DefaultTerminal;
 use crate::features::{FeatureFlag, runtime_flags_menu_items};
 use crate::root_view::OpenLaunchConfigArg;
@@ -53,8 +54,8 @@ const SHOW_BOOTSTRAP_BLOCK_MENU_ITEM_NAME: &str = "Show Initialization Block";
 const HIDE_BOOTSTRAP_BLOCK_MENU_ITEM_NAME: &str = "Hide Initialization Block";
 const SHOW_IN_BAND_COMMAND_BLOCKS_MENU_ITEM_NAME: &str = "Show In-band Command Blocks";
 const HIDE_IN_BAND_COMMAND_BLOCKS_MENU_ITEM_NAME: &str = "Hide In-band Command Blocks";
-const SHOW_SSH_COMMAND_BLOCKS_MENU_ITEM_NAME: &str = "Show Warpified SSH Blocks";
-const HIDE_SSH_COMMAND_BLOCKS_MENU_ITEM_NAME: &str = "Hide Warpified SSH Blocks";
+const SHOW_SSH_COMMAND_BLOCKS_MENU_ITEM_NAME: &str = "Show SSH Command Blocks";
+const HIDE_SSH_COMMAND_BLOCKS_MENU_ITEM_NAME: &str = "Hide SSH Command Blocks";
 const EXPORT_DEFAULT_SETTINGS_CSV_MENU_ITEM_NAME: &str =
     "Export Default Settings as CSV to home dir";
 
@@ -63,18 +64,22 @@ const MAX_RECENT_REPOS_IN_MENU: usize = 10;
 
 /// Creates the root app menu bar
 pub fn menu_bar(ctx: &mut AppContext) -> MenuBar {
-    MenuBar::new(vec![
+    let mut menus = vec![
         make_new_app_menu(ctx),
         make_new_file_menu(ctx),
         make_new_edit_menu(ctx),
         make_new_view_menu(ctx),
         make_new_tab_menu(ctx),
         make_new_blocks_menu(ctx),
-        make_new_ai_menu(ctx),
-        make_new_drive_menu(ctx),
-        make_new_window_menu(),
-        make_new_help_menu(),
-    ])
+    ];
+    if ChannelState::channel() != Channel::Oss {
+        menus.extend([make_new_ai_menu(ctx), make_new_drive_menu(ctx)]);
+    }
+    menus.push(make_new_window_menu());
+    if ChannelState::channel() != Channel::Oss {
+        menus.push(make_new_help_menu());
+    }
+    MenuBar::new(menus)
 }
 
 // Creates the app dock menu
@@ -82,9 +87,9 @@ pub fn menu_bar(ctx: &mut AppContext) -> MenuBar {
 // To create submenus, we could use MenuItem::Custom(CustomMenuItem::new_with_submenu(...))
 pub fn dock_menu() -> Menu {
     Menu::new(
-        "New Window",
+        "Nova janela",
         vec![MenuItem::Custom(CustomMenuItem::new(
-            "New Window",
+            "Nova janela",
             move |ctx| {
                 ctx.dispatch_global_action("root_view:open_new", &());
                 ctx.dispatch_global_action("workspace:save_app", &());
@@ -139,23 +144,28 @@ fn updateable_custom_item_without_checkmark(action: CustomAction, ctx: &AppConte
 }
 
 fn make_new_app_menu(ctx: &AppContext) -> Menu {
-    let mut menu_items = vec![updateable_custom_item_without_checkmark(
-        CustomAction::ShowAboutWarp,
-        ctx,
-    )];
+    let is_local_build = ChannelState::channel() == Channel::Oss;
+    let mut menu_items = vec![MenuItem::Custom(CustomMenuItem::new(
+        "Sobre o Kikito Terminal",
+        custom_action_dispatcher(CustomAction::ShowAboutWarp),
+        no_updates,
+        custom_shortcut(CustomAction::ShowAboutWarp),
+    ))];
 
-    if !FeatureFlag::AvatarInTabBar.is_enabled() {
+    if !is_local_build && !FeatureFlag::AvatarInTabBar.is_enabled() {
         menu_items.push(updateable_custom_item_without_checkmark(
             CustomAction::ToggleResourceCenter,
             ctx,
         ))
     }
 
-    menu_items.extend([
-        MenuItem::Separator,
-        updateable_custom_item_without_checkmark(CustomAction::ReferAFriend, ctx),
-        MenuItem::Separator,
-    ]);
+    if !is_local_build {
+        menu_items.extend([
+            MenuItem::Separator,
+            updateable_custom_item_without_checkmark(CustomAction::ReferAFriend, ctx),
+            MenuItem::Separator,
+        ]);
+    }
 
     let preferences_menu_items = vec![
         updateable_custom_item_without_checkmark(CustomAction::ShowSettings, ctx),
@@ -168,14 +178,14 @@ fn make_new_app_menu(ctx: &AppContext) -> Menu {
     ];
 
     menu_items.push(MenuItem::Custom(CustomMenuItem::new_with_submenu(
-        "Preferences",
+        "Preferências",
         |_| (),
         no_updates,
         None,
         preferences_menu_items,
     )));
 
-    if FeatureFlag::Changelog.is_enabled() {
+    if !is_local_build && FeatureFlag::Changelog.is_enabled() {
         menu_items.push(updateable_custom_item_without_checkmark(
             CustomAction::ViewChangelog,
             ctx,
@@ -187,11 +197,13 @@ fn make_new_app_menu(ctx: &AppContext) -> Menu {
         menu_items.push(MenuItem::Services);
     }
 
-    menu_items.push(MenuItem::Separator);
-    menu_items.push(link_menu_item(
-        "Privacy Policy...",
-        links::PRIVACY_POLICY_URL.into(),
-    ));
+    if !is_local_build {
+        menu_items.push(MenuItem::Separator);
+        menu_items.push(link_menu_item(
+            "Privacy Policy...",
+            links::PRIVACY_POLICY_URL.into(),
+        ));
+    }
 
     let debug_menu_items = debug_menu_items();
     if !debug_menu_items.is_empty() {
@@ -210,7 +222,7 @@ fn make_new_app_menu(ctx: &AppContext) -> Menu {
     menu_items.push(MenuItem::Standard(StandardAction::ShowAllApps));
     menu_items.push(MenuItem::Separator);
     menu_items.push(MenuItem::Custom(CustomMenuItem::new(
-        "Set Warp as Default Terminal",
+        "Definir Kikito Terminal como terminal padrão",
         move |ctx| {
             DefaultTerminal::handle(ctx).update(ctx, |default_terminal, ctx| {
                 default_terminal.make_warp_default(ctx)
@@ -228,24 +240,26 @@ fn make_new_app_menu(ctx: &AppContext) -> Menu {
         },
         None,
     )));
-    menu_items.push(MenuItem::Separator);
-    menu_items.push(MenuItem::Custom(CustomMenuItem::new(
-        "Log out",
-        auth::maybe_log_out,
-        move |_, ctx| {
-            let is_anonymous = AuthStateProvider::handle(ctx)
-                .as_ref(ctx)
-                .get()
-                .is_anonymous_or_logged_out();
-            MenuItemPropertyChanges {
-                disabled: Some(is_anonymous),
-                ..Default::default()
-            }
-        },
-        None,
-    )));
+    if !is_local_build {
+        menu_items.push(MenuItem::Separator);
+        menu_items.push(MenuItem::Custom(CustomMenuItem::new(
+            "Log out",
+            auth::maybe_log_out,
+            move |_, ctx| {
+                let is_anonymous = AuthStateProvider::handle(ctx)
+                    .as_ref(ctx)
+                    .get()
+                    .is_anonymous_or_logged_out();
+                MenuItemPropertyChanges {
+                    disabled: Some(is_anonymous),
+                    ..Default::default()
+                }
+            },
+            None,
+        )));
+    }
     menu_items.push(MenuItem::Standard(StandardAction::Quit));
-    Menu::new("Warp", menu_items)
+    Menu::new("Kikito Terminal", menu_items)
 }
 
 fn make_new_file_menu(ctx: &AppContext) -> Menu {
@@ -254,7 +268,7 @@ fn make_new_file_menu(ctx: &AppContext) -> Menu {
         MenuItem::Separator,
         updateable_custom_item_without_checkmark(CustomAction::OpenRepository, ctx),
         MenuItem::Custom(CustomMenuItem::new_with_submenu(
-            "Open Recent",
+            "Abrir recente",
             |_| (),
             |_props, ctx| {
                 let recent_repos = generate_recent_repos_for_menu(ctx);
@@ -272,7 +286,7 @@ fn make_new_file_menu(ctx: &AppContext) -> Menu {
         updateable_custom_item_without_checkmark(CustomAction::CloseWindow, ctx),
     ]);
 
-    Menu::new("File", file_menu_options)
+    Menu::new("Arquivo", file_menu_options)
 }
 
 fn make_new_edit_menu(ctx: &AppContext) -> Menu {
@@ -301,7 +315,7 @@ fn make_new_edit_menu(ctx: &AppContext) -> Menu {
     ];
     let group_5 = vec![
         MenuItem::Custom(CustomMenuItem::new(
-            "Use Warp's Prompt",
+            "Usar o prompt do Kikito Terminal",
             move |ctx| ctx.dispatch_global_action("app:toggle_user_ps1", &()),
             move |_props, ctx| MenuItemPropertyChanges {
                 checked: Some(
@@ -314,7 +328,7 @@ fn make_new_edit_menu(ctx: &AppContext) -> Menu {
             None,
         )),
         MenuItem::Custom(CustomMenuItem::new(
-            "Copy on Select within the Terminal",
+            "Copiar ao selecionar no terminal",
             move |ctx| {
                 ctx.dispatch_global_action("app:toggle_copy_on_select", &());
             },
@@ -340,7 +354,7 @@ fn make_new_edit_menu(ctx: &AppContext) -> Menu {
     edit_menu_items.push(MenuItem::Separator);
 
     edit_menu_items.push(MenuItem::Custom(CustomMenuItem::new_with_submenu(
-        "Synchronize Inputs",
+        "Sincronizar entradas",
         |_| (),
         no_updates,
         None,
@@ -370,27 +384,51 @@ fn make_new_edit_menu(ctx: &AppContext) -> Menu {
 
     edit_menu_items.extend(group_5);
 
-    Menu::new("Edit", edit_menu_items)
+    Menu::new("Editar", edit_menu_items)
 }
 
 fn make_new_view_menu(ctx: &AppContext) -> Menu {
-    let mut items = vec![
-        updateable_custom_item_without_checkmark(CustomAction::ToggleWarpDrive, ctx),
+    let is_local_build = ChannelState::channel() == Channel::Oss;
+    let mut items = Vec::new();
+    if !is_local_build {
+        items.push(updateable_custom_item_without_checkmark(
+            CustomAction::ToggleWarpDrive,
+            ctx,
+        ));
+    }
+    items.extend([
         MenuItem::Separator,
         updateable_custom_item_without_checkmark(CustomAction::CommandPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::NavigationPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::LaunchConfigPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::FilesPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::ToggleProjectExplorer, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::ToggleConversationListView, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::ToggleGlobalSearch, ctx),
+    ]);
+    if !is_local_build {
+        items.push(updateable_custom_item_without_checkmark(
+            CustomAction::ToggleConversationListView,
+            ctx,
+        ));
+    }
+    items.push(updateable_custom_item_without_checkmark(
+        CustomAction::ToggleGlobalSearch,
+        ctx,
+    ));
+    items.extend([
         MenuItem::Separator,
         updateable_custom_item_without_checkmark(CustomAction::History, ctx),
         updateable_custom_item_without_checkmark(CustomAction::CommandSearch, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::Workflows, ctx),
+    ]);
+    if !is_local_build {
+        items.push(updateable_custom_item_without_checkmark(
+            CustomAction::Workflows,
+            ctx,
+        ));
+    }
+    items.extend([
         MenuItem::Separator,
         MenuItem::Custom(CustomMenuItem::new(
-            "Toggle Mouse Reporting",
+            "Alternar relatório do mouse",
             move |ctx| {
                 ctx.dispatch_global_action("workspace:toggle_mouse_reporting", &());
             },
@@ -407,7 +445,7 @@ fn make_new_view_menu(ctx: &AppContext) -> Menu {
             None,
         )),
         MenuItem::Custom(CustomMenuItem::new(
-            "Toggle Scroll Reporting",
+            "Alternar relatório de rolagem",
             move |ctx| {
                 ctx.dispatch_global_action("workspace:toggle_scroll_reporting", &());
             },
@@ -422,7 +460,7 @@ fn make_new_view_menu(ctx: &AppContext) -> Menu {
             None,
         )),
         MenuItem::Custom(CustomMenuItem::new(
-            "Toggle Focus Reporting",
+            "Alternar relatório de foco",
             move |ctx| {
                 ctx.dispatch_global_action("workspace:toggle_focus_reporting", &());
             },
@@ -435,7 +473,7 @@ fn make_new_view_menu(ctx: &AppContext) -> Menu {
             },
             None,
         )),
-    ];
+    ]);
 
     let is_compact_mode = matches!(
         TerminalSettings::handle(ctx)
@@ -448,7 +486,7 @@ fn make_new_view_menu(ctx: &AppContext) -> Menu {
     items.extend([
         MenuItem::Separator,
         MenuItem::Custom(CustomMenuItem::new(
-            "Compact Mode",
+            "Modo compacto",
             move |ctx| {
                 TerminalSettings::handle(ctx).update(ctx, |terminal_settings, ctx| {
                     let current_value = *terminal_settings.spacing_mode;
@@ -484,7 +522,7 @@ fn make_new_view_menu(ctx: &AppContext) -> Menu {
         ]);
     }
 
-    Menu::new("View", items)
+    Menu::new("Visualizar", items)
 }
 
 fn make_new_tab_menu(ctx: &AppContext) -> Menu {
@@ -511,7 +549,7 @@ fn make_new_tab_menu(ctx: &AppContext) -> Menu {
         updateable_custom_item_without_checkmark(CustomAction::CloseOtherTabs, ctx),
         updateable_custom_item_without_checkmark(CustomAction::CloseTabsRight, ctx),
     ];
-    Menu::new("Tab", items)
+    Menu::new("Aba", items)
 }
 
 fn make_new_ai_menu(ctx: &AppContext) -> Menu {
@@ -565,16 +603,27 @@ fn make_new_blocks_menu(ctx: &AppContext) -> Menu {
         ctx,
     ));
     items.push(MenuItem::Separator);
-    items.extend([
-        updateable_custom_item_without_checkmark(CustomAction::CreateBlockPermalink, ctx),
-        non_updateable_custom_item(CustomAction::ViewSharedBlocks, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::ToggleBookmarkBlock, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::FindWithinBlock, ctx),
-        MenuItem::Separator,
-        updateable_custom_item_without_checkmark(CustomAction::CopyBlock, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::CopyBlockCommand, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::CopyBlockOutput, ctx),
-    ]);
+    if ChannelState::channel() == Channel::Oss {
+        items.extend([
+            updateable_custom_item_without_checkmark(CustomAction::ToggleBookmarkBlock, ctx),
+            updateable_custom_item_without_checkmark(CustomAction::FindWithinBlock, ctx),
+            MenuItem::Separator,
+            updateable_custom_item_without_checkmark(CustomAction::CopyBlock, ctx),
+            updateable_custom_item_without_checkmark(CustomAction::CopyBlockCommand, ctx),
+            updateable_custom_item_without_checkmark(CustomAction::CopyBlockOutput, ctx),
+        ]);
+    } else {
+        items.extend([
+            updateable_custom_item_without_checkmark(CustomAction::CreateBlockPermalink, ctx),
+            non_updateable_custom_item(CustomAction::ViewSharedBlocks, ctx),
+            updateable_custom_item_without_checkmark(CustomAction::ToggleBookmarkBlock, ctx),
+            updateable_custom_item_without_checkmark(CustomAction::FindWithinBlock, ctx),
+            MenuItem::Separator,
+            updateable_custom_item_without_checkmark(CustomAction::CopyBlock, ctx),
+            updateable_custom_item_without_checkmark(CustomAction::CopyBlockCommand, ctx),
+            updateable_custom_item_without_checkmark(CustomAction::CopyBlockOutput, ctx),
+        ]);
+    }
 
     let debug_items = block_menu_debug_items();
     if !debug_items.is_empty() {
@@ -582,7 +631,7 @@ fn make_new_blocks_menu(ctx: &AppContext) -> Menu {
         items.extend(debug_items);
     }
 
-    Menu::new("Blocks", items)
+    Menu::new("Blocos", items)
 }
 
 fn make_new_drive_menu(ctx: &AppContext) -> Menu {
@@ -741,7 +790,7 @@ fn toggle_bootstrap_block_menu_item() -> MenuItem {
 
 fn make_new_window_menu() -> Menu {
     Menu::new(
-        "Window",
+        "Janela",
         vec![
             MenuItem::Standard(StandardAction::Minimize),
             MenuItem::Standard(StandardAction::Zoom),
@@ -930,7 +979,7 @@ fn make_new_help_menu() -> Menu {
         "Help",
         vec![
             feedback_menu_item(),
-            link_menu_item("Warp Documentation...", links::USER_DOCS_URL.into()),
+            link_menu_item("Documentation...", links::USER_DOCS_URL.into()),
             link_menu_item("GitHub Issues...", links::GITHUB_ISSUES_URL.into()),
             link_menu_item("Join our Slack community...", links::SLACK_URL.into()),
         ],
@@ -981,7 +1030,7 @@ fn make_new_elements_menu_items(ctx: &AppContext) -> Vec<MenuItem> {
     // shows its dedicated keystroke instead.
     let mut new_elements_menu = vec![
         MenuItem::Custom(CustomMenuItem::new(
-            "New Window",
+            "Nova janela",
             open_new_window,
             move |_props: &MenuItemProperties, ctx: &mut AppContext| {
                 let mut changes = MenuItemPropertyChanges::default();
@@ -997,7 +1046,7 @@ fn make_new_elements_menu_items(ctx: &AppContext) -> Vec<MenuItem> {
             Some(Keystroke::parse("cmd-n").expect("Valid keystroke")),
         )),
         MenuItem::Custom(CustomMenuItem::new(
-            "New Terminal Tab",
+            "Nova aba de terminal",
             open_new_default_tab_or_window,
             move |_props: &MenuItemProperties, ctx: &mut AppContext| {
                 let mut changes = MenuItemPropertyChanges::default();
@@ -1021,7 +1070,10 @@ fn make_new_elements_menu_items(ctx: &AppContext) -> Vec<MenuItem> {
             },
             Some(Keystroke::parse("cmd-t").expect("Valid keystroke")),
         )),
-        MenuItem::Custom(CustomMenuItem::new(
+    ];
+
+    if ChannelState::channel() != Channel::Oss {
+        new_elements_menu.push(MenuItem::Custom(CustomMenuItem::new(
             "New Agent Tab",
             open_new_agent_tab_or_window,
             move |_props: &MenuItemProperties, ctx: &mut AppContext| {
@@ -1051,9 +1103,9 @@ fn make_new_elements_menu_items(ctx: &AppContext) -> Vec<MenuItem> {
                 changes
             },
             None,
-        )),
-        non_updateable_custom_item(CustomAction::NewFile, ctx),
-    ];
+        )));
+    }
+    new_elements_menu.push(non_updateable_custom_item(CustomAction::NewFile, ctx));
 
     let reopen_session_action_updater =
         custom_action_updater(CustomAction::ReopenClosedSession, Box::new(|_| false));

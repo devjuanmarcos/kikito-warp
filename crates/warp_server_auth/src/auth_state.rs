@@ -58,6 +58,11 @@ impl AuthState {
             credentials: RwLock::new(None),
         }
     }
+
+    /// Creates a local identity without reading credentials or contacting an authentication service.
+    pub fn initialize_local(ctx: &AppContext) -> Self {
+        Self::new(ctx)
+    }
     #[cfg(any(
         test,
         feature = "integration_tests",

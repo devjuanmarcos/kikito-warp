@@ -399,28 +399,28 @@ impl<'a> UnsavedStateSummary<'a> {
         let mut info_text_lines = Vec::<String>::new();
 
         let scope_suffix = match self.scope {
-            QuitScope::Tabs(ref tabs) if tabs.len() == 1 => " in this tab.",
-            QuitScope::Window(_) => " in this window.",
-            QuitScope::Pane { .. } => " in this pane.",
+            QuitScope::Tabs(ref tabs) if tabs.len() == 1 => " nesta aba.",
+            QuitScope::Window(_) => " nesta janela.",
+            QuitScope::Pane { .. } => " neste painel.",
             QuitScope::App | QuitScope::Tabs(_) | QuitScope::EditorTab { .. } => ".",
         };
 
         if self.total_long_running_commands > 0 {
             let mut process_info_text = format!(
-                "You have {} {} running",
+                "Há {} {} em execução",
                 self.total_long_running_commands,
-                pluralize(self.total_long_running_commands, "process", "processes")
+                pluralize(self.total_long_running_commands, "processo", "processos")
             );
             if self.windows_with_long_running_commands > 1 {
                 let _ = write!(
                     &mut process_info_text,
-                    " in {} windows",
+                    " em {} janelas",
                     self.windows_with_long_running_commands
                 );
             } else if self.tabs_with_long_running_commands > 1 {
                 let _ = write!(
                     &mut process_info_text,
-                    " in {} tabs",
+                    " em {} abas",
                     self.tabs_with_long_running_commands
                 );
             }
@@ -430,17 +430,17 @@ impl<'a> UnsavedStateSummary<'a> {
 
         if self.shared_sessions > 0 {
             info_text_lines.push(format!(
-                "You are sharing {} {}{scope_suffix}",
+                "Você está compartilhando {} {}{scope_suffix}",
                 self.shared_sessions,
-                pluralize(self.shared_sessions, "session", "sessions")
+                pluralize(self.shared_sessions, "sessão", "sessões")
             ));
         }
 
         if self.unsaved_code_changes {
             if let QuitScope::EditorTab { ref file_name, .. } = self.scope {
-                info_text_lines.push(format!("Do you want to save the changes you made to {}? Your changes will be discarded if you don't save them.", file_name.clone().unwrap_or("this file".to_string())));
+                info_text_lines.push(format!("Deseja salvar as alterações feitas em {}? Elas serão descartadas se você não salvar.", file_name.clone().unwrap_or("este arquivo".to_string())));
             } else {
-                info_text_lines.push(format!("You have unsaved file changes{scope_suffix}"));
+                info_text_lines.push(format!("Há alterações de arquivo não salvas{scope_suffix}"));
             }
         }
 
@@ -506,26 +506,26 @@ impl<'a> QuitWarningDialog<'a> {
 
         if let Some(callback) = on_confirm {
             let confirm_title = match state.scope {
-                QuitScope::Window(_) | QuitScope::Tabs(_) | QuitScope::Pane { .. } => "Yes, close",
-                QuitScope::App => "Yes, quit",
+                QuitScope::Window(_) | QuitScope::Tabs(_) | QuitScope::Pane { .. } => "Sim, fechar",
+                QuitScope::App => "Sim, sair",
                 _ => "",
             };
             buttons.push(ModalButton::for_app(confirm_title.to_string(), callback));
         }
 
         if let Some(callback) = on_save_changes {
-            buttons.push(ModalButton::for_app("Save".to_string(), callback));
+            buttons.push(ModalButton::for_app("Salvar".to_string(), callback));
         }
 
         if let Some(callback) = on_discard_changes {
-            buttons.push(ModalButton::for_app("Don't Save".to_string(), callback));
+            buttons.push(ModalButton::for_app("Não salvar".to_string(), callback));
         }
 
         if let Some(callback) = on_show_processes
             && state.total_long_running_commands > 0
         {
             buttons.push(ModalButton::for_app(
-                "Show running processes".to_string(),
+                "Mostrar processos em execução".to_string(),
                 move |app| {
                     callback(app);
                 },
@@ -533,16 +533,16 @@ impl<'a> QuitWarningDialog<'a> {
         }
 
         if let Some(callback) = on_cancel {
-            buttons.push(ModalButton::for_app("Cancel".to_string(), callback));
+            buttons.push(ModalButton::for_app("Cancelar".to_string(), callback));
         }
 
         let title = match &state.scope {
-            QuitScope::Pane { .. } => "Close pane?",
-            QuitScope::Tabs(tabs) if tabs.len() == 1 => "Close tab?",
-            QuitScope::Tabs(_) => "Close tabs?",
-            QuitScope::Window(_) => "Close window?",
-            QuitScope::App => "Quit Warp?",
-            QuitScope::EditorTab { .. } => "Save changes?",
+            QuitScope::Pane { .. } => "Fechar painel?",
+            QuitScope::Tabs(tabs) if tabs.len() == 1 => "Fechar aba?",
+            QuitScope::Tabs(_) => "Fechar abas?",
+            QuitScope::Window(_) => "Fechar janela?",
+            QuitScope::App => "Sair do Kikito Terminal?",
+            QuitScope::EditorTab { .. } => "Salvar alterações?",
         };
 
         AlertDialogWithCallbacks::for_app(

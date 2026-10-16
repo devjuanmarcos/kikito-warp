@@ -7,6 +7,9 @@
 #ifndef MyAppName
   #define MyAppName "WarpDev"
 #endif
+#ifndef MyAppDisplayName
+  #define MyAppDisplayName MyAppName
+#endif
 #ifndef MyAppVersion
   #define MyAppVersion "0.1.0"
 #endif
@@ -37,10 +40,10 @@
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId=warp-terminal-{#ReleaseChannel}
-AppName={#MyAppName}
+AppName={#MyAppDisplayName}
 AppVersion={#MyAppVersion}
-AppVerName={#MyAppName} {#MyAppVersion}
-UninstallDisplayName={#MyAppName}
+AppVerName={#MyAppDisplayName} {#MyAppVersion}
+UninstallDisplayName={#MyAppDisplayName}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -57,8 +60,13 @@ OutputBaseFilename={#OutputName}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+#if ReleaseChannel == "oss"
+WizardSmallImageFile="installer-images\kikito-terminal-logo.bmp"
+WizardImageFile="installer-images\kikito-terminal-banner.bmp"
+#else
 WizardSmallImageFile="installer-images\warp-logo.bmp"
 WizardImageFile="installer-images\warp-banner.bmp"
+#endif
 SetupIconFile="..\..\app\channels\{#ReleaseChannel}\icon\no-padding\icon.ico"
 UninstallDisplayIcon="{app}\icon.ico"
 ; Force close previous Warp if it hasn't shut down yet.
@@ -111,28 +119,28 @@ Source: "{#TargetProfileDir}\resources\*"; DestDir: "{app}\resources"; Flags: ig
 Root: HKCU; Subkey: "SOFTWARE\Warp.dev\{#MyAppName}"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "SOFTWARE\Warp.dev\{#MyAppName}"; ValueType: string; ValueName: "InstallationPath"; ValueData: "{app}\{#MyAppExeName}"; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName}"; Flags: uninsdeletekey
-; cleanup "Open Warp Here" registry entries
+; Remove previous app context-menu entries when the installation is removed.
 Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; Flags: deletekey
 Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; Flags: deletekey
-; Add "Open Warp in new tab" to directory context menu
-Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Tab"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppName} in new tab"; Flags: uninsdeletekey
+; Add the app to the directory context menu.
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Tab"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppDisplayName} in new tab"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Tab"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icon.ico"
 Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Tab\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""{#MyAppName}://action/new_tab?path=%1"""
-; Add "Open Warp in new tab" to directory background context menu
-Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Tab"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppName} in new tab"; Flags: uninsdeletekey
+; Add the app to the directory background context menu.
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Tab"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppDisplayName} in new tab"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Tab"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icon.ico"
 Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Tab\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""{#MyAppName}://action/new_tab?path=%V"""
-; Add "Open Warp in new window" to directory context menu
-Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Window"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppName} in new window"; Flags: uninsdeletekey
+; Add the app to the directory context menu in a new window.
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Window"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppDisplayName} in new window"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Window"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icon.ico"
 Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}Window\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""{#MyAppName}://action/new_window?path=%1"""
-; Add "Open Warp in new window" to directory background context menu
-Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Window"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppName} in new window"; Flags: uninsdeletekey
+; Add the app to the directory background context menu in a new window.
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Window"; ValueType: string; ValueName: ""; ValueData: "Open {#MyAppDisplayName} in new window"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Window"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icon.ico"
 Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}Window\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""{#MyAppName}://action/new_window?path=%V"""
 
 [Tasks]
-Name: addToPath; Description: "Add Warp to PATH"
+Name: addToPath; Description: "Add {#MyAppDisplayName} to PATH"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{userappdata}\warp\{#MyAppName}"
@@ -140,8 +148,13 @@ Type: filesandordirs; Name: "{localappdata}\warp\{#MyAppName}"
 Type: filesandordirs; Name: "{app}\bin"
 
 [Icons]
+#if ReleaseChannel == "oss"
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; AppUserModelID: "dev.warp.WarpOss"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; AppUserModelID: "dev.warp.WarpOss"; Tasks: desktopicon
+#else
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; AppUserModelID: "dev.warp.{#MyAppName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; AppUserModelID: "dev.warp.{#MyAppName}"; Tasks: desktopicon
+#endif
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall runhidden nowait
