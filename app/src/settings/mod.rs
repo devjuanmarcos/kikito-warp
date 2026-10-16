@@ -96,11 +96,11 @@ impl std::fmt::Display for SettingsFileError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::FileParseFailed(_) => {
-                write!(f, "Couldn't parse due to invalid syntax")
+                write!(f, "Não foi possível interpretar devido a um erro de sintaxe")
             }
             Self::InvalidSettings(keys) => match keys.as_slice() {
-                [key] => write!(f, "Invalid value for '{key}'"),
-                _ => write!(f, "Invalid values for: {}", keys.join(", ")),
+                [key] => write!(f, "Valor inválido para '{key}'"),
+                _ => write!(f, "Valores inválidos para: {}", keys.join(", ")),
             },
         }
     }
@@ -114,17 +114,17 @@ impl SettingsFileError {
     pub fn heading_and_description(&self) -> (String, String) {
         match self {
             Self::FileParseFailed(_) => (
-                "Your settings file contains an error.".to_owned(),
-                format!("{self}. Open the file to fix it."),
+                "Seu arquivo de configurações contém um erro.".to_owned(),
+                format!("{self}. Abra o arquivo para corrigir o problema."),
             ),
             Self::InvalidSettings(keys) => match keys.len() {
                 1 => (
-                    "Your settings file contains an error.".to_owned(),
-                    format!("{self}. The default value is being used."),
+                    "Seu arquivo de configurações contém um erro.".to_owned(),
+                    format!("{self}. O valor padrão será usado."),
                 ),
                 _ => (
-                    "Your settings file contains errors.".to_owned(),
-                    format!("{self}. Default values are being used."),
+                    "Seu arquivo de configurações contém erros.".to_owned(),
+                    format!("{self}. Os valores padrão serão usados."),
                 ),
             },
         }

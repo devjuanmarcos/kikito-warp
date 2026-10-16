@@ -422,6 +422,11 @@
 - Traduzi descrições de posicionamento, botão de fechar, visibilidade e cores das abas nos metadados das configurações.
 - Preservei os campos, valores serializados e chaves TOML.
 
+## Tradução — erros do arquivo de configurações
+
+- Traduzi cabeçalhos, detalhes e consequências exibidos quando o TOML tem erro de sintaxe ou valores inválidos.
+- Preservei as chaves das configurações e a lógica que aplica valores padrão.
+
 ## Tradução — rótulo de agente CLI desconhecido
 
 - Traduzi o nome exibido para agentes CLI personalizados ou não reconhecidos.
