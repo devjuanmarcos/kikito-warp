@@ -2261,7 +2261,9 @@ impl Workspace {
                     log::warn!("Failed to remove tab config file: {e:?}");
                     self.toast_stack.update(ctx, |toast_stack, ctx| {
                         toast_stack.add_ephemeral_toast(
-                            DismissibleToast::error(format!("Failed to remove tab config: {e}")),
+                            DismissibleToast::error(format!(
+                                "Falha ao remover a configuração de abas: {e}"
+                            )),
                             ctx,
                         );
                     });
@@ -2763,14 +2765,14 @@ impl Workspace {
                             home_dir.as_ref().and_then(|h| h.to_str()),
                         );
                         let message = format!(
-                            "Failed to load tab config {friendly_path}: {}",
+                            "Falha ao carregar a configuração de abas {friendly_path}: {}",
                             error.error_message
                         );
                         let path = error.file_path.clone();
                         let toast = DismissibleToast::error(message)
                             .with_object_id(object_id.clone())
                             .with_link(
-                                ToastLink::new("Open file".to_string()).with_onclick_action(
+                                ToastLink::new("Abrir arquivo".to_string()).with_onclick_action(
                                     WorkspaceAction::OpenTabConfigErrorFile {
                                         path,
                                         toast_object_id: object_id,
@@ -2797,14 +2799,14 @@ impl Workspace {
                             home_dir.as_ref().and_then(|h| h.to_str()),
                         );
                         let message = format!(
-                            "Failed to load model config {friendly_path}: {}",
+                            "Falha ao carregar a configuração do modelo {friendly_path}: {}",
                             error.error_message
                         );
                         let path = error.file_path.clone();
                         let toast = DismissibleToast::error(message)
                             .with_object_id(object_id.clone())
                             .with_link(
-                                ToastLink::new("Open file".to_string()).with_onclick_action(
+                                ToastLink::new("Abrir arquivo".to_string()).with_onclick_action(
                                     WorkspaceAction::OpenTabConfigErrorFile {
                                         path,
                                         toast_object_id: object_id,
@@ -2864,13 +2866,15 @@ impl Workspace {
         let toast = match result {
             Ok(path) => {
                 ctx.open_file_path_in_explorer(&path);
-                DismissibleToast::success(format!("Wrote heap profile to {}", path.display()))
+                DismissibleToast::success(format!("Perfil de heap salvo em {}", path.display()))
                     .with_link(
-                        ToastLink::new("Show in file explorer".to_string())
+                        ToastLink::new("Mostrar no explorador de arquivos".to_string())
                             .with_onclick_action(WorkspaceAction::OpenInExplorer { path }),
                     )
             }
-            Err(err) => DismissibleToast::error(format!("Failed to write heap profile: {err:#}")),
+            Err(err) => DismissibleToast::error(format!(
+                "Falha ao salvar o perfil de heap: {err:#}"
+            )),
         };
 
         self.toast_stack.update(ctx, |toast_stack, ctx| {

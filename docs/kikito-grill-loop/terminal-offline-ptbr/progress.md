@@ -561,3 +561,11 @@
 
 - Traduzi os nomes de preenchimento usados quando grupos ou painéis ainda não têm um título definido.
 - Preservei os nomes personalizados e o comportamento de edição.
+
+## Tradução — mensagens de arquivos locais do workspace
+
+- Traduzi notificações de falha ao carregar ou remover configurações locais e os links para abrir os
+  arquivos.
+- Traduzi mensagens de sucesso ou falha ao salvar um perfil de heap e o atalho para exibi-lo no
+  explorador.
+- Preservei os caminhos, IDs das notificações e ações.
