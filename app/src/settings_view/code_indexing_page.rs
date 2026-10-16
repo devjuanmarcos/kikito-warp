@@ -72,12 +72,12 @@ const SUB_SECTION_MARGIN: f32 = 8.;
 const STATUS_ICON_SIZE: f32 = 16.;
 const LSP_STATUS_INDICATOR_SIZE: f32 = 8.;
 const CODE_FEATURE_NAME: &str = "Code";
-const INITIALIZATION_SETTINGS_HEADER: &str = "Initialization Settings";
-const CODEBASE_INDEXING_LABEL: &str = "Codebase indexing";
-const CODEBASE_INDEX_DESCRIPTION: &str = "Warp can automatically index code repositories as you navigate them, helping agents quickly understand context and provide solutions. Code is never stored on the server. If a codebase is unable to be indexed, Warp can still navigate your codebase and gain insights via grep and find tool calling.";
-const WARP_INDEXING_IGNORE_DESCRIPTION: &str = "To exclude specific files or directories from indexing, add them to the .warpindexingignore file in your repository directory. These files will still be accessible to AI features, but they won't be included in codebase embeddings.";
-const AUTO_INDEX_FEATURE_NAME: &str = "Index new folders by default";
-const AUTO_INDEX_DESCRIPTION: &str = "When set to true, Warp will automatically index code repositories as you navigate them - helping agents quickly understand context and provide targeted solutions.";
+const INITIALIZATION_SETTINGS_HEADER: &str = "Configuração da inicialização";
+const CODEBASE_INDEXING_LABEL: &str = "Indexação da base de código";
+const CODEBASE_INDEX_DESCRIPTION: &str = "O Kikito Terminal pode indexar automaticamente os repositórios de código enquanto você navega por eles, ajudando os agentes a entender o contexto rapidamente e oferecer soluções. O código nunca é armazenado no servidor. Se não for possível indexar uma base de código, o Kikito Terminal ainda pode navegar por ela e obter informações usando as ferramentas grep e find.";
+const WARP_INDEXING_IGNORE_DESCRIPTION: &str = "Para excluir arquivos ou diretórios específicos da indexação, adicione-os ao arquivo .warpindexingignore no diretório do repositório. Esses arquivos continuarão acessíveis aos recursos de IA, mas não serão incluídos nos embeddings da base de código.";
+const AUTO_INDEX_FEATURE_NAME: &str = "Indexar novas pastas por padrão";
+const AUTO_INDEX_DESCRIPTION: &str = "Quando ativada, esta opção indexa automaticamente os repositórios de código durante a navegação, ajudando os agentes a entender o contexto rapidamente e oferecer soluções direcionadas.";
 const INDEXING_DISABLED_ADMIN_TEXT: &str = "Team admins have disabled codebase indexing.";
 const INDEXING_WORKSPACE_ENABLED_ADMIN_TEXT: &str = "Team admins have enabled codebase indexing.";
 const INDEXING_DISABLED_GLOBAL_AI_TEXT: &str =
@@ -87,7 +87,7 @@ const CODEBASE_INDEX_LIMIT_REACHED: &str = "You have reached the maximum number 
 const REMOTE_CODEBASE_INDEX_LIMIT_REACHED_FAILURE: &str =
     "maximum number of codebase indexes has been reached";
 
-const PAGE_TITLE: &str = "Codebase Indexing";
+const PAGE_TITLE: &str = "Indexação da base de código";
 
 #[cfg(not(target_family = "wasm"))]
 fn remote_codebase_index_limit_reached(status: &RemoteCodebaseIndexStatus) -> bool {

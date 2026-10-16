@@ -267,3 +267,9 @@
 
 - Traduzi os nomes locais das seções Recursos e Privacidade na navegação das configurações.
 - Mantive os identificadores de seção, slugs e comportamento.
+
+
+## Tradução - indexação de código
+
+- Traduzi títulos, descrição da indexação automática e instruções para excluir arquivos.
+- Mantive comandos grep/find, o nome do arquivo .warpindexingignore, termos técnicos e comportamento.
