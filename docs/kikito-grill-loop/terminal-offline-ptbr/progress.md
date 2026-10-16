@@ -486,3 +486,8 @@
 
 - Traduzi descrições de Quake Mode, atalhos globais, teclas meta e o comportamento de Ctrl+Tab.
 - Preservei os caminhos de configuração, exemplos de atalhos e os nomes das teclas.
+
+## Tradução — ocultação de segredos
+
+- Traduzi as descrições dos modos de exibição e ocultação de segredos detectados na saída do terminal.
+- Preservei os enums, a compatibilidade com a configuração legada e os caminhos TOML.
