@@ -152,3 +152,10 @@
 - Traduzi título, controles e descrições da página de editor, revisão de código, explorador de projetos, busca de arquivos, arquivos ocultos, formatação ao salvar, salvamento automático e numeração de linhas.
 - Preservei actions, flags, termos técnicos como LSP/diff e comportamento.
 - Ainda há outras superfícies locais da GUI para revisar.
+
+
+## Tradução — teclas modificadoras Meta
+
+- Traduzi os rótulos de configuração das teclas Option/Alt esquerda e direita usadas como Meta.
+- Mantive os termos técnicos Option, Alt e Meta, assim como actions e armazenamento da configuração.
+- A varredura da página de recursos continua; recursos remotos e nomes técnicos permanecem fora deste lote.

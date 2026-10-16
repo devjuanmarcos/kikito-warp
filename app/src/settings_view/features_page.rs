@@ -115,11 +115,11 @@ use crate::{GlobalResourceHandles, send_telemetry_from_ctx, themes};
 
 cfg_if::cfg_if! {
     if #[cfg(target_os = "macos")] {
-        static EXTRA_META_KEYS_LEFT_TEXT: &str = "Left Option key is Meta";
-        static EXTRA_META_KEYS_RIGHT_TEXT: &str = "Right Option key is Meta";
+        static EXTRA_META_KEYS_LEFT_TEXT: &str = "A tecla Option esquerda funciona como Meta";
+        static EXTRA_META_KEYS_RIGHT_TEXT: &str = "A tecla Option direita funciona como Meta";
     } else {
-        static EXTRA_META_KEYS_LEFT_TEXT: &str = "Left Alt key is Meta";
-        static EXTRA_META_KEYS_RIGHT_TEXT: &str = "Right Alt key is Meta";
+        static EXTRA_META_KEYS_LEFT_TEXT: &str = "A tecla Alt esquerda funciona como Meta";
+        static EXTRA_META_KEYS_RIGHT_TEXT: &str = "A tecla Alt direita funciona como Meta";
     }
 }
 
