@@ -355,10 +355,10 @@ impl CommandRenderInfo {
                 },
                 command_text: Some(last_run_command),
                 hint_text: match mins_since_completion {
-                    Some(mins) if mins >= 60 => "Completed over 1 hour ago".to_string(),
-                    Some(mins) if mins == 1 => format!("Completed {mins} minute ago"),
-                    Some(mins) => format!("Completed {mins} minutes ago"),
-                    None => "No timestamp found".to_string(),
+                    Some(mins) if mins >= 60 => "Concluída há mais de 1 hora".to_string(),
+                    Some(mins) if mins == 1 => format!("Concluída há {mins} minuto"),
+                    Some(mins) => format!("Concluída há {mins} minutos"),
+                    None => "Horário não encontrado".to_string(),
                 },
             },
             CommandContext::RunningAIBlock { prompt } => CommandRenderInfo {
@@ -375,7 +375,7 @@ impl CommandRenderInfo {
             },
             CommandContext::None => CommandRenderInfo {
                 command_text: Some(String::new()),
-                hint_text: "Empty Session".to_string(),
+                hint_text: "Sessão vazia".to_string(),
                 row_spacing: 0.,
                 hint_margin: 0.,
             },

@@ -593,3 +593,9 @@
 - Traduzi seções, ações de criar, retomar e copiar conversas, dicas e instruções de acessibilidade.
 - Traduzi avisos quando o agente está monitorando um comando e impede a troca ou o início de conversa.
 - Preservei ações, navegação e condições de bloqueio.
+
+## Tradução — navegação de sessões na paleta
+
+- Traduzi estados de sessão vazia, horário ausente e tempo desde a conclusão, além da dica para abrir
+  uma sessão.
+- Preservei a lógica de navegação e os dados de data/hora.
