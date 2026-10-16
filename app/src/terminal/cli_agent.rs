@@ -299,7 +299,7 @@ impl CLIAgent {
             CLIAgent::Kiro => "Kiro CLI",
             CLIAgent::Muse => "Muse Code",
             CLIAgent::WarpTui => "Warp TUI",
-            CLIAgent::Unknown => "CLI Agent",
+            CLIAgent::Unknown => "Agente de CLI",
         }
     }
 

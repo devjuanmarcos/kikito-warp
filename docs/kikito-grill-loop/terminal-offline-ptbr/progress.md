@@ -412,6 +412,11 @@
 - Traduzi as ações visíveis para pedir ajuda ao agente, anexar contexto e perguntar à IA do Kikito Terminal.
 - Mantive as actions e o comportamento dos botões.
 
+## Tradução — rótulo de agente CLI desconhecido
+
+- Traduzi o nome exibido para agentes CLI personalizados ou não reconhecidos.
+- Mantive o variant `Unknown`, os dados serializados e a telemetria.
+
 ## Tradução — mensagens de coleta de amostras
 
 - Traduzi o sucesso e as falhas da coleta local de amostras de processo.
