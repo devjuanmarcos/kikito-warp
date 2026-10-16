@@ -491,3 +491,9 @@
 
 - Traduzi as descrições dos modos de exibição e ocultação de segredos detectados na saída do terminal.
 - Preservei os enums, a compatibilidade com a configuração legada e os caminhos TOML.
+
+## Tradução — preferências de notificação
+
+- Traduzi os estados e as descrições de notificações para eventos do terminal, como comandos
+  demorados, solicitações de senha e tarefas do agente.
+- Preservei enums, campos, valores e o limite em segundos.

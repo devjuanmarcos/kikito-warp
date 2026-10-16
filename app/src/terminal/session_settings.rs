@@ -32,24 +32,24 @@ lazy_static! {
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Whether the user has enabled or disabled notifications.",
+    description = "Indica se as notificações estão ativadas ou desativadas.",
     rename_all = "snake_case"
 )]
 pub enum NotificationsMode {
     // User has not been shown notifications banner before or has seen it before but decided not to dismiss it.
-    #[schemars(description = "Notifications have not been configured yet.")]
+    #[schemars(description = "As notificações ainda não foram configuradas.")]
     Unset,
 
     // User has asked not to be shown notifications banner again.
-    #[schemars(description = "The notifications banner has been dismissed.")]
+    #[schemars(description = "O aviso de notificações foi dispensado.")]
     Dismissed,
 
     // User has enabled system notifications and wants to receive notifications.
-    #[schemars(description = "Notifications are enabled.")]
+    #[schemars(description = "As notificações estão ativadas.")]
     Enabled,
 
     // User had previously enabled notifications, but has now disabled them.
-    #[schemars(description = "Notifications are disabled.")]
+    #[schemars(description = "As notificações estão desativadas.")]
     Disabled,
 }
 
@@ -66,31 +66,44 @@ pub enum NotificationsMode {
  */
 #[serde(default)]
 #[derive(schemars::JsonSchema)]
-#[schemars(description = "Notification preferences for terminal events.")]
+#[schemars(description = "Preferências de notificação para eventos do terminal.")]
 pub struct NotificationsSettings {
     #[schemars(
-        description = "Whether notifications are enabled, disabled, or not yet configured."
+        description = "Indica se as notificações estão ativadas, desativadas ou ainda não foram \
+            configuradas."
     )]
     pub mode: NotificationsMode,
 
-    #[schemars(description = "Whether to notify when a long-running command completes.")]
+    #[schemars(
+        description = "Indica se uma notificação deve ser exibida ao concluir um comando \
+            demorado."
+    )]
     pub is_long_running_enabled: bool,
     #[schemars(
         with = "u64",
-        description = "Threshold in seconds for long-running command notifications."
+        description = "Limite, em segundos, para notificações de comandos demorados."
     )]
     pub long_running_threshold: Duration,
 
     /// Legacy. To be combined with `is_needs_attention_enabled` when desktop notifs are unflagged.
-    #[schemars(description = "Whether to notify when a password prompt is detected.")]
+    #[schemars(
+        description = "Indica se uma notificação deve ser exibida ao detectar uma solicitação \
+            de senha."
+    )]
     pub is_password_prompt_enabled: bool,
 
-    #[schemars(description = "Whether to notify when an agent task completes.")]
+    #[schemars(
+        description = "Indica se uma notificação deve ser exibida ao concluir uma tarefa do \
+            agente."
+    )]
     pub is_agent_task_completed_enabled: bool,
-    #[schemars(description = "Whether to notify when a session needs attention.")]
+    #[schemars(
+        description = "Indica se uma notificação deve ser exibida quando uma sessão precisar \
+            de atenção."
+    )]
     pub is_needs_attention_enabled: bool,
 
-    #[schemars(description = "Whether to play a sound with notifications.")]
+    #[schemars(description = "Indica se um som deve ser reproduzido junto com as notificações.")]
     pub play_notification_sound: bool,
 }
 
