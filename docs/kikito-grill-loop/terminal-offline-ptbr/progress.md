@@ -180,3 +180,10 @@
 - Traduzi os rótulos para ativar atalhos Vim, usar o registrador sem nome como clipboard do sistema e exibir a barra de status do Vim.
 - Mantive Vim como nome técnico e preservei actions, flags e comportamento.
 - Outros grupos locais da página de recursos ainda estão pendentes.
+
+
+## Tradução — seleção de texto e clipboard
+
+- Traduzi opções locais de seleção inteligente, cópia ao selecionar e acesso de programas ao clipboard por OSC 52.
+- Mantive OSC 52, actions, flags, links e comportamento.
+- Ainda há outros grupos locais da página de recursos para revisar.
