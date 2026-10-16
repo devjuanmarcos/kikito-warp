@@ -356,3 +356,8 @@
 
 - Traduzi o aviso local de recuperação após falha na inicialização e a ação “Saiba mais”.
 - Mantive Xwayland e o comportamento de recuperação.
+
+## Tradução — diretório inicial de novas sessões
+
+- Traduzi as opções de diretório pessoal, sessão anterior e diretório personalizado.
+- Mantive os modos e valores persistidos de configuração.
