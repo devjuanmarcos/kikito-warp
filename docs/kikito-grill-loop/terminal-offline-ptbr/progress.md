@@ -671,3 +671,9 @@
 - Traduzi descrições dos comandos para aumentar, diminuir e restaurar o tamanho da fonte e focar a
   entrada do terminal.
 - Preservei IDs, ações, contextos e atalhos registrados.
+
+## Tradução — ações de configurações de aba
+
+- Traduzi os botões para definir uma configuração como padrão, editá-la e removê-la, além da dica
+  que informa o estado padrão.
+- Preservei os eventos e as condições de disponibilidade das ações.
