@@ -677,3 +677,8 @@
 - Traduzi os botões para definir uma configuração como padrão, editá-la e removê-la, além da dica
   que informa o estado padrão.
 - Preservei os eventos e as condições de disponibilidade das ações.
+
+## Tradução — seletor de tipo de sessão
+
+- Traduzi o rótulo do seletor e substituí a marca antiga no nome da opção de agente por “Agente”.
+- Preservei os tipos de sessão e a seleção correspondente.
