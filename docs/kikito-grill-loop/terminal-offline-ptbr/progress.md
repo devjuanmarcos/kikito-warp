@@ -361,3 +361,8 @@
 
 - Traduzi as opções de diretório pessoal, sessão anterior e diretório personalizado.
 - Mantive os modos e valores persistidos de configuração.
+
+## Tradução — permissões de clipboard por OSC 52
+
+- Ajustei os rótulos das opções para não permitir, permitir gravação ou permitir leitura e gravação.
+- Mantive os enums e as permissões associadas a cada opção.
