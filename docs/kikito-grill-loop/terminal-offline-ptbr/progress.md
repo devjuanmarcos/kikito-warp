@@ -243,3 +243,9 @@
 - Traduzi controles de notificação da área de trabalho, conclusão de tarefas de agentes, avisos de atenção e sons.
 - Traduzi os textos de duração e limite das notificações temporárias, atualizando a marca para Kikito Terminal.
 - Mantive actions, configurações e comportamento.
+
+
+## Tradução - novas sessões
+
+- Traduzi os rótulos de shell padrão, diretório de trabalho e modo padrão para novas sessões.
+- Mantive os valores dos seletores, configurações locais e comportamento.
