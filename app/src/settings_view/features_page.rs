@@ -6308,7 +6308,7 @@ impl SettingsWidget for VimModeWidget {
         let app_editor_settings = AppEditorSettings::as_ref(app);
         let vim_mode_enabled = *app_editor_settings.vim_mode.value();
         column.add_child(render_body_item::<FeaturesPageAction>(
-            "Edit code and commands with Vim keybindings".into(),
+            "Editar código e comandos com atalhos do Vim".into(),
             None,
             LocalOnlyIconState::for_setting(
                 VimModeEnabled::storage_key(),
@@ -6356,7 +6356,7 @@ impl SettingsWidget for VimModeWidget {
                     app,
                 ),
                 clipboard_switch,
-                "Set unnamed register as system clipboard".into(),
+                "Usar o registrador sem nome como área de transferência do sistema".into(),
             );
 
             let vim_status_bar = *app_editor_settings.vim_status_bar.value();
@@ -6380,7 +6380,7 @@ impl SettingsWidget for VimModeWidget {
                     app,
                 ),
                 status_bar_switch,
-                "Show Vim status bar".into(),
+                "Mostrar barra de status do Vim".into(),
             );
 
             column.add_child(render_group(

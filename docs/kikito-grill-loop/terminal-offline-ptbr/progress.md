@@ -173,3 +173,10 @@
 - Traduzi os controles locais de relatórios de mouse, rolagem e foco, além da opção de sinal sonoro.
 - Preservei actions, flags, links e o comportamento dos controles.
 - A varredura da página de recursos continua em outros grupos.
+
+
+## Tradução — opções de edição Vim
+
+- Traduzi os rótulos para ativar atalhos Vim, usar o registrador sem nome como clipboard do sistema e exibir a barra de status do Vim.
+- Mantive Vim como nome técnico e preservei actions, flags e comportamento.
+- Outros grupos locais da página de recursos ainda estão pendentes.
