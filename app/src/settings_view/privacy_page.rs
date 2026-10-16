@@ -150,7 +150,7 @@ impl PrivacyPageView {
         });
 
         let add_regex_modal_view = ctx.add_typed_action_view(|ctx| {
-            Modal::new(Some("Add regex pattern".to_string()), add_regex_body, ctx)
+            Modal::new(Some("Adicionar padrão de regex".to_string()), add_regex_body, ctx)
                 .with_modal_style(UiComponentStyles {
                     width: Some(600.),
                     height: Some(400.),
@@ -230,7 +230,7 @@ impl PrivacyPageView {
         }
         widgets.push(Box::new(DataManagementWidget::default()));
         widgets.push(Box::new(PrivacyPolicyWidget::default()));
-        PageType::new_uncategorized(widgets, Some(PageTitle::new("Privacy")))
+        PageType::new_uncategorized(widgets, Some(PageTitle::new("Privacidade")))
     }
 
     fn update_button_states(
@@ -1011,7 +1011,7 @@ impl SecretRedactionWidget {
                         .with_main_axis_alignment(MainAxisAlignment::SpaceBetween)
                         .with_cross_axis_alignment(CrossAxisAlignment::Center)
                         .with_child(
-                            self.render_section_title("Recommended".to_string(), appearance),
+                            self.render_section_title("Recomendadas".to_string(), appearance),
                         )
                         .with_child(
                             Container::new(
@@ -1021,7 +1021,7 @@ impl SecretRedactionWidget {
                                         self.add_all_button_mouse_state.clone(),
                                     )
                                     .with_text_and_icon_label(Self::add_button(
-                                        "Add all", appearance,
+                                        "Adicionar todas", appearance,
                                     ))
                                     .with_style(Self::add_button_style())
                                     .build()
@@ -1240,7 +1240,7 @@ impl SettingsWidget for SecretRedactionWidget {
 
             // Create the label with local-only icon if needed
             let label_with_icon = super::settings_page::render_dropdown_item_label(
-                "Secret visual redaction mode".to_string(),
+                "Modo de ocultação visual de segredos".to_string(),
                 None,
                 local_only_icon_state,
                 None,
@@ -1254,7 +1254,7 @@ impl SettingsWidget for SecretRedactionWidget {
                     Container::new(
                         ui_builder
                             .paragraph(
-                                "Choose how secrets are visually presented in the block list while keeping them searchable. This setting only affects what you see in the block list.",
+                                "Escolha como os segredos serão exibidos na lista de blocos, mantendo-os pesquisáveis. Esta configuração afeta apenas o que você vê nessa lista.",
                             )
                             .with_style(UiComponentStyles {
                                 font_color: Some(description_text_color),
@@ -1325,7 +1325,7 @@ impl SettingsWidget for SecretRedactionWidget {
                                 ButtonVariant::Secondary,
                                 self.add_regex_button_mouse_state.clone(),
                             )
-                            .with_text_and_icon_label(Self::add_button("Add regex", appearance))
+                            .with_text_and_icon_label(Self::add_button("Adicionar regex", appearance))
                             .with_style(Self::add_button_style())
                             .build()
                             .on_click(move |ctx, _, _| {

@@ -292,3 +292,9 @@
 
 - Traduzi os títulos e descrições de ocultação de segredos e regras regex.
 - Mantive a sintaxe da flag `(?i)`, a semântica e o comportamento local.
+
+
+## Tradução - controles de regras de segredos
+
+- Traduzi o título da página, o modo de exibição visual, o botão de adicionar regex e a seção de regras recomendadas.
+- Mantive regexes, actions e comportamento.
