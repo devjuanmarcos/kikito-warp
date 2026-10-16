@@ -29,7 +29,7 @@ use crate::view_components::{Dropdown, DropdownItem};
 use crate::workspace::tab_settings::TabSettings;
 use crate::{TelemetryEvent, send_telemetry_from_ctx};
 
-const PAGE_TITLE: &str = "Editor and Code Review";
+const PAGE_TITLE: &str = "Editor e revisão de código";
 
 pub struct EditorAndCodeReviewPageView {
     page: PageType<Self>,
@@ -384,7 +384,7 @@ impl SettingsWidget for AutoOpenCodeReviewPaneCodeWidget {
     ) -> Box<dyn Element> {
         let general_settings = GeneralSettings::as_ref(app);
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Auto open code review panel".into(),
+            "Abrir automaticamente o painel de revisão de código".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -400,7 +400,7 @@ impl SettingsWidget for AutoOpenCodeReviewPaneCodeWidget {
                     );
                 })
                 .finish(),
-            Some("When this setting is on, the code review panel will open on the first accepted diff of a conversation".into()),
+            Some("Quando ativada, o painel de revisão de código será aberto na primeira alteração aceita de uma conversa.".into()),
         )
     }
 }
@@ -426,7 +426,7 @@ impl SettingsWidget for CodeReviewPanelToggleWidget {
         let tab_settings = TabSettings::as_ref(app);
 
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Show code review button".into(),
+            "Mostrar botão de revisão de código".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -441,7 +441,7 @@ impl SettingsWidget for CodeReviewPanelToggleWidget {
                 })
                 .finish(),
             Some(
-                "Show a button in the top right of the window to toggle the code review panel."
+                "Exibe um botão no canto superior direito da janela para alternar o painel de revisão de código."
                     .into(),
             ),
         )
@@ -469,7 +469,7 @@ impl SettingsWidget for CodeReviewDiffStatsToggleWidget {
         let tab_settings = TabSettings::as_ref(app);
 
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Show diff stats on code review button".into(),
+            "Mostrar estatísticas de diff no botão de revisão de código".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -485,7 +485,7 @@ impl SettingsWidget for CodeReviewDiffStatsToggleWidget {
                     );
                 })
                 .finish(),
-            Some("Show lines added and removed counts on the code review button.".into()),
+            Some("Exibe no botão de revisão de código a quantidade de linhas adicionadas e removidas.".into()),
         )
     }
 }
@@ -511,7 +511,7 @@ impl SettingsWidget for ProjectExplorerToggleWidget {
         let code_settings = CodeSettings::as_ref(app);
 
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Project explorer".into(),
+            "Explorador de projetos".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -526,7 +526,7 @@ impl SettingsWidget for ProjectExplorerToggleWidget {
                 })
                 .finish(),
             Some(
-                "Adds an IDE-style project explorer / file tree to the left side tools panel."
+                "Adiciona um explorador de projetos em árvore ao painel de ferramentas à esquerda."
                     .into(),
             ),
         )
@@ -554,7 +554,7 @@ impl SettingsWidget for GlobalSearchToggleWidget {
         let code_settings = CodeSettings::as_ref(app);
 
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Global file search".into(),
+            "Busca global de arquivos".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -568,7 +568,7 @@ impl SettingsWidget for GlobalSearchToggleWidget {
                     ctx.dispatch_typed_action(EditorAndCodeReviewPageAction::ToggleGlobalSearch);
                 })
                 .finish(),
-            Some("Adds global file search to the left side tools panel.".into()),
+            Some("Adiciona a busca global de arquivos ao painel de ferramentas à esquerda.".into()),
         )
     }
 }
@@ -594,7 +594,7 @@ impl SettingsWidget for ShowHiddenFilesToggleWidget {
         let code_settings = CodeSettings::as_ref(app);
 
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Show hidden files in project explorer".into(),
+            "Mostrar arquivos ocultos no explorador de projetos".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -609,7 +609,7 @@ impl SettingsWidget for ShowHiddenFilesToggleWidget {
                 })
                 .finish(),
             Some(
-                "Show dotfiles and hidden files (starting with .) in the project explorer.".into(),
+                "Exibe no explorador de projetos dotfiles e outros arquivos ocultos (iniciados por ponto).".into(),
             ),
         )
     }
@@ -636,7 +636,7 @@ impl SettingsWidget for FormatOnSaveToggleWidget {
         let code_settings = CodeSettings::as_ref(app);
 
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Format on save (requires an active language server)".into(),
+            "Formatar ao salvar (requer um servidor de linguagem ativo)".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -651,7 +651,7 @@ impl SettingsWidget for FormatOnSaveToggleWidget {
                 })
                 .finish(),
             Some(
-                "Only applies when a language server is active for the file. Automatically formats the file with the language server on save; other LSP features (hover, go-to-definition, references, diagnostics) are unaffected."
+                "Aplica-se quando há um servidor de linguagem ativo para o arquivo. Formata o arquivo ao salvar; os outros recursos LSP, como dicas, ir para definição, referências e diagnósticos, não são afetados."
                     .into(),
             ),
         )
@@ -679,7 +679,7 @@ impl SettingsWidget for AutoSaveToggleWidget {
         let code_settings = CodeSettings::as_ref(app);
 
         render_body_item::<EditorAndCodeReviewPageAction>(
-            "Auto save".into(),
+            "Salvamento automático".into(),
             None,
             LocalOnlyIconState::Hidden,
             ToggleState::Enabled,
@@ -694,7 +694,7 @@ impl SettingsWidget for AutoSaveToggleWidget {
                 })
                 .finish(),
             Some(
-                "Automatically saves changes in the Warp text editor as you type and when the editor loses focus."
+                "Salva automaticamente as alterações no editor de texto do Kikito Terminal enquanto você digita e quando o editor perde o foco."
                     .into(),
             ),
         )
@@ -719,7 +719,7 @@ impl SettingsWidget for CodeEditorLineNumberModeWidget {
     ) -> Box<dyn Element> {
         render_dropdown_item(
             appearance,
-            "Code editor line numbers:",
+            "Números de linha do editor de código:",
             None,
             None,
             LocalOnlyIconState::Hidden,

@@ -145,3 +145,10 @@
 - Traduzi as mensagens e ações do banner local de visualização de Markdown e edição de arquivos de código no terminal.
 - Atualizei os nomes visíveis para Kikito Terminal; actions, identificadores e destinos das URLs foram preservados.
 - Outras superfícies locais da GUI ainda precisam de varredura.
+
+
+## Tradução — configurações locais de editor e código
+
+- Traduzi título, controles e descrições da página de editor, revisão de código, explorador de projetos, busca de arquivos, arquivos ocultos, formatação ao salvar, salvamento automático e numeração de linhas.
+- Preservei actions, flags, termos técnicos como LSP/diff e comportamento.
+- Ainda há outras superfícies locais da GUI para revisar.
