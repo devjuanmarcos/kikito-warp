@@ -461,3 +461,8 @@
 
 - Traduzi os rótulos locais de depuração do shell, gravação PTY, blocos e exportação CSV.
 - Mantive atalhos, siglas e o identificador técnico `warp.pty.recording`.
+
+## Tradução — configurações gerais
+
+- Traduzi as descrições de encerramento, restauração de sessão, inicialização, dicas de links e revisão de código.
+- Preservei as chaves TOML e o comportamento de cada configuração.

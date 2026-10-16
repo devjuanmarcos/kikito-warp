@@ -15,7 +15,7 @@ define_settings_group!(GeneralSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "general.show_warning_before_quitting",
-        description: "Whether to show a warning dialog before quitting Warp.",
+        description: "Define se uma confirmação será exibida antes de sair do Kikito Terminal.",
     },
     quit_on_last_window_closed: QuitOnLastWindowClosed {
         type: bool,
@@ -25,7 +25,7 @@ define_settings_group!(GeneralSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "general.quit_on_last_window_closed",
-        description: "Whether to quit Warp when the last window is closed.",
+        description: "Define se o Kikito Terminal deve ser encerrado quando a última janela for fechada.",
     },
     restore_session: RestoreSession {
         type: bool,
@@ -35,7 +35,7 @@ define_settings_group!(GeneralSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "general.restore_session",
-        description: "Whether to restore the previous session when Warp starts up.",
+        description: "Define se a sessão anterior deve ser restaurada ao iniciar o Kikito Terminal.",
     },
     add_app_as_login_item: LoginItem {
         type: bool,
@@ -48,7 +48,7 @@ define_settings_group!(GeneralSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "general.login_item",
-        description: "Whether to launch Warp automatically when you log in.",
+        description: "Define se o Kikito Terminal deve ser iniciado automaticamente ao entrar no sistema.",
     },
     // Records whether the app has been added as a login item.
     // If it has, we don't try to add it again unless the user explicitly
@@ -74,7 +74,7 @@ define_settings_group!(GeneralSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "general.link_tooltip",
-        description: "Whether to show a tooltip when hovering over links.",
+        description: "Define se uma dica deve ser exibida ao passar o cursor sobre os links.",
     },
     welcome_tips_features_used: WelcomeTipsFeaturesUsed {
         type: HashSet<Tip>,
@@ -167,7 +167,7 @@ define_settings_group!(GeneralSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "code.editor.auto_open_code_review_pane_on_first_agent_change",
-        description: "Whether to automatically open the code review pane when the agent makes its first change.",
+        description: "Define se o painel de revisão de código deve ser aberto automaticamente quando o agente fizer a primeira alteração.",
     },
     bonus_grants_shown: BonusGrantsShown {
         type: HashSet<String>,
