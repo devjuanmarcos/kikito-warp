@@ -103,3 +103,10 @@
 - Traduzi a pergunta e a ação do banner local que oferece ativar os atalhos de teclado do Vim.
 - Mantive actions, estado do banner e comportamento de ativação/dispensa.
 - `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.
+
+
+## Tradução — confirmação de remoção de endpoint
+
+- Traduzi o título, a explicação e os botões do diálogo local que confirma a remoção de um endpoint personalizado.
+- Mantive as actions e o comportamento de cancelar/confirmar.
+- `git diff --check` passou neste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.
