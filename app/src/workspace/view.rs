@@ -11248,12 +11248,12 @@ impl Workspace {
             .unwrap_or_else(|| repo.to_string());
         let config_name = match worktree_branch_name {
             Some(name) if !name.is_empty() => {
-                format!("New worktree: {repo_display_name}, {name}")
+                format!("Novo worktree: {repo_display_name}, {name}")
             }
             _ if !base_branch.is_empty() => {
-                format!("New worktree: {repo_display_name}, {base_branch}")
+                format!("Novo worktree: {repo_display_name}, {base_branch}")
             }
-            _ => format!("New worktree: {repo_display_name}"),
+            _ => format!("Novo worktree: {repo_display_name}"),
         };
 
         let filename_hint = if let Some(name) = worktree_branch_name {
@@ -11373,7 +11373,7 @@ impl Workspace {
             .file_name()
             .map(|name| name.to_string_lossy().to_string())
             .unwrap_or_else(|| repo_path.clone());
-        let config_name = format!("Worktree: {repo_display_name}");
+        let config_name = format!("Worktree de {repo_display_name}");
         // Use the user's default session mode to decide pane type.
         let pane_type = if AISettings::as_ref(ctx).is_any_ai_enabled(ctx)
             && AISettings::as_ref(ctx).default_session_mode(ctx) == DefaultSessionMode::Agent

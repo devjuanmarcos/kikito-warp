@@ -366,3 +366,8 @@
 
 - Ajustei os rótulos das opções para não permitir, permitir gravação ou permitir leitura e gravação.
 - Mantive os enums e as permissões associadas a cada opção.
+
+## Tradução — nomes gerados para configurações de worktree
+
+- Traduzi os títulos das configurações geradas para novos worktrees.
+- Mantive nomes de repositórios, branches e dados de configuração.
