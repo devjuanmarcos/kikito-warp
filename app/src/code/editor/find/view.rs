@@ -48,11 +48,11 @@ const FIND_EDITOR_BORDER_WIDTH: f32 = 1.;
 const FIND_EDITOR_FONT_SIZE: f32 = 12.;
 const FIND_EDITOR_ROW_SPACING: f32 = 4.;
 
-pub const REGEX_TOGGLE_TOOLTIP: &str = "Regex toggle";
-pub const CASE_SENSITIVE_TOOLTIP: &str = "Case sensitive search";
-pub const PRESERVE_CASE_TOOLTIP: &str = "Preserve case";
-pub const FIND_PLACEHOLDER_TEXT: &str = "Find";
-pub const REPLACE_PLACEHOLDER_TEXT: &str = "Replace";
+pub const REGEX_TOGGLE_TOOLTIP: &str = "Alternar expressões regulares";
+pub const CASE_SENSITIVE_TOOLTIP: &str = "Diferenciar maiúsculas de minúsculas";
+pub const PRESERVE_CASE_TOOLTIP: &str = "Preservar maiúsculas e minúsculas";
+pub const FIND_PLACEHOLDER_TEXT: &str = "Buscar";
+pub const REPLACE_PLACEHOLDER_TEXT: &str = "Substituir";
 
 #[derive(Default)]
 struct ButtonMouseStates {
@@ -113,7 +113,7 @@ pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "find:find_next_occurrence",
-            "Find the next occurrence of your search query",
+            "Encontrar a próxima ocorrência do texto buscado",
             FindAction::CmdG,
         )
         .with_context_predicate(id!("CodeEditorFind"))
@@ -123,7 +123,7 @@ pub fn init(app: &mut AppContext) {
         .with_linux_or_windows_key_binding("f3"),
         EditableBinding::new(
             "find:find_prev_occurrence",
-            "Find the previous occurrence of your search query",
+            "Encontrar a ocorrência anterior do texto buscado",
             FindAction::CmdShiftG,
         )
         .with_context_predicate(id!("CodeEditorFind"))
@@ -179,7 +179,7 @@ impl CodeEditorFind {
         let editor_height = line_height + (2. * FIND_EDITOR_PADDING) + 5.;
 
         let select_all_button = ctx.add_typed_action_view(|_ctx| {
-            ActionButton::new("Select all", SecondaryTheme)
+            ActionButton::new("Selecionar tudo", SecondaryTheme)
                 .on_click(|ctx| {
                     ctx.dispatch_typed_action(FindAction::SelectAll);
                 })
@@ -189,7 +189,7 @@ impl CodeEditorFind {
         });
 
         let replace_all_button = ctx.add_typed_action_view(|ctx| {
-            let mut button = ActionButton::new("Replace all", SecondaryTheme)
+            let mut button = ActionButton::new("Substituir tudo", SecondaryTheme)
                 .on_click(|ctx| {
                     ctx.dispatch_typed_action(FindAction::ReplaceAll);
                 })
@@ -391,15 +391,16 @@ impl CodeEditorFind {
         let content = if let Some(match_index) = self.searcher.as_ref(ctx).selected_match() {
             AccessibilityContent::new(
                 format!(
-                    "Result {} of {}.",
+                    "Resultado {} de {}.",
                     match_index + 1,
                     self.searcher.as_ref(ctx).match_count()
                 ),
-                "Use enter and shift-enter to navigate between matches. Escape to quit.",
+                "Use Enter e Shift+Enter para navegar entre as ocorrências. Pressione Esc para \
+                    sair.",
                 WarpA11yRole::UserAction,
             )
         } else {
-            AccessibilityContent::new_without_help("No results.", WarpA11yRole::UserAction)
+            AccessibilityContent::new_without_help("Nenhum resultado.", WarpA11yRole::UserAction)
         };
         ctx.emit_a11y_content(content);
     }
@@ -411,14 +412,16 @@ impl CodeEditorFind {
             let remaining_matches = self.searcher.as_ref(ctx).match_count();
             AccessibilityContent::new(
                 format!(
-                    "Successfully replaced match. Selected match is {match_index} of {remaining_matches}"
+                    "Ocorrência substituída. A ocorrência selecionada é {match_index} de \
+                        {remaining_matches}."
                 ),
-                "Continue pressing Enter to replace more matches, or use up/down arrows to navigate.",
+                "Continue pressionando Enter para substituir outras ocorrências ou use as setas \
+                    para navegar.",
                 WarpA11yRole::UserAction,
             )
         } else {
             AccessibilityContent::new_without_help(
-                "Successfully replaced the last match.",
+                "A última ocorrência foi substituída.",
                 WarpA11yRole::UserAction,
             )
         };
@@ -971,9 +974,9 @@ impl View for CodeEditorFind {
         let match_count = self.searcher.as_ref(app).match_count();
         let selected_match = self.searcher.as_ref(app).selected_match();
         let description = match (match_count, selected_match) {
-            (0, _) | (_, None) => "Find bar for searching text in the editor.".to_string(),
+            (0, _) | (_, None) => "Barra para buscar texto no editor.".to_string(),
             (count, Some(current)) => format!(
-                "Find bar with {} matches found. Currently on match {} of {}.",
+                "Barra de busca com {} ocorrências. Selecionada a ocorrência {} de {}.",
                 count,
                 current + 1,
                 count
@@ -982,9 +985,12 @@ impl View for CodeEditorFind {
 
         let is_replace_focused = self.is_replace_open && self.replace_editor.is_focused(app);
         let help_text = if is_replace_focused {
-            "Replace field focused. Type replacement text, press Enter to replace current match, Tab to return to find field. Use up/down arrows to navigate matches, Escape to close."
+            "Campo de substituição em foco. Digite o texto substituto e pressione Enter para \
+                substituir a ocorrência atual. Pressione Tab para voltar à busca, use as setas \
+                para navegar e Esc para fechar."
         } else {
-            "Find field focused. Type to search text. Use Enter and Shift-Enter or up/down arrows to navigate between matches. Press Escape to close find bar."
+            "Campo de busca em foco. Digite para buscar. Use Enter e Shift+Enter ou as setas para \
+                navegar entre as ocorrências. Pressione Esc para fechar a barra de busca."
         };
 
         Some(AccessibilityContent::new(

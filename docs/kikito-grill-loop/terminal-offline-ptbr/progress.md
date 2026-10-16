@@ -654,3 +654,9 @@
 - Traduzi as mensagens exibidas quando o arquivo vinculado não existe, falta o diretório base ou o
   link está inválido.
 - Preservei as variantes e a lógica de resolução.
+
+## Tradução — busca e substituição no editor
+
+- Traduzi rótulos, dicas, estados sem resultados ou em busca e mensagens acessíveis das barras de
+  busca em notebooks e no editor de código.
+- Preservei IDs de ações, atalhos, estado da busca e comportamento de substituição.

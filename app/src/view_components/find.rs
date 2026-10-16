@@ -40,13 +40,13 @@ pub(crate) const FIND_EDITOR_BORDER_WIDTH: f32 = 1.;
 const FIND_EDITOR_FONT_SIZE: f32 = 12.;
 
 pub const REGEX_TOGGLE_LABEL: &str = ". *";
-pub const REGEX_TOGGLE_TOOLTIP: &str = "Regex toggle";
+pub const REGEX_TOGGLE_TOOLTIP: &str = "Alternar expressões regulares";
 
 pub const CASE_SENSITIVE_LABEL: &str = "Aa";
-pub const CASE_SENSITIVE_TOOLTIP: &str = "Case sensitive search";
+pub const CASE_SENSITIVE_TOOLTIP: &str = "Diferenciar maiúsculas de minúsculas";
 
-pub const FIND_WITHIN_BLOCK_TOOLTIP: &str = "Find in selected block";
-pub const FIND_PLACEHOLDER_TEXT: &str = "Find";
+pub const FIND_WITHIN_BLOCK_TOOLTIP: &str = "Buscar no bloco selecionado";
+pub const FIND_PLACEHOLDER_TEXT: &str = "Buscar";
 
 // Moving FindEvent, FindModel implementations away from terminal/.
 pub enum FindEvent {
@@ -134,7 +134,7 @@ pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "find:find_next_occurrence",
-            "Find the next occurrence of your search query",
+            "Encontrar a próxima ocorrência do texto buscado",
             FindAction::CmdG,
         )
         .with_context_predicate(id!("Find"))
@@ -144,7 +144,7 @@ pub fn init(app: &mut AppContext) {
         .with_linux_or_windows_key_binding("f3"),
         EditableBinding::new(
             "find:find_prev_occurrence",
-            "Find the previous occurrence of your search query",
+            "Encontrar a ocorrência anterior do texto buscado",
             FindAction::CmdShiftG,
         )
         .with_context_predicate(id!("Find"))
@@ -257,15 +257,15 @@ impl<T: FindModel + Entity<Event = FindEvent> + 'static> Find<T> {
         let content = if let Some(match_index) = self.model.as_ref(ctx).focused_match_index() {
             AccessibilityContent::new(
                 format!(
-                    "Result {} of {}.",
+                    "Resultado {} de {}.",
                     match_index + 1,
                     self.model.as_ref(ctx).match_count()
                 ),
-                "Use enter and shift-enter to navigate between matches. Escape to quit.",
+                "Use Enter e Shift+Enter para navegar entre as ocorrências. Pressione Esc para sair.",
                 WarpA11yRole::UserAction,
             )
         } else {
-            AccessibilityContent::new_without_help("No results.", WarpA11yRole::UserAction)
+            AccessibilityContent::new_without_help("Nenhum resultado.", WarpA11yRole::UserAction)
         };
         ctx.emit_a11y_content(content);
     }
@@ -329,7 +329,7 @@ impl<T: FindModel + Entity<Event = FindEvent> + 'static> Find<T> {
             let label = if match_count > 0 {
                 format!("{}+ ...", match_count)
             } else {
-                "Scanning...".to_string()
+                "Buscando...".to_string()
             };
             return Text::new_inline(label, appearance.ui_font_family(), FIND_EDITOR_FONT_SIZE)
                 .with_color(blended_colors::text_sub(
@@ -520,8 +520,8 @@ impl<T: FindModel + Entity<Event = FindEvent> + 'static> View for Find<T> {
 
     fn accessibility_contents(&self, _: &AppContext) -> Option<AccessibilityContent> {
         Some(AccessibilityContent::new(
-            "Type searched phrase.",
-            "Press escape to quit, use enter and shift-enter to navigate between matches",
+            "Digite o texto a buscar.",
+            "Pressione Esc para sair. Use Enter e Shift+Enter para navegar entre as ocorrências.",
             WarpA11yRole::TextareaRole,
         ))
     }

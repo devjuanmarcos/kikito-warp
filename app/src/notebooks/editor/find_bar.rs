@@ -187,7 +187,7 @@ impl FindBar {
         if searcher.has_query() {
             let match_count = searcher.match_count();
             let text = if match_count == 0 {
-                "No matches".to_string()
+                "Nenhuma ocorrência".to_string()
             } else {
                 let mut text = String::new();
                 match searcher.selected_match() {
@@ -535,21 +535,21 @@ impl TypedActionView for FindBar {
         let text = match action {
             FindBarAction::ToggleRegex => {
                 if self.searcher.as_ref(ctx).is_regex() {
-                    "Enable regex search"
+                    "Ativar busca por expressões regulares"
                 } else {
-                    "Disable regex search"
+                    "Desativar busca por expressões regulares"
                 }
             }
             FindBarAction::ToggleCaseSensitive => {
                 if self.searcher.as_ref(ctx).is_case_sensitive() {
-                    "Enable case-sensitive search"
+                    "Ativar diferenciação entre maiúsculas e minúsculas"
                 } else {
-                    "Disable case-sensitive search"
+                    "Desativar diferenciação entre maiúsculas e minúsculas"
                 }
             }
-            FindBarAction::FocusNextMatch => "Focus next match",
-            FindBarAction::FocusPreviousMatch => "Focus previous match",
-            FindBarAction::Close => "Close find bar",
+            FindBarAction::FocusNextMatch => "Ir para a próxima ocorrência",
+            FindBarAction::FocusPreviousMatch => "Ir para a ocorrência anterior",
+            FindBarAction::Close => "Fechar barra de busca",
         };
         Some(AccessibilityContent::new_without_help(
             text,
