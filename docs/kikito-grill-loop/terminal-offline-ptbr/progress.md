@@ -588,6 +588,12 @@
 - Traduzi os rótulos para exibir itens no Finder, Explorador de Arquivos ou gerenciador de arquivos.
 - Preservei as ações internas e as condições de disponibilidade.
 
+## Tradução — inicialização de projeto e ambiente
+
+- Traduzi o selo de opção sugerida, a ação de gerar novamente `AGENTS.md` e o botão para ver o status
+  da indexação.
+- Preservei o nome do arquivo e as ações internas.
+
 ## Tradução — menu de contexto dos blocos do terminal
 
 - Traduzi ações locais para copiar saídas, comandos e prompts; buscar, rolar, filtrar, marcar e limpar

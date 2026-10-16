@@ -521,7 +521,7 @@ impl InitStepBlock {
         let mut button = appearance
             .ui_builder()
             .button(ButtonVariant::Outlined, mouse_state.clone())
-            .with_text_label("Re-generate AGENTS.md file".to_string());
+            .with_text_label("Gerar novamente o arquivo AGENTS.md".to_string());
         if disabled {
             button = button.disabled();
         }
@@ -681,7 +681,7 @@ impl InitStepBlock {
                                 ButtonVariant::Outlined,
                                 mouse_states.view_status_button.clone(),
                             )
-                            .with_text_label("View index status".to_string())
+                            .with_text_label("Ver status da indexação".to_string())
                             .build()
                             .on_click(|ctx, _, _| {
                                 ctx.dispatch_typed_action(
