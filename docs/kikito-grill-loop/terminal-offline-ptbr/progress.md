@@ -476,3 +476,8 @@
 
 - Traduzi a descrição do modo que define como os blocos são organizados na área visível do terminal.
 - Preservei os valores serializados do enum.
+
+## Tradução — ligaduras tipográficas
+
+- Traduzi a descrição da configuração que controla a exibição de ligaduras no terminal.
+- Mantive a chave TOML e a feature flag.
