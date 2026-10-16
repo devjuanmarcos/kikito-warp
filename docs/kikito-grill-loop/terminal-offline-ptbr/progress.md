@@ -708,3 +708,8 @@
 
 - Traduzi os botões e o rótulo acessível que expandem ou recolhem mensagens longas de notificações.
 - Preservei o estado e a ação de expansão.
+
+## Tradução — selo de novos recursos
+
+- Traduzi o texto do selo exibido em avisos de novos recursos.
+- Preservei a variante visual e o fluxo de dispensa.
