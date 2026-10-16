@@ -118,7 +118,7 @@ impl AvailableShell {
 
     pub fn short_name(&self) -> Cow<'_, str> {
         match self.state.as_ref() {
-            Config::SystemDefault => Cow::from("Default"),
+            Config::SystemDefault => Cow::from("Padrão"),
             Config::KnownLocal(LocalConfig { command, .. })
             | Config::MSYS2(LocalConfig { command, .. }) => match command.as_str() {
                 "bash" => Cow::from("Bash"),
@@ -129,25 +129,25 @@ impl AvailableShell {
                 _ => Cow::from(command),
             },
             Config::Wsl { distro } => Cow::from(distro),
-            Config::Custom(_) => Cow::from("Custom"),
-            Config::DockerSandbox { .. } => Cow::from("Docker Sandbox"),
+            Config::Custom(_) => Cow::from("Personalizado"),
+            Config::DockerSandbox { .. } => Cow::from("Ambiente Docker"),
         }
     }
 
     pub fn details(&self) -> Cow<'_, str> {
         match self.state.as_ref() {
-            Config::SystemDefault => Cow::from("System default shell"),
+            Config::SystemDefault => Cow::from("Shell padrão do sistema"),
             Config::KnownLocal(LocalConfig {
                 executable_path, ..
             })
             | Config::MSYS2(LocalConfig {
                 executable_path, ..
             }) => Cow::from(format!("{}", executable_path.display())),
-            Config::Wsl { .. } => Cow::from("Windows Subsystem for Linux"),
+            Config::Wsl { .. } => Cow::from("Subsistema do Windows para Linux"),
             Config::Custom(LocalConfig {
                 executable_path, ..
-            }) => Cow::from(format!("Custom: {}", executable_path.display())),
-            Config::DockerSandbox { .. } => Cow::from("Docker Sandbox"),
+            }) => Cow::from(format!("Personalizado: {}", executable_path.display())),
+            Config::DockerSandbox { .. } => Cow::from("Ambiente Docker"),
         }
     }
 
@@ -181,16 +181,16 @@ impl AvailableShell {
     /// the executable.
     fn long_name(&self) -> String {
         match &self.state.as_ref() {
-            Config::SystemDefault => "Default".to_string(),
+            Config::SystemDefault => "Padrão".to_string(),
             Config::KnownLocal(LocalConfig {
                 executable_path, ..
             }) => format!("{} ({})", self.short_name(), executable_path.display()),
             Config::Wsl { distro } => distro.to_string(),
-            Config::Custom(LocalConfig { command, .. }) => format!("Custom ({command})"),
+            Config::Custom(LocalConfig { command, .. }) => format!("Personalizado ({command})"),
             Config::MSYS2(LocalConfig {
                 executable_path, ..
             }) => format!("{} ({})", self.short_name(), executable_path.display()),
-            Config::DockerSandbox { .. } => "Docker Sandbox".to_string(),
+            Config::DockerSandbox { .. } => "Ambiente Docker".to_string(),
         }
     }
 

@@ -367,6 +367,11 @@
 - Traduzi busca, filtros regex/case sensitivity, contagem e avisos de resultados, além dos estados locais sem resultados ou sem sessão compatível.
 - Mantive `.gitignore`, Git Bash, WSL e os estados específicos de sessão remota.
 
+## Tradução — nomes dos shells locais
+
+- Traduzi os rótulos de shell padrão, personalizado, sistema e ambiente Docker exibidos nos seletores locais.
+- Mantive nomes de comandos, distribuições WSL, caminhos e valores de telemetria.
+
 ## Tradução — diretório inicial de novas sessões
 
 - Traduzi as opções de diretório pessoal, sessão anterior e diretório personalizado.
