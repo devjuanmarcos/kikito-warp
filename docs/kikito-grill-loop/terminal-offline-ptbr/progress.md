@@ -54,3 +54,10 @@
 - Mantive intactos o texto técnico usado para classificar arquivo existente, IDs e os atalhos Enter/Escape.
 - A ligação para documentação externa permanece fora do lote por depender de um destino remoto.
 - `git diff --check` passou; `progress.md` está em UTF-8 válido, U+FFFD=0 e sem sequências `??` em palavras.
+
+
+## Tradução — editor da barra de ferramentas
+
+- Traduzi o modal local de edição da barra de ferramentas do cabeçalho: título, grupos, ações e nomes dos itens configuráveis.
+- Mantive enums serializados, actions e atalhos; as mudanças afetam apenas os rótulos visíveis.
+- `git diff --check` passou nos arquivos deste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.
