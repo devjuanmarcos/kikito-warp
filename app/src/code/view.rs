@@ -1156,7 +1156,7 @@ impl CodeView {
                                     ButtonVariant::Outlined,
                                     tab.mouse_state_handles.reject_mouse_state.clone(),
                                 )
-                                .with_text_label("Reject".to_string())
+                                .with_text_label("Rejeitar".to_string())
                                 .build()
                                 .on_click(|ctx, _, _| {
                                     ctx.dispatch_typed_action(CodeViewAction::RejectPendingDiffs)
@@ -1174,7 +1174,7 @@ impl CodeView {
                                     ButtonVariant::Outlined,
                                     tab.mouse_state_handles.accept_mouse_state.clone(),
                                 )
-                                .with_text_label("Accept and save".to_string())
+                                .with_text_label("Aceitar e salvar".to_string())
                                 .build()
                                 .on_click(|ctx, _, _| {
                                     ctx.dispatch_typed_action(
@@ -2162,7 +2162,7 @@ impl CodeView {
             if active_location.is_some() {
                 items.push(MenuItem::Separator);
                 items.push(
-                    MenuItemFields::new("Copy file path")
+                    MenuItemFields::new("Copiar caminho do arquivo")
                         .with_on_select_action(CodeViewAction::CopyFilePath)
                         .into_item(),
                 );
@@ -2170,11 +2170,11 @@ impl CodeView {
 
             if local_path.is_some() {
                 let reveal_label = if cfg!(target_os = "macos") {
-                    "Reveal in Finder"
+                    "Mostrar no Finder"
                 } else if cfg!(target_os = "windows") {
-                    "Reveal in Explorer"
+                    "Mostrar no Explorador de Arquivos"
                 } else {
-                    "Reveal in file manager"
+                    "Mostrar no gerenciador de arquivos"
                 };
                 items.push(
                     MenuItemFields::new(reveal_label)
@@ -2197,7 +2197,7 @@ impl CodeView {
                 });
             if renders_in_notebook_viewer {
                 items.push(
-                    MenuItemFields::new("View Markdown preview")
+                    MenuItemFields::new("Visualizar prévia do Markdown")
                         .with_on_select_action(CodeViewAction::RenderMarkdown)
                         .into_item(),
                 );

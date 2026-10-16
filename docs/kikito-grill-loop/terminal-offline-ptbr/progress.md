@@ -594,6 +594,12 @@
 - Traduzi avisos quando o agente está monitorando um comando e impede a troca ou o início de conversa.
 - Preservei ações, navegação e condições de bloqueio.
 
+## Tradução — controles do editor de código
+
+- Traduzi ações de navegação por símbolos, gerenciamento de alterações, cópia de caminho, acesso à
+  pasta e prévia Markdown.
+- Preservei as ações internas e o comportamento de edição.
+
 ## Tradução — navegação de sessões na paleta
 
 - Traduzi estados de sessão vazia, horário ausente e tempo desde a conclusão, além da dica para abrir
