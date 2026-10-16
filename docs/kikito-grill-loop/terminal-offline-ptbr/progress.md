@@ -279,3 +279,10 @@
 
 - Traduzi avisos de ativação/desativação por administradores e de requisitos de IA, além do aviso de limite de índices.
 - Mantive o nome dinâmico da equipe, mensagens de falha usadas internamente e comportamento.
+
+
+## Tradução - estados locais de indexação
+
+- Traduzi a ação para adicionar pasta, o estado vazio, o botão de regras do projeto e estados/andamento da indexação local.
+- Traduzi estados e ações de servidores LSP locais; preservei placeholders, identificadores e comportamento.
+- Traduzi também os estados de instalação/disponibilidade de servidores LSP e seus controles locais de reiniciar/ver registros.

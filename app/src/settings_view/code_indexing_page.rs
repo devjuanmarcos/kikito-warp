@@ -364,7 +364,7 @@ impl CodeIndexingPageView {
 
     fn build_page(ctx: &mut ViewContext<Self>) -> PageType<Self> {
         let manual_add_directory_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new("Index new folder", SecondaryTheme)
+            ActionButton::new("Indexar nova pasta", SecondaryTheme)
                 .with_icon(Icon::FindAll)
                 .on_click(|ctx| {
                     ctx.dispatch_typed_action(CodeIndexingPageAction::ManualAddDirectory);
@@ -1190,7 +1190,7 @@ impl CodePageWidget {
                 Container::new(
                     appearance
                         .ui_builder()
-                        .paragraph("No folders have been initialized yet.")
+                        .paragraph("Nenhuma pasta foi inicializada ainda.")
                         .build()
                         .finish(),
                 )
@@ -1257,7 +1257,7 @@ impl CodePageWidget {
                 .with_text_and_icon_label(
                     warpui::ui_components::button::TextAndIcon::new(
                         warpui::ui_components::button::TextAndIconAlignment::IconFirst,
-                        "Open project rules",
+                        "Abrir regras do projeto",
                         warpui::elements::Icon::new(
                             "bundled/svg/file-code-02.svg",
                             theme.foreground(),
@@ -1421,7 +1421,7 @@ impl CodePageWidget {
         let mut column = Flex::column().with_spacing(SUB_SECTION_MARGIN);
         column.add_child(
             ui_builder
-                .span("INDEXING")
+                .span("INDEXAÇÃO")
                 .with_style(UiComponentStyles {
                     font_size: Some(11.0),
                     font_weight: Some(Weight::Semibold),
@@ -1460,7 +1460,7 @@ impl CodePageWidget {
         let theme = appearance.theme();
         let Some(index_state) = index_state else {
             return IndexingStatusPresentation {
-                text: Cow::from("No index created"),
+                text: Cow::from("Nenhum índice criado"),
                 color: theme.disabled_ui_text_color().into_solid(),
                 icon: Some(Icon::SlashCircle),
                 refresh_action: None,
@@ -1471,13 +1471,13 @@ impl CodePageWidget {
         if index_state.has_pending() {
             let text = match index_state.sync_progress() {
                 Some(SyncProgress::Discovering { total_nodes }) => {
-                    Cow::from(format!("Discovered {total_nodes} chunks"))
+                    Cow::from(format!("{total_nodes} blocos encontrados"))
                 }
                 Some(SyncProgress::Syncing {
                     completed_nodes,
                     total_nodes,
-                }) => Cow::from(format!("Syncing - {completed_nodes} / {total_nodes}")),
-                None => Cow::from("Syncing..."),
+                }) => Cow::from(format!("Sincronizando - {completed_nodes} / {total_nodes}")),
+                None => Cow::from("Sincronizando..."),
             };
 
             return IndexingStatusPresentation {
@@ -1491,25 +1491,25 @@ impl CodePageWidget {
 
         if let Some(completed_successfully) = index_state.last_sync_successful() {
             let (text, color, icon) = if completed_successfully {
-                ("Synced", theme.ansi_fg_green(), Icon::Check)
+                ("Sincronizada", theme.ansi_fg_green(), Icon::Check)
             } else if let Some(CodebaseIndexFinishedStatus::Failed(
                 CodebaseIndexingError::ExceededMaxFileLimit
                 | CodebaseIndexingError::MaxDepthExceeded,
             )) = index_state.last_sync_result()
             {
                 (
-                    "Codebase too large",
+                    "Base de código muito grande",
                     theme.ui_warning_color(),
                     Icon::AlertTriangle,
                 )
             } else if index_state.has_synced_version() {
                 (
-                    "Stale",
+                    "Desatualizada",
                     theme.nonactive_ui_detail().into_solid(),
                     Icon::ClockRefresh,
                 )
             } else {
-                ("Failed", theme.ui_error_color(), Icon::AlertTriangle)
+                ("Falha", theme.ui_error_color(), Icon::AlertTriangle)
             };
 
             return IndexingStatusPresentation {
@@ -1523,7 +1523,7 @@ impl CodePageWidget {
 
         log::warn!("No index state for codebase");
         IndexingStatusPresentation {
-            text: Cow::from("No index built"),
+            text: Cow::from("Nenhum índice criado"),
             color: theme.nonactive_ui_text_color().into_solid(),
             icon: None,
             refresh_action: None,
@@ -1880,10 +1880,10 @@ impl CodePageWidget {
         );
 
         let (description, is_installing) = match &repo_status {
-            Some(LspRepoStatus::DisabledAndInstalled { .. }) => ("Installed", false),
-            Some(LspRepoStatus::Installing { .. }) => ("Installing...", true),
-            Some(LspRepoStatus::CheckingForInstallation) => ("Checking...", true),
-            _ => ("Available for download", false),
+            Some(LspRepoStatus::DisabledAndInstalled { .. }) => ("Instalado", false),
+            Some(LspRepoStatus::Installing { .. }) => ("Instalando...", true),
+            Some(LspRepoStatus::CheckingForInstallation) => ("Verificando...", true),
+            _ => ("Disponível para baixar", false),
         };
 
         name_desc_column.add_child(
@@ -2064,7 +2064,7 @@ impl CodePageWidget {
                     background: Some(theme.surface_3().into()),
                     ..Default::default()
                 })
-                .with_text_label("Restart server".to_owned())
+                .with_text_label("Reiniciar servidor".to_owned())
                 .build()
                 .with_cursor(Cursor::PointingHand)
                 .on_click(move |ctx, _, _| {
@@ -2094,7 +2094,7 @@ impl CodePageWidget {
                         font_size: Some(12.),
                         ..Default::default()
                     })
-                    .with_text_label("View logs".to_owned())
+                    .with_text_label("Ver registros".to_owned())
                     .build()
                     .with_cursor(Cursor::PointingHand)
                     .on_click(move |ctx, _, _| {
@@ -2150,26 +2150,26 @@ impl CodePageWidget {
                         AnsiColorIdentifier::Green
                             .to_ansi_color(&theme.terminal_colors().normal)
                             .into(),
-                        "Available",
+                        "Disponível",
                     ),
                     LspState::Starting | LspState::Available { .. } => (
                         AnsiColorIdentifier::Yellow
                             .to_ansi_color(&theme.terminal_colors().normal)
                             .into(),
-                        "Busy",
+                        "Ocupado",
                     ),
                     LspState::Failed { .. } => (
                         AnsiColorIdentifier::Red
                             .to_ansi_color(&theme.terminal_colors().normal)
                             .into(),
-                        "Failed",
+                        "Falha",
                     ),
                     LspState::Stopped { .. } | LspState::Stopping { .. } => {
-                        (theme.disabled_ui_text_color().into_solid(), "Stopped")
+                        (theme.disabled_ui_text_color().into_solid(), "Parado")
                     }
                 }
             }
-            None => (theme.disabled_ui_text_color().into_solid(), "Not running"),
+            None => (theme.disabled_ui_text_color().into_solid(), "Não está em execução"),
         }
     }
 }
