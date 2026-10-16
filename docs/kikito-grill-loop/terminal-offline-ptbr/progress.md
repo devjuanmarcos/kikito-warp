@@ -255,3 +255,9 @@
 
 - Traduzi a confirmação exibida antes de encerrar uma sessão compartilhada.
 - Mantive a configuração local, action e comportamento.
+
+
+## Tradução - notas da versão
+
+- Traduzi a opção para mostrar as notas da versão após atualizações.
+- Mantive a configuração local, action e comportamento.
