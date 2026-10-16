@@ -117,3 +117,10 @@
 - Traduzi os botões do modal local que permite escolher um modelo padrão após configurar uma credencial ou endpoint personalizado.
 - Mantive actions, escolhas de modelo e o fechamento pelo atalho Escape.
 - A descrição dinâmica permanece fornecida pelo chamador e não foi alterada neste lote.
+
+
+## Tradução — banner de encerramento do shell
+
+- Traduzi os estados locais de encerramento/falha ao iniciar o shell, a explicação da falha de inicialização e os rótulos dos botões.
+- Preservei actions, URLs e o texto de erro bruto fornecido pelo sistema operacional.
+- Permanecem outras superfícies locais da GUI a localizar; este lote cobriu apenas o banner de encerramento do shell.
