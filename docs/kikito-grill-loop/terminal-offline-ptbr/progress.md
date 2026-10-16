@@ -166,3 +166,10 @@
 - Traduzi as preferências de restauração de janelas/abas/painéis, aviso ao sair, inicialização com o sistema e encerramento após fechar as janelas.
 - Traduzi também o aviso local do Wayland; mantive flags, actions, links e comportamento.
 - A varredura da página de recursos segue em andamento.
+
+
+## Tradução — relatórios do terminal e sinal sonoro
+
+- Traduzi os controles locais de relatórios de mouse, rolagem e foco, além da opção de sinal sonoro.
+- Preservei actions, flags, links e o comportamento dos controles.
+- A varredura da página de recursos continua em outros grupos.
