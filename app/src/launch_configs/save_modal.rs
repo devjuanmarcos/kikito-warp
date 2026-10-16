@@ -38,8 +38,8 @@ const MODAL_WIDTH: f32 = 660.;
 const SIDE_PADDING: f32 = 16.;
 const BUTTON_SIZE: f32 = 24.;
 const DOC_LINK_WIDTH: f32 = 120.;
-const SAVE_CONFIG_BUTTON_LABEL: &str = "Save Configuration";
-const OPEN_FILE_BUTTON_LABEL: &str = "Open YAML File";
+const SAVE_CONFIG_BUTTON_LABEL: &str = "Salvar configuração";
+const OPEN_FILE_BUTTON_LABEL: &str = "Abrir arquivo YAML";
 
 pub fn init(app: &mut AppContext) {
     use warpui::keymap::macros::*;
@@ -436,7 +436,7 @@ impl LaunchConfigSaveModal {
                     1.0,
                     Align::new(
                         Text::new_inline(
-                            "Save Current Configuration",
+                            "Salvar configuração atual",
                             appearance.header_font_family(),
                             appearance.header_font_size(),
                         )
@@ -547,7 +547,7 @@ impl LaunchConfigSaveModal {
             SaveState::Success => header
                 .with_child(
                     self.render_formatted_text_line(appearance, vec![
-                        FormattedTextFragment::plain_text("Saved successfully to "),
+                        FormattedTextFragment::plain_text("Configuração salva em "),
                         FormattedTextFragment::inline_code(self.file_name.clone().unwrap_or_default()),
                         FormattedTextFragment::plain_text(".")
                     ])
@@ -560,21 +560,23 @@ impl LaunchConfigSaveModal {
                     appearance,
                     match failure_type {
                         FailureType::FileAlreadyExists => {
-                            "Failed to save. A launch configuration with the same name already exists.".to_string()
+                            "Não foi possível salvar. Já existe uma configuração de inicialização \
+                             com esse nome."
+                                .to_string()
                         }
-                        FailureType::Other => "An issue was encountered while saving.".to_string(),
+                        FailureType::Other => "Ocorreu um problema ao salvar.".to_string(),
                     },
                 )
                 .with_padding_bottom(24.)
                 .finish(),
             ),
             SaveState::NotSaved => {
-                let mut text = "This will save your current configuration of windows, tabs \
-                and panes to a file so you can easily open it again".to_string();
+                let mut text = "Isso salvará a configuração atual de janelas, abas e painéis \
+                em um arquivo para que você possa abri-la novamente".to_string();
                 if self.open_modal_keybinding_str.is_empty() {
                     text.push('.');
                 } else {
-                    text.push_str(&format!(" with {}.", self.open_modal_keybinding_str));
+                    text.push_str(&format!(" usando {}.", self.open_modal_keybinding_str));
                 }
                 header
                     .with_child(
@@ -584,7 +586,7 @@ impl LaunchConfigSaveModal {
                     )
                     .with_child(
                         self.render_formatted_text_line(appearance, vec![
-                            FormattedTextFragment::plain_text("\nThe YAML file is saved to "),
+                            FormattedTextFragment::plain_text("\nO arquivo YAML será salvo em "),
                             FormattedTextFragment::inline_code(home_relative_path(&launch_configs_dir())),
                             FormattedTextFragment::plain_text("."),
                         ])
@@ -654,10 +656,10 @@ impl View for LaunchConfigSaveModal {
 
     fn accessibility_contents(&self, _ctx: &AppContext) -> Option<AccessibilityContent> {
         Some(AccessibilityContent::new(
-            "Save Config Modal",
-            "Type the name of the file to which you want to save your
-            current configuration of windows, tabs, and panes. Use enter to save the
-            launch configuration, esc to quit the save configuration modal.",
+            "Modal de salvamento da configuração",
+            "Digite o nome do arquivo em que deseja salvar a configuração atual de janelas, abas \
+             e painéis. Use Enter para salvar a configuração de inicialização ou Esc para fechar \
+             este modal.",
             WarpA11yRole::PopoverRole,
         ))
     }

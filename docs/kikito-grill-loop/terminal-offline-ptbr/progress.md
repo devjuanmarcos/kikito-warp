@@ -46,3 +46,11 @@
 - Mantive IDs, actions e o atalho Escape.
 - `git diff --check` passou nos arquivos deste lote; restaram apenas avisos de conversão LF/CRLF do Git no Windows.
 - `progress.md` está em UTF-8 válido, sem U+FFFD nem texto corrompido.
+
+
+## Tradução — salvamento de configuração
+
+- Traduzi o modal local que salva a configuração de janelas, abas e painéis como YAML: título, botões, explicação, status, erros e acessibilidade.
+- Mantive intactos o texto técnico usado para classificar arquivo existente, IDs e os atalhos Enter/Escape.
+- A ligação para documentação externa permanece fora do lote por depender de um destino remoto.
+- `git diff --check` passou; `progress.md` está em UTF-8 válido, U+FFFD=0 e sem sequências `??` em palavras.
