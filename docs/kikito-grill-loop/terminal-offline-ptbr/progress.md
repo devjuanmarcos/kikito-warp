@@ -544,3 +544,9 @@
 - Traduzi os textos de orientação da busca de repositórios e abas, além dos tooltips para nova aba e
   configurações de abas.
 - Preservei atalhos e ações.
+
+## Tradução — painel direito do workspace
+
+- Traduzi tooltips de maximização, inicialização de repositório e fechamento do painel, além do título
+  de revisão de código.
+- Preservei atalhos, ações e navegação do painel.
