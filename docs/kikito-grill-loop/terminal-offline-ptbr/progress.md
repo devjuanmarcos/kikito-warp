@@ -416,3 +416,8 @@
 
 - Traduzi o sucesso e as falhas da coleta local de amostras de processo.
 - Mantive o caminho do arquivo gerado e a indicação para consultar os logs.
+
+## Tradução — filtro de saída dos blocos
+
+- Traduzi o placeholder, tooltips e instruções de acessibilidade do filtro de saída do terminal.
+- Mantive regex, ações de filtro e atalhos.

@@ -30,7 +30,7 @@ use crate::themes::theme::Fill;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
 
-const FILTER_BLOCK_PLACEHOLDER_TEXT: &str = "Filter block output";
+const FILTER_BLOCK_PLACEHOLDER_TEXT: &str = "Filtrar saída do bloco";
 
 const BLOCK_FILTER_BAR_WIDTH: f32 = 380.;
 const BLOCK_FILTER_BAR_PADDING: f32 = 4.;
@@ -46,10 +46,10 @@ const BLOCK_FILTER_ICON_CORNER_RADIUS: f32 = 4.;
 const MAXIMUM_CONTEXT_LINES: u16 = 99;
 /// The maximum buffer length that we allow in the context line editor.
 const MAXIMUM_CONTEXT_LINE_EDITOR_BUFFER_LENGTH: usize = 2;
-const CONTEXT_LINE_EDITOR_TOOLTIP_LABEL: &str = "Show context lines around matches";
-const REGEX_TOOLTIP_LABEL: &str = "Regex toggle";
-const CASE_SENSITIVITY_TOOLTIP_LABEL: &str = "Case sensitive search";
-const INVERT_FILTER_TOOLTIP_LABEL: &str = "Invert filter";
+const CONTEXT_LINE_EDITOR_TOOLTIP_LABEL: &str = "Mostrar linhas de contexto ao redor das correspondências";
+const REGEX_TOOLTIP_LABEL: &str = "Alternar regex";
+const CASE_SENSITIVITY_TOOLTIP_LABEL: &str = "Alternar distinção entre maiúsculas e minúsculas";
+const INVERT_FILTER_TOOLTIP_LABEL: &str = "Inverter filtro";
 
 pub const BLOCK_FILTER_DOTTED_LINE_DASH: Dash = Dash {
     dash_length: 4.,
@@ -706,8 +706,8 @@ impl View for BlockFilterEditor {
 
     fn accessibility_contents(&self, _: &AppContext) -> Option<AccessibilityContent> {
         Some(AccessibilityContent::new(
-            "Type searched phrase.",
-            "Press escape to quit",
+            "Digite a frase que deseja buscar.",
+            "Pressione Esc para sair",
             WarpA11yRole::TextareaRole,
         ))
     }
