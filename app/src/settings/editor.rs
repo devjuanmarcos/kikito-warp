@@ -121,9 +121,9 @@ pub enum TabBehavior {
 impl TabBehavior {
     pub fn dropdown_item_label(&self) -> &'static str {
         match self {
-            TabBehavior::Completions => "Open completions menu",
-            TabBehavior::Autosuggestions => "Accept autosuggestion",
-            TabBehavior::UserDefined => "User defined",
+            TabBehavior::Completions => "Abrir menu de sugestões",
+            TabBehavior::Autosuggestions => "Aceitar sugestão automática",
+            TabBehavior::UserDefined => "Definido pelo usuário",
         }
     }
 }

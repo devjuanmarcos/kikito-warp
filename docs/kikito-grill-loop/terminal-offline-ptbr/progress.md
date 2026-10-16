@@ -215,3 +215,10 @@
 - Traduzi o rótulo local da opção que mantém o cabeçalho do comando visível nos blocos do terminal.
 - Mantive action, flag, link de documentação e comportamento.
 - A varredura de recursos locais continua.
+
+
+## Tradução — navegação entre abas
+
+- Traduzi os rótulos e opções de posição de novas abas, comportamento de Ctrl+Tab e comportamento da tecla Tab para sugestões.
+- Mantive variantes/enums, actions, atalhos e valores de configuração.
+- Outros grupos locais da página de recursos continuam pendentes.

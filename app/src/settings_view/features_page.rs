@@ -3670,8 +3670,8 @@ impl FeaturesPageView {
 
     fn new_tab_placement_dropdown_item_label(val: NewTabPlacement) -> &'static str {
         match val {
-            NewTabPlacement::AfterAllTabs => "After all tabs",
-            NewTabPlacement::AfterCurrentTab => "After current tab",
+            NewTabPlacement::AfterAllTabs => "Após todas as abas",
+            NewTabPlacement::AfterCurrentTab => "Após a aba atual",
         }
     }
 
@@ -6920,7 +6920,7 @@ impl SettingsWidget for CtrlTabBehaviorWidget {
             || {
                 render_dropdown_item(
                     appearance,
-                    "Ctrl+Tab behavior:",
+                    "Comportamento de Ctrl+Tab:",
                     None,
                     None,
                     LocalOnlyIconState::for_setting(
@@ -7428,7 +7428,7 @@ impl SettingsWidget for NewTabPlacementWidget {
     ) -> Box<dyn Element> {
         render_dropdown_item(
             appearance,
-            "New tab placement",
+            "Posição da nova aba",
             None,
             None,
             LocalOnlyIconState::for_setting(
