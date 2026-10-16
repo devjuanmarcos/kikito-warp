@@ -249,3 +249,9 @@
 
 - Traduzi os rótulos de shell padrão, diretório de trabalho e modo padrão para novas sessões.
 - Mantive os valores dos seletores, configurações locais e comportamento.
+
+
+## Tradução - encerramento de sessões
+
+- Traduzi a confirmação exibida antes de encerrar uma sessão compartilhada.
+- Mantive a configuração local, action e comportamento.
