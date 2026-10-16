@@ -67,13 +67,13 @@ impl SetDefaultModelModalBody {
         });
 
         let cancel_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new("Not now", NakedTheme).on_click(|ctx| {
+            ActionButton::new("Agora não", NakedTheme).on_click(|ctx| {
                 ctx.dispatch_typed_action(SetDefaultModelModalBodyAction::Cancel);
             })
         });
 
         let save_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new("Change default model", PrimaryTheme).on_click(|ctx| {
+            ActionButton::new("Alterar modelo padrão", PrimaryTheme).on_click(|ctx| {
                 ctx.dispatch_typed_action(SetDefaultModelModalBodyAction::Save);
             })
         });

@@ -110,3 +110,10 @@
 - Traduzi o título, a explicação e os botões do diálogo local que confirma a remoção de um endpoint personalizado.
 - Mantive as actions e o comportamento de cancelar/confirmar.
 - `git diff --check` passou neste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.
+
+
+## Tradução — seleção de modelo padrão
+
+- Traduzi os botões do modal local que permite escolher um modelo padrão após configurar uma credencial ou endpoint personalizado.
+- Mantive actions, escolhas de modelo e o fechamento pelo atalho Escape.
+- A descrição dinâmica permanece fornecida pelo chamador e não foi alterada neste lote.
