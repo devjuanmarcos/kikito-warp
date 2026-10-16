@@ -10653,7 +10653,7 @@ impl Workspace {
                 .with_height(NEW_SESSION_SIDECAR_SEARCH_BOX_HEIGHT)
                 .finish()
             }),
-            Some("Search repos".to_string()),
+            Some("Buscar repositórios".to_string()),
         )
         .with_no_interaction_on_hover()
         .no_highlight_on_hover()
@@ -10732,7 +10732,7 @@ impl Workspace {
                                 .with_main_axis_size(MainAxisSize::Max)
                                 .with_cross_axis_alignment(CrossAxisAlignment::Center)
                                 .with_child(
-                                    Text::new_inline(" + Add new repo", font_family, font_size)
+                                    Text::new_inline(" + Adicionar repositório", font_family, font_size)
                                         .with_color(text_color.into())
                                         .finish(),
                                 )

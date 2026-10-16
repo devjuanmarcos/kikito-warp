@@ -346,3 +346,8 @@
 
 - Traduzi os nomes exibidos das opções Asteriscos, Tachado e Sempre mostrar segredos.
 - Mantive os variants, serialização e valores de configuração.
+
+## Tradução — seletor de repositórios para worktrees
+
+- Traduzi a busca e a ação para adicionar repositórios no seletor local de worktrees.
+- Mantive os filtros, caminhos e ações existentes.
