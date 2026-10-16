@@ -532,3 +532,9 @@
 - Traduzi os tooltips locais do explorador de projetos, busca global, conversas do agente e botão de
   fechar painel.
 - Preservei os atalhos e as ações associados.
+
+## Tradução — estados e rótulos das abas verticais
+
+- Traduzi tooltips de opções/configuração, o estado vazio sem abas e os rótulos padrão de aba e
+  sessão.
+- Preservei atalhos, ações e valores internos.
