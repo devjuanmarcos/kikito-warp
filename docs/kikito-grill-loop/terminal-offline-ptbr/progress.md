@@ -588,6 +588,14 @@
 - Traduzi os rótulos para exibir itens no Finder, Explorador de Arquivos ou gerenciador de arquivos.
 - Preservei as ações internas e as condições de disponibilidade.
 
+## Tradução — menu de contexto dos blocos do terminal
+
+- Traduzi ações locais para copiar saídas, comandos e prompts; buscar, rolar, filtrar, marcar e limpar
+  blocos; e editar prompts e barras de ferramentas.
+- Traduzi ações de cópia e reversão de conversas exibidas no menu local.
+- Preservei as ações e os atalhos; mantive intactos os itens remotos de fluxo de trabalho e
+  compartilhamento.
+
 ## Tradução — conversas na paleta de comandos
 
 - Traduzi seções, ações de criar, retomar e copiar conversas, dicas e instruções de acessibilidade.
