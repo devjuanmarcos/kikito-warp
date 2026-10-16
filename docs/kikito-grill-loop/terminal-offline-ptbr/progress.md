@@ -605,3 +605,8 @@
 - Traduzi estados de sessão vazia, horário ausente e tempo desde a conclusão, além da dica para abrir
   uma sessão.
 - Preservei a lógica de navegação e os dados de data/hora.
+
+## Tradução — controles de sugestões do editor
+
+- Traduzi o item de atalho personalizado e as dicas para alterar o atalho ou ignorar uma sugestão.
+- Preservei as ações e os atalhos disponíveis.
