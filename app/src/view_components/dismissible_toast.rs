@@ -294,12 +294,12 @@ impl<A: Action + Clone> TypedActionView for DismissibleToastStack<A> {
         match action {
             DismissibleToastAction::ToggleMessageExpanded(uuid) => {
                 let label = self.toasts.iter().find(|toast| toast.uuid == *uuid).map_or(
-                    "Show more",
+                    "Mostrar mais",
                     |toast| {
                         if toast.message_expanded {
-                            "Show less"
+                            "Mostrar menos"
                         } else {
-                            "Show more"
+                            "Mostrar mais"
                         }
                     },
                 );
@@ -529,9 +529,9 @@ impl<A: Action + Clone> DismissibleToast<A> {
 
         if toast_message_is_truncated(&self.main_text) {
             let label = if message_expanded {
-                "Show less"
+                "Mostrar menos"
             } else {
-                "Show more"
+                "Mostrar mais"
             };
             let toggle_button = ui_builder
                 .button(ButtonVariant::Text, self.expand_button_mouse_state.clone())

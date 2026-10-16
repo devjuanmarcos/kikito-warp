@@ -703,3 +703,8 @@
 
 - Traduzi o título, a descrição e as ações para abrir uma sessão de terminal na tela de boas-vindas.
 - Atualizei a marca exibida para Kikito Terminal e preservei os atalhos e ações.
+
+## Tradução — expansão de notificações
+
+- Traduzi os botões e o rótulo acessível que expandem ou recolhem mensagens longas de notificações.
+- Preservei o estado e a ação de expansão.
