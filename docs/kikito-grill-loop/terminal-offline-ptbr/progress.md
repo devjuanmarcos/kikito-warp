@@ -526,3 +526,9 @@
 - Traduzi as ações de criar grupo e remover abas de um grupo, além do nome padrão de grupo sem
   título.
 - Preservei as ações internas e a lógica de agrupamento.
+
+## Tradução — tooltips do painel lateral
+
+- Traduzi os tooltips locais do explorador de projetos, busca global, conversas do agente e botão de
+  fechar painel.
+- Preservei os atalhos e as ações associados.
