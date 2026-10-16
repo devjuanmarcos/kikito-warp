@@ -569,3 +569,9 @@
 - Traduzi mensagens de sucesso ou falha ao salvar um perfil de heap e o atalho para exibi-lo no
   explorador.
 - Preservei os caminhos, IDs das notificações e ações.
+
+## Tradução — mensagens do ciclo de conversas
+
+- Traduzi notificações locais de falha ao carregar, copiar e excluir conversas, incluindo o título
+  padrão de conversa.
+- Preservei as ações e os IDs; as mensagens não alteram o fluxo de dados.
