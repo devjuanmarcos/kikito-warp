@@ -9,9 +9,9 @@ use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 use super::env_var_collection::{EnvVarCollectionAction, EnvVarCollectionView};
 use crate::ui_components::dialog::{Dialog, dialog_styles};
 
-const UNSAVED_CHANGES_TEXT: &str = "You have unsaved changes.";
-const KEEP_EDITING_TEXT: &str = "Keep editing";
-const DISCARD_CHANGES_TEXT: &str = "Discard changes";
+const UNSAVED_CHANGES_TEXT: &str = "Você tem alterações não salvas.";
+const KEEP_EDITING_TEXT: &str = "Continuar editando";
+const DISCARD_CHANGES_TEXT: &str = "Descartar alterações";
 const BUTTON_FONT_SIZE: f32 = 14.;
 const BUTTON_PADDING: f32 = 12.;
 const MODAL_HORIZONTAL_MARGIN: f32 = 28.;

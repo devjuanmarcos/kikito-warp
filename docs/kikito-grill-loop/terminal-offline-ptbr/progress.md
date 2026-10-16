@@ -61,3 +61,10 @@
 - Traduzi o modal local de edição da barra de ferramentas do cabeçalho: título, grupos, ações e nomes dos itens configuráveis.
 - Mantive enums serializados, actions e atalhos; as mudanças afetam apenas os rótulos visíveis.
 - `git diff --check` passou nos arquivos deste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.
+
+
+## Tradução — confirmação de alterações não salvas
+
+- Traduzi o diálogo local de variáveis de ambiente, incluindo a mensagem e as ações para continuar editando ou descartar alterações.
+- Mantive as actions e o comportamento de cada botão.
+- `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.
