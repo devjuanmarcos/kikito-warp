@@ -550,3 +550,9 @@
 - Traduzi tooltips de maximização, inicialização de repositório e fechamento do painel, além do título
   de revisão de código.
 - Preservei atalhos, ações e navegação do painel.
+
+## Tradução — lista local de conversas
+
+- Traduzi busca, estado vazio, explicação de conversas, criação, exclusão e ramificação local em nova
+  aba ou painel.
+- Preservei as ações e deixei o item de compartilhamento condicionado ao serviço remoto sem alteração.
