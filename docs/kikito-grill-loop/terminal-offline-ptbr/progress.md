@@ -372,6 +372,11 @@
 - Traduzi os rótulos de shell padrão, personalizado, sistema e ambiente Docker exibidos nos seletores locais.
 - Mantive nomes de comandos, distribuições WSL, caminhos e valores de telemetria.
 
+## Tradução — erro ao continuar conversa local
+
+- Traduzi o aviso exibido quando não é possível continuar uma conversa local de agente.
+- Mantive a referência aos logs e o fluxo de recuperação.
+
 ## Tradução — diretório inicial de novas sessões
 
 - Traduzi as opções de diretório pessoal, sessão anterior e diretório personalizado.

@@ -13941,7 +13941,8 @@ impl Workspace {
                         );
                         WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                             let toast = DismissibleToast::error(
-                                "Couldn't continue this conversation locally. Check the logs for details."
+                                "Não foi possível continuar esta conversa localmente. Consulte os logs \
+                                 para ver os detalhes."
                                     .to_owned(),
                             );
                             toast_stack.add_ephemeral_toast(toast, window_id, ctx);
