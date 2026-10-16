@@ -161,6 +161,12 @@ fn save_app(_: &(), ctx: &mut AppContext) {
 
     // Only compute the app state if we're definitely going to use it.
     let app_state = get_app_state(ctx);
+    // The last window is removed before its close callback saves app state. An empty snapshot
+    // would erase the session that should be restored the next time Warp launches.
+    if app_state.windows.is_empty() {
+        return;
+    }
+
     let event = ModelEvent::Snapshot(app_state);
 
     if let Err(err) = model_event_sender.send(event) {
