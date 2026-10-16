@@ -610,3 +610,8 @@
 
 - Traduzi o item de atalho personalizado e as dicas para alterar o atalho ou ignorar uma sugestão.
 - Preservei as ações e os atalhos disponíveis.
+
+## Tradução — navegação e revisão no editor
+
+- Traduzi o botão de rejeitar alterações e o placeholder do campo de navegação para linha/coluna.
+- Preservei a ação de reversão e o separador `:` do formato.
