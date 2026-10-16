@@ -38,7 +38,7 @@ pub const CHATGPT_CONTINUED_WITH_WARP_CREDITS_TEXT: &str = "Continued with Warp 
 /// Text to use as a label throughout the app for user interactions that will attach selected
 /// block(s) or text selections to a new AI query.
 pub static ATTACH_AS_AGENT_MODE_CONTEXT_TEXT: LazyLock<&'static str> =
-    LazyLock::new(|| "Attach as agent context");
+    LazyLock::new(|| "Anexar como contexto do agente");
 
 /// Label we use for the the command palette action to create a new local Warp Agent pane.
 pub static NEW_AGENT_PANE_LABEL: LazyLock<&'static str> = LazyLock::new(|| "New Agent Pane");

@@ -406,3 +406,8 @@
 
 - Traduzi a mensagem exibida quando a criação do pacote local de logs falha.
 - Mantive os detalhes do erro e o contexto técnico dos registros internos.
+
+## Tradução — ações de IA nos blocos do terminal
+
+- Traduzi as ações visíveis para pedir ajuda ao agente, anexar contexto e perguntar à IA do Kikito Terminal.
+- Mantive as actions e o comportamento dos botões.
