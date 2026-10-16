@@ -713,3 +713,8 @@
 
 - Traduzi o texto do selo exibido em avisos de novos recursos.
 - Preservei a variante visual e o fluxo de dispensa.
+
+## Tradução — confirmação de exclusão de conversa
+
+- Traduzi o título, a explicação e os botões do diálogo de confirmação.
+- Mantive os atalhos e as ações de confirmar e cancelar.
