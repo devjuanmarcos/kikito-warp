@@ -417,6 +417,11 @@
 - Traduzi as descrições das preferências de notificação, foco da entrada e divisórias dos blocos.
 - Mantive as chaves TOML, valores e comportamento das configurações.
 
+## Tradução — descrições das configurações de abas
+
+- Traduzi descrições de posicionamento, botão de fechar, visibilidade e cores das abas nos metadados das configurações.
+- Preservei os campos, valores serializados e chaves TOML.
+
 ## Tradução — rótulo de agente CLI desconhecido
 
 - Traduzi o nome exibido para agentes CLI personalizados ou não reconhecidos.

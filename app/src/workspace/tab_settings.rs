@@ -17,7 +17,7 @@ use warp_core::ui::theme::AnsiColorIdentifier;
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Where new tabs are placed in the tab bar.",
+    description = "Onde novas abas são posicionadas na barra de abas.",
     rename_all = "snake_case"
 )]
 pub enum NewTabPlacement {
@@ -34,7 +34,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "general.new_tab_placement",
-    description: "Where new tabs are placed in the tab bar.",
+    description: "Onde novas abas são posicionadas na barra de abas.",
 );
 
 #[derive(
@@ -49,7 +49,7 @@ settings::macros::implement_setting_for_enum!(
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Position of the close button on tabs.",
+    description = "Posição do botão de fechar nas abas.",
     rename_all = "snake_case"
 )]
 pub enum TabCloseButtonPosition {
@@ -66,7 +66,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.tabs.tab_close_button_position",
-    description: "Position of the close button on tabs.",
+    description: "Posição do botão de fechar nas abas.",
 );
 
 /// Visibility options for workspace decorations like the tab bar.
@@ -83,7 +83,7 @@ settings::macros::implement_setting_for_enum!(
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "When workspace decorations such as the tab bar are visible.",
+    description = "Quando elementos da interface, como a barra de abas, ficam visíveis.",
     rename_all = "snake_case"
 )]
 pub enum WorkspaceDecorationVisibility {
@@ -104,7 +104,7 @@ settings::macros::implement_setting_for_enum!(
     surface: settings::SettingSurfaces::GUI,
     private: false,
     toml_path: "appearance.tabs.workspace_decoration_visibility",
-    description: "When workspace decorations such as the tab bar are visible.",
+    description: "Quando elementos da interface, como a barra de abas, ficam visíveis.",
 );
 
 impl WorkspaceDecorationVisibility {
@@ -143,18 +143,18 @@ impl WorkspaceDecorationVisibility {
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Color assignment state for a directory's tab.",
+    description = "Estado da atribuição de cor à aba de um diretório.",
     rename_all = "snake_case"
 )]
 pub enum DirectoryTabColor {
     /// User explicitly removed this directory. Retained for backwards compatibility with settings files written by older versions.
-    #[schemars(description = "The directory was explicitly removed from tab coloring.")]
+    #[schemars(description = "O diretório foi removido explicitamente da coloração das abas.")]
     Suppressed,
     /// Directory is tracked but has no assigned color.
-    #[schemars(description = "The directory is tracked but has no assigned color.")]
+    #[schemars(description = "O diretório é monitorado, mas não tem uma cor atribuída.")]
     Unassigned,
     /// Directory is tracked with a specific color.
-    #[schemars(description = "The directory is assigned a specific color.")]
+    #[schemars(description = "O diretório tem uma cor específica atribuída.")]
     Color(AnsiColorIdentifier),
 }
 
@@ -186,7 +186,7 @@ impl DirectoryTabColor {
     schemars::JsonSchema,
     settings_value::SettingsValue,
 )]
-#[schemars(description = "Mapping of directory paths to their tab color assignments.")]
+#[schemars(description = "Mapeamento de caminhos de diretórios para as cores atribuídas às abas.")]
 pub struct DirectoryTabColors(pub(crate) HashMap<String, DirectoryTabColor>);
 
 settings::macros::implement_setting_for_enum!(
@@ -198,7 +198,7 @@ settings::macros::implement_setting_for_enum!(
     private: false,
     toml_path: "appearance.tabs.directory_tab_colors",
     max_table_depth: 0,
-    description: "Mapping of directory paths to their tab color assignments.",
+    description: "Mapeamento de caminhos de diretórios para as cores atribuídas às abas.",
     feature_flag: warp_core::features::FeatureFlag::DirectoryTabColors,
 );
 
