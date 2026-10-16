@@ -693,3 +693,8 @@
 - Traduzi descrições de layout, conteúdo e comportamento das abas verticais e da barra de ferramentas.
 - Mantive sem alteração as descrições relacionadas a revisão de código e links de pull request.
 - Preservei chaves, enums e valores das configurações.
+
+## Tradução — aviso de recursos do cabeçalho de painéis
+
+- Traduzi o aviso sobre abrir arquivos e revisar diferenças de código exibido no cabeçalho do painel.
+- Preservei o fluxo de exibição e dispensa do aviso.
