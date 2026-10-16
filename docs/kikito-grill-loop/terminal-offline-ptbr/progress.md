@@ -304,3 +304,9 @@
 
 - Traduzi as opções Sem material e Acrílico no seletor de fundo da janela.
 - Mantive os nomes de plataforma Mica e Mica Alt, os valores e o comportamento.
+
+
+## Tradução - nomes dos ícones do aplicativo
+
+- Traduzi os nomes descritivos das variantes de ícone, incluindo Clássico, Cometas, Brilho, Holográfico e Adesivo.
+- Atualizei o nome visível Warp 1 para Kikito 1 e mantive intactas as variantes e os valores internos.
