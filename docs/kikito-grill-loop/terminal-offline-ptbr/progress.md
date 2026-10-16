@@ -427,6 +427,11 @@
 - Traduzi o nome exibido para agentes CLI personalizados ou não reconhecidos.
 - Mantive o variant `Unknown`, os dados serializados e a telemetria.
 
+## Tradução — metadados das configurações do terminal
+
+- Traduzi descrições de OSC 52, espaçamento e preenchimento em tela cheia, sinal sonoro, grade, bloco inicial da IA e busca assíncrona.
+- Preservei chaves TOML, enums e valores técnicos `deny`, `write_only` e `read_write`.
+
 ## Tradução — mensagens de coleta de amostras
 
 - Traduzi o sucesso e as falhas da coleta local de amostras de processo.
