@@ -78,11 +78,11 @@ const CODEBASE_INDEX_DESCRIPTION: &str = "O Kikito Terminal pode indexar automat
 const WARP_INDEXING_IGNORE_DESCRIPTION: &str = "Para excluir arquivos ou diretórios específicos da indexação, adicione-os ao arquivo .warpindexingignore no diretório do repositório. Esses arquivos continuarão acessíveis aos recursos de IA, mas não serão incluídos nos embeddings da base de código.";
 const AUTO_INDEX_FEATURE_NAME: &str = "Indexar novas pastas por padrão";
 const AUTO_INDEX_DESCRIPTION: &str = "Quando ativada, esta opção indexa automaticamente os repositórios de código durante a navegação, ajudando os agentes a entender o contexto rapidamente e oferecer soluções direcionadas.";
-const INDEXING_DISABLED_ADMIN_TEXT: &str = "Team admins have disabled codebase indexing.";
-const INDEXING_WORKSPACE_ENABLED_ADMIN_TEXT: &str = "Team admins have enabled codebase indexing.";
+const INDEXING_DISABLED_ADMIN_TEXT: &str = "Os administradores da equipe desativaram a indexação da base de código.";
+const INDEXING_WORKSPACE_ENABLED_ADMIN_TEXT: &str = "Os administradores da equipe ativaram a indexação da base de código.";
 const INDEXING_DISABLED_GLOBAL_AI_TEXT: &str =
-    "AI Features must be enabled to use codebase indexing.";
-const CODEBASE_INDEX_LIMIT_REACHED: &str = "You have reached the maximum number of codebase indices for your plan. Delete existing indices to auto-index new codebases.";
+    "Os recursos de IA precisam estar ativados para usar a indexação da base de código.";
+const CODEBASE_INDEX_LIMIT_REACHED: &str = "Você atingiu o limite de índices da base de código do seu plano. Exclua índices existentes para indexar novas bases automaticamente.";
 #[cfg(not(target_family = "wasm"))]
 const REMOTE_CODEBASE_INDEX_LIMIT_REACHED_FAILURE: &str =
     "maximum number of codebase indexes has been reached";
@@ -108,7 +108,7 @@ fn codebase_indexing_disabled_admin_text(
     blocking_team_name.map_or_else(
         || INDEXING_DISABLED_ADMIN_TEXT.to_string(),
         |team_name| {
-            format!("Codebase indexing is unavailable because {team_name} has disabled it.")
+            format!("A indexação da base de código está indisponível porque {team_name} a desativou.")
         },
     )
 }

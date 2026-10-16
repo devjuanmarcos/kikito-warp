@@ -273,3 +273,9 @@
 
 - Traduzi títulos, descrição da indexação automática e instruções para excluir arquivos.
 - Mantive comandos grep/find, o nome do arquivo .warpindexingignore, termos técnicos e comportamento.
+
+
+## Tradução - disponibilidade da indexação
+
+- Traduzi avisos de ativação/desativação por administradores e de requisitos de IA, além do aviso de limite de índices.
+- Mantive o nome dinâmico da equipe, mensagens de falha usadas internamente e comportamento.
