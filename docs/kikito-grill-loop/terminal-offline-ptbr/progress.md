@@ -82,3 +82,10 @@
 - Traduzi os rótulos do seletor local que adiciona diretórios à configuração de cores das abas.
 - Mantive o fluxo de seleção e abertura do seletor nativo de pastas sem alterações.
 - `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.
+
+
+## Tradução — seleção de suporte a linguagens
+
+- Traduzi a orientação e as ações do bloco local que oferece instalação/ativação de servidores de linguagem para uma base de código.
+- Mantive as actions e o atalho Enter.
+- `git diff --check` passou neste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.

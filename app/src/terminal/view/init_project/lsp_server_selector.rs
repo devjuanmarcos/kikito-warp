@@ -126,7 +126,7 @@ pub fn render_lsp_selector_block(
     );
 
     let title_element = Span::new(
-        "Would you like to enable available language support for this codebase? This will give you smarter code navigation and inline error checking.",
+        "Deseja ativar o suporte de linguagem disponível para esta base de código? Isso oferece navegação mais inteligente e verificação de erros no código.",
         UiComponentStyles {
             font_family_id: Some(appearance.ui_font_family()),
             font_color: Some(blended_colors::text_main(appearance.theme(), header_background)),
@@ -159,7 +159,7 @@ pub fn render_lsp_selector_block(
     let skip_button = appearance
         .ui_builder()
         .button(ButtonVariant::Text, skip_mouse_state.clone())
-        .with_text_label("Skip for now".to_string())
+        .with_text_label("Pular por enquanto".to_string())
         .build()
         .on_click(|ctx, _, _| {
             ctx.dispatch_typed_action(InitProjectBlockAction::SkipLanguageServers);
@@ -172,9 +172,9 @@ pub fn render_lsp_selector_block(
     let any_needs_download = selected_items.iter().any(|info| !info.is_installed);
 
     let enable_label = if any_needs_download {
-        "Install and enable"
+        "Instalar e ativar"
     } else {
-        "Enable language support"
+        "Ativar suporte de linguagem"
     };
 
     // Create keyboard shortcut for Enter
