@@ -244,12 +244,12 @@ impl PromptRenderHelper {
         use crate::terminal::event::RemoteServerSetupState;
 
         // If a remote server setup is in progress for the pending session,
-        // show a stage-specific message instead of the generic "Starting shell...".
+        // show a stage-specific message instead of the generic "Iniciando shell...".
         if let Some(pending_session_id) = model.pending_session_id()
             && let Some(state) = sessions.remote_server_setup_state(pending_session_id)
         {
             return match state {
-                RemoteServerSetupState::Checking => "Starting shell...".to_string(),
+                RemoteServerSetupState::Checking => "Iniciando shell...".to_string(),
                 RemoteServerSetupState::Installing {
                     progress_percent: Some(p),
                 } => format!("Installing Warp SSH Extension... ({p}%)"),
@@ -258,19 +258,19 @@ impl PromptRenderHelper {
                 } => "Installing Warp SSH Extension...".to_string(),
                 RemoteServerSetupState::Updating => "Updating Warp SSH Extension...".to_string(),
                 RemoteServerSetupState::Initializing => "Initializing...".to_string(),
-                RemoteServerSetupState::Ready => "Starting shell...".to_string(),
+                RemoteServerSetupState::Ready => "Iniciando shell...".to_string(),
                 // Failed and Unsupported both fall back to the wrapper-only SSH
                 // flow, so we render the same generic prompt as a normal
                 // SSH session that doesn't have the remote-server extension.
                 RemoteServerSetupState::Failed { .. }
-                | RemoteServerSetupState::Unsupported { .. } => "Starting shell...".to_string(),
+                | RemoteServerSetupState::Unsupported { .. } => "Iniciando shell...".to_string(),
             };
         }
 
         if !sessions.is_empty() {
-            "Starting shell...".to_string()
+            "Iniciando shell...".to_string()
         } else {
-            format!("Starting {}...", model.shell_launch_state().display_name())
+            format!("Iniciando {}...", model.shell_launch_state().display_name())
         }
     }
 

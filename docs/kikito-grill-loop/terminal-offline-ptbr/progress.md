@@ -357,6 +357,11 @@
 - Traduzi o aviso local de recuperação após falha na inicialização e a ação “Saiba mais”.
 - Mantive Xwayland e o comportamento de recuperação.
 
+## Tradução — estado de inicialização do shell
+
+- Traduzi a indicação de inicialização do shell e mantive o nome do shell selecionado.
+- Preservei as mensagens específicas de configuração remota e seus estados.
+
 ## Tradução — diretório inicial de novas sessões
 
 - Traduzi as opções de diretório pessoal, sessão anterior e diretório personalizado.
