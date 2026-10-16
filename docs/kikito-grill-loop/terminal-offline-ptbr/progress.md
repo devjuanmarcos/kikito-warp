@@ -519,4 +519,10 @@
 
 - Traduzi ações locais de copiar/colar, selecionar texto, copiar caminhos e URLs, abrir links e
   inserir texto na entrada.
-- Preservei actions, atalhos e o comportamento de abertura de arquivos.
+- Preservei as ações internas, os atalhos e o comportamento de abertura de arquivos.
+
+## Tradução — agrupamento de abas
+
+- Traduzi as ações de criar grupo e remover abas de um grupo, além do nome padrão de grupo sem
+  título.
+- Preservei as ações internas e a lógica de agrupamento.
