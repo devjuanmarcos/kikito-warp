@@ -351,3 +351,8 @@
 
 - Traduzi a busca e a ação para adicionar repositórios no seletor local de worktrees.
 - Mantive os filtros, caminhos e ações existentes.
+
+## Tradução — aviso de recuperação no Linux
+
+- Traduzi o aviso local de recuperação após falha na inicialização e a ação “Saiba mais”.
+- Mantive Xwayland e o comportamento de recuperação.
