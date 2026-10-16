@@ -884,13 +884,14 @@ fn max_max_grid_size() -> usize {
 
 fn block_maximum_rows_description() -> String {
     let max_rows = if ChannelState::enable_debug_features() {
-        "10 million"
+        "10 milhões de linhas"
     } else {
-        "1 million"
+        "1 milhão de linhas"
     };
 
     format!(
-        "Setting the limit above 100k lines may impact performance. Maximum rows supported is {max_rows}."
+        "Definir o limite acima de 100 mil linhas pode afetar o desempenho. \
+        O limite máximo suportado é {max_rows}."
     )
 }
 
@@ -5068,7 +5069,7 @@ impl SettingsWidget for MouseScrollMultiplierWidget {
                 } else {
                     appearance
                         .ui_builder()
-                        .wrappable_text("Allowed Values: 1-20", true)
+                        .wrappable_text("Valores permitidos: 1 a 20", true)
                         .with_style(UiComponentStyles {
                             font_color: Some(themes::theme::Fill::error().into_solid()),
                             ..Default::default()
@@ -5081,13 +5082,13 @@ impl SettingsWidget for MouseScrollMultiplierWidget {
             .finish();
 
         render_body_item::<FeaturesPageAction>(
-            "Lines scrolled by mouse wheel interval".into(),
+            "Linhas por rolagem da roda do mouse".into(),
             Some(AdditionalInfo {
                 mouse_state: self.additional_info_link.clone(),
                 on_click_action: None,
                 secondary_text: None,
                 tooltip_override_text: Some(
-                    "Supports floating point values between 1 and 20.".to_string(),
+                    "Aceita valores decimais entre 1 e 20.".to_string(),
                 ),
             }),
             LocalOnlyIconState::for_setting(
@@ -5129,7 +5130,7 @@ impl SettingsWidget for DefaultTerminalWidget {
         let default_terminal = DefaultTerminal::as_ref(app);
         if default_terminal.is_warp_default() {
             ui_builder
-                .wrappable_text("Warp is the default terminal", true)
+                .wrappable_text("Kikito Terminal é o terminal padrão", true)
                 .with_style(UiComponentStyles {
                     font_color: Some(appearance.theme().disabled_ui_text_color().into()),
                     margin: Some(Coords::default().bottom(16.)),
@@ -5140,7 +5141,7 @@ impl SettingsWidget for DefaultTerminalWidget {
         } else {
             ui_builder
                 .link(
-                    "Make Warp the default terminal".to_string(),
+                    "Definir o Kikito Terminal como terminal padrão".to_string(),
                     None,
                     Some(Box::new(|ctx| {
                         ctx.dispatch_typed_action(FeaturesPageAction::MakeWarpDefaultTerminal);
@@ -5193,7 +5194,7 @@ impl SettingsWidget for BlockLimitWidget {
             .finish();
 
         render_body_item::<FeaturesPageAction>(
-            "Maximum rows in a block".into(),
+            "Número máximo de linhas por bloco".into(),
             None,
             LocalOnlyIconState::for_setting(
                 MaximumGridSize::storage_key(),

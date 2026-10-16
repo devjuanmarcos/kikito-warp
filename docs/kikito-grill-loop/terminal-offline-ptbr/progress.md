@@ -194,3 +194,10 @@
 - Traduzi rótulos de linha de mensagem, foco da entrada, dicas/botão de sugestões, comportamento da tecla Tab e mensagens de ajuda dos atalhos.
 - Mantive os nomes internos usados para localizar bindings, as teclas, actions, flags e comportamento.
 - A varredura da página de recursos continua nos grupos locais restantes.
+
+
+## Tradução — rolagem e limites de exibição
+
+- Traduzi a preferência de linhas por rolagem do mouse, os valores aceitos, o limite de linhas por bloco e a indicação do Kikito Terminal como terminal padrão.
+- Mantive valores numéricos, actions, flags, links e comportamento.
+- A página de recursos ainda tem outros grupos locais a revisar.
