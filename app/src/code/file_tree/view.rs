@@ -2757,7 +2757,7 @@ impl FileTreeView {
             )
             .with_child(
                 Text::new(
-                    "Project explorer unavailable",
+                    "Explorador de projetos indisponível",
                     appearance.ui_font_family(),
                     appearance.ui_font_size() + 2.,
                 )

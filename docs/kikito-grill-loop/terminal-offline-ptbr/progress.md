@@ -718,3 +718,8 @@
 
 - Traduzi o título, a explicação e os botões do diálogo de confirmação.
 - Mantive os atalhos e as ações de confirmar e cancelar.
+
+## Tradução — estado indisponível do explorador de projetos
+
+- Traduzi o título exibido quando o explorador de projetos não pode ser mostrado.
+- Preservei o conteúdo dinâmico e o estado do explorador.
