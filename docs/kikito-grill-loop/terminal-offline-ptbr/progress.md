@@ -68,3 +68,10 @@
 - Traduzi o diálogo local de variáveis de ambiente, incluindo a mensagem e as ações para continuar editando ou descartar alterações.
 - Mantive as actions e o comportamento de cada botão.
 - `git diff --check` passou neste lote; o Git mostra apenas o aviso habitual de conversão LF/CRLF no Windows.
+
+
+## Tradução — modal de expressões regulares de privacidade
+
+- Traduzi os rótulos, o exemplo de nome, o estado de validação e as ações do modal local que adiciona uma regra de expressão regular.
+- Preservei a sintaxe do campo de expressão regular, as actions e os atalhos de navegação/fechamento.
+- `git diff --check` passou neste lote; restam apenas avisos habituais de conversão LF/CRLF no Windows.
