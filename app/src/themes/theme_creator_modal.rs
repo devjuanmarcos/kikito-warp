@@ -19,7 +19,7 @@ use crate::themes::theme_creator_body::{
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;
 
-const THEME_CREATOR_MODAL_HEADER: &str = "Create new theme from image";
+const THEME_CREATOR_MODAL_HEADER: &str = "Criar tema a partir de uma imagem";
 
 pub struct ThemeCreatorModal {
     theme_creator_modal: ViewHandle<Modal<ThemeCreatorBody>>,

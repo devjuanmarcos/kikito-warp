@@ -38,3 +38,11 @@
 - Atalhos, actions, IDs e slugs foram preservados.
 - `git diff --check` passou nos arquivos dos lotes; os avisos são apenas de conversão LF/CRLF do Windows.
 - A localização das superfícies locais restantes da GUI continua pendente.
+
+## Tradução — editor local de temas
+
+- Traduzi o modal de criação de tema por imagem, incluindo instruções, seleção da imagem, nome, cor de fundo, ações e mensagens de erro.
+- Traduzi a confirmação de exclusão de tema, suas ações e a mensagem de erro local.
+- Mantive IDs, actions e o atalho Escape.
+- `git diff --check` passou nos arquivos deste lote; restaram apenas avisos de conversão LF/CRLF do Git no Windows.
+- `progress.md` está em UTF-8 válido, sem U+FFFD nem texto corrompido.
