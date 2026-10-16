@@ -286,3 +286,9 @@
 - Traduzi a ação para adicionar pasta, o estado vazio, o botão de regras do projeto e estados/andamento da indexação local.
 - Traduzi estados e ações de servidores LSP locais; preservei placeholders, identificadores e comportamento.
 - Traduzi também os estados de instalação/disponibilidade de servidores LSP e seus controles locais de reiniciar/ver registros.
+
+
+## Tradução - privacidade local
+
+- Traduzi os títulos e descrições de ocultação de segredos e regras regex.
+- Mantive a sintaxe da flag `(?i)`, a semântica e o comportamento local.

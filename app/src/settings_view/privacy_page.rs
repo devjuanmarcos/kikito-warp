@@ -62,17 +62,17 @@ use crate::workspaces::workspace::{
 
 const FONT_SIZE: f32 = 12.;
 
-const SAFE_MODE_TITLE: &str = "Secret redaction";
+const SAFE_MODE_TITLE: &str = "Ocultação de segredos";
 static SAFE_MODE_DESCRIPTION: LazyLock<&'static str> = LazyLock::new(|| {
-    "When this setting is enabled, Warp will scan blocks, the contents of \
-        Warp Drive objects, and Oz prompts for potential sensitive \
-        information and prevent saving or sending this data to any \
-        servers. You can customize this list via regexes."
+    "Quando esta configuração está ativada, o Kikito Terminal verifica os blocos e o conteúdo de itens \
+        do Drive, além dos prompts do assistente, em busca de informações potencialmente sensíveis. \
+        Ele impede que esses dados sejam salvos ou enviados a servidores. Você pode personalizar esta \
+        lista usando expressões regulares."
 });
-const USER_SECRET_REGEX_TITLE: &str = "Custom secret redaction";
-const USER_SECRET_REGEX_DESCRIPTION: &str = "Use regex to define additional secrets or data you'd like to redact. This will take effect \
-    when the next command runs. You can use the inline (?i) flag as a prefix to your regex \
-    to make it case-insensitive.";
+const USER_SECRET_REGEX_TITLE: &str = "Ocultação personalizada de segredos";
+const USER_SECRET_REGEX_DESCRIPTION: &str = "Use expressões regulares (regex) para definir segredos adicionais \
+    ou dados que você deseja ocultar. A alteração terá efeito a partir do próximo comando. Use a flag \
+    inline (?i) como prefixo da regex para ignorar diferenças entre maiúsculas e minúsculas.";
 const TELEMETRY_DESCRIPTION_OLD: &str = "App analytics help us make the product better for you. We only collect \
     app usage metadata, never console input or output.";
 const TELEMETRY_TITLE: &str = "Help improve Warp";
