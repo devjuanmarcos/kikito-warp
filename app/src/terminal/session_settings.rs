@@ -303,7 +303,7 @@ define_settings_group!(SessionSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "session.startup_shell_override",
-        description: "The shell to use when Warp starts up.",
+        description: "Shell usado ao iniciar o Kikito Terminal.",
     },
     new_session_shell_override: NewSessionShellOverride {
         type: Option<NewSessionShell>,
@@ -313,7 +313,7 @@ define_settings_group!(SessionSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "session.new_session_shell_override",
-        description: "The shell to use when opening a new session.",
+        description: "Shell usado ao abrir uma nova sessão.",
     }
     honor_ps1: HonorPS1 {
         type: bool,
@@ -323,7 +323,8 @@ define_settings_group!(SessionSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "terminal.input.honor_ps1",
-        description: "Whether to use your shell's PS1 prompt instead of the Warp prompt.",
+        description: "Define se o prompt PS1 do shell será usado no lugar do prompt \
+            do Kikito Terminal.",
     },
     saved_prompt: SavedPrompt {
         type: PromptSelection,
@@ -349,7 +350,7 @@ define_settings_group!(SessionSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "general.should_confirm_close_session",
-        description: "Whether to show a confirmation dialog when closing a session.",
+        description: "Define se uma confirmação será exibida ao fechar uma sessão.",
     },
     // Value is saved here but not shown in ui (can't be toggled in settings)
     should_confirm_shared_session_edit_access: ShouldConfirmSharedSessionEditAccess {

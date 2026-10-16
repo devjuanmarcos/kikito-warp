@@ -503,3 +503,9 @@
 - Traduzi descrições das opções de layout padrão ou personalizado para as barras do Agent Mode e de
   agentes CLI.
 - Preservei os enums e as listas serializadas de itens à esquerda e à direita.
+
+## Tradução — preferências de shell e sessão
+
+- Traduzi as descrições de shell inicial, shell para novas sessões, prompt PS1 e confirmação ao fechar
+  sessão.
+- Preservei os campos e caminhos TOML.
