@@ -587,3 +587,9 @@
   contexto e copiar caminhos.
 - Traduzi os rótulos para exibir itens no Finder, Explorador de Arquivos ou gerenciador de arquivos.
 - Preservei as ações internas e as condições de disponibilidade.
+
+## Tradução — conversas na paleta de comandos
+
+- Traduzi seções, ações de criar, retomar e copiar conversas, dicas e instruções de acessibilidade.
+- Traduzi avisos quando o agente está monitorando um comando e impede a troca ou o início de conversa.
+- Preservei ações, navegação e condições de bloqueio.
