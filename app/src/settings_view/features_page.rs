@@ -4596,13 +4596,15 @@ impl SettingsWidget for NativeRedirectWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Open links in desktop app".into(),
+            "Abrir links no aplicativo de desktop".into(),
             Some(AdditionalInfo {
                 mouse_state: self.additional_info_link.clone(),
                 on_click_action: None,
                 secondary_text: None,
                 tooltip_override_text: Some(
-                    "Automatically open links in desktop app whenever possible.".into(),
+                    "Sempre que possível, abre links automaticamente no \
+                    aplicativo de desktop."
+                        .into(),
                 ),
             }),
             LocalOnlyIconState::for_setting(
@@ -4804,7 +4806,7 @@ impl SettingsWidget for LinkTooltipWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Show tooltip on click on links".into(),
+            "Exibir dicas ao clicar em links".into(),
             None,
             LocalOnlyIconState::for_setting(
                 LinkTooltip::storage_key(),

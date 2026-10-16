@@ -201,3 +201,10 @@
 - Traduzi a preferência de linhas por rolagem do mouse, os valores aceitos, o limite de linhas por bloco e a indicação do Kikito Terminal como terminal padrão.
 - Mantive valores numéricos, actions, flags, links e comportamento.
 - A página de recursos ainda tem outros grupos locais a revisar.
+
+
+## Tradução — abertura e dicas de links
+
+- Traduzi os controles locais para abrir links no aplicativo de desktop e exibir dicas ao clicar em links.
+- Mantive actions, flags, destinos e comportamento.
+- Outros grupos locais da página de recursos continuam pendentes.
