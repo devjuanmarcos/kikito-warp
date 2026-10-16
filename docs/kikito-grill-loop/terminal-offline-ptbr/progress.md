@@ -53,7 +53,7 @@
 - Traduzi o modal local que salva a configuração de janelas, abas e painéis como YAML: título, botões, explicação, status, erros e acessibilidade.
 - Mantive intactos o texto técnico usado para classificar arquivo existente, IDs e os atalhos Enter/Escape.
 - A ligação para documentação externa permanece fora do lote por depender de um destino remoto.
-- `git diff --check` passou; `progress.md` está em UTF-8 válido, U+FFFD=0 e sem sequências `??` em palavras.
+- `git diff --check` passou; `progress.md` está em UTF-8 válido, U+FFFD=0 e sem sequências de duas interrogações em palavras.
 
 
 ## Tradução — editor da barra de ferramentas
@@ -451,3 +451,8 @@
 
 - Traduzi o placeholder, tooltips e instruções de acessibilidade do filtro de saída do terminal.
 - Mantive regex, ações de filtro e atalhos.
+
+## Tradução — configurações de janela
+
+- Traduzi as descrições de desfoque, fundo, opacidade, tamanho, painel e zoom da janela.
+- Preservei as chaves TOML, os valores e as opções técnicas.

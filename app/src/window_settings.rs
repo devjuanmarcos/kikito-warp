@@ -14,7 +14,7 @@ define_settings_group!(WindowSettings, settings: [
         private: false,
         storage_key: "OverrideBlur",
         toml_path: "appearance.window.override_blur",
-        description: "The blur radius applied to the window background.",
+        description: "O raio de desfoque aplicado ao fundo da janela.",
     },
     background_backdrop: BackgroundBackdrop {
         type: WindowBackdrop,
@@ -24,7 +24,7 @@ define_settings_group!(WindowSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.window.backdrop",
-        description: "The system backdrop material applied to the window background.",
+        description: "O material de fundo do sistema aplicado à janela.",
     },
     legacy_override_blur_texture: LegacyOverrideBlurTexture {
         type: bool,
@@ -35,7 +35,7 @@ define_settings_group!(WindowSettings, settings: [
         private: false,
         storage_key: "OverrideBlurTexture",
         toml_path: "appearance.window.override_blur_texture",
-        description: "Deprecated legacy setting for the Acrylic window backdrop.",
+        description: "Configuração legada obsoleta para o fundo acrílico da janela.",
     },
     background_opacity: BackgroundOpacity {
         type: u8,
@@ -46,7 +46,7 @@ define_settings_group!(WindowSettings, settings: [
         private: false,
         storage_key: "OverrideOpacity",
         toml_path: "appearance.window.override_opacity",
-        description: "The opacity of the window background, from 1 to 100 percent.",
+        description: "A opacidade do fundo da janela, de 1 a 100 por cento.",
     },
     open_windows_at_custom_size: OpenWindowsAtCustomSize {
         type: bool,
@@ -56,7 +56,7 @@ define_settings_group!(WindowSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.window.open_windows_at_custom_size",
-        description: "Whether to open new windows at a custom size instead of the default.",
+        description: "Define se novas janelas serão abertas com tamanho personalizado em vez do padrão.",
     },
     new_windows_num_columns: NewWindowsNumColumns {
         type: u16,
@@ -66,7 +66,7 @@ define_settings_group!(WindowSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.window.new_windows_num_columns",
-        description: "The number of columns for new windows when using a custom size.",
+        description: "O número de colunas das novas janelas quando um tamanho personalizado estiver ativo.",
     },
     new_windows_num_rows: NewWindowsNumRows {
         type: u16,
@@ -76,7 +76,7 @@ define_settings_group!(WindowSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.window.new_windows_num_rows",
-        description: "The number of rows for new windows when using a custom size.",
+        description: "O número de linhas das novas janelas quando um tamanho personalizado estiver ativo.",
     },
     left_panel_visibility_across_tabs: LeftPanelVisibilityAcrossTabs {
         type: bool,
@@ -86,7 +86,7 @@ define_settings_group!(WindowSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.window.left_panel_visibility_across_tabs",
-        description: "Whether the left panel visibility is shared across all tabs.",
+        description: "Define se a visibilidade do painel esquerdo é compartilhada entre todas as abas.",
     },
     zoom_level: ZoomLevel {
         type: u16,
@@ -96,7 +96,7 @@ define_settings_group!(WindowSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "appearance.window.zoom_level",
-        description: "The zoom level for the window, as a percentage.",
+        description: "O nível de zoom da janela, em porcentagem.",
     },
 ]);
 
