@@ -471,3 +471,8 @@
 
 - Traduzi as descrições de encaminhamento de eventos do mouse, rolagem e foco para aplicativos de terminal em tela cheia.
 - Mantive as chaves TOML e o comportamento das opções.
+
+## Tradução — direção dos blocos
+
+- Traduzi a descrição do modo que define como os blocos são organizados na área visível do terminal.
+- Preservei os valores serializados do enum.

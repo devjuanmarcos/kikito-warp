@@ -249,7 +249,7 @@ pub enum ScrollPositionUpdate {
     settings_value::SettingsValue,
 )]
 #[schemars(
-    description = "Direction that blocks flow in the terminal viewport.",
+    description = "Direção em que os blocos são organizados na área visível do terminal.",
     rename_all = "snake_case"
 )]
 pub enum InputMode {
