@@ -556,3 +556,8 @@
 - Traduzi busca, estado vazio, explicação de conversas, criação, exclusão e ramificação local em nova
   aba ou painel.
 - Preservei as ações e deixei o item de compartilhamento condicionado ao serviço remoto sem alteração.
+
+## Tradução — nomes padrão de grupos e painéis
+
+- Traduzi os nomes de preenchimento usados quando grupos ou painéis ainda não têm um título definido.
+- Preservei os nomes personalizados e o comportamento de edição.
