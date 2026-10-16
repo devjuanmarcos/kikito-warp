@@ -224,7 +224,7 @@ where
     let on_accent_bg = bg.is_some();
 
     let label = Text::new_inline(
-        "Select directory".to_string(),
+        "Selecione uma pasta".to_string(),
         appearance.ui_font_family(),
         12.,
     )
@@ -356,7 +356,8 @@ where
             if state.is_hovered() {
                 let tooltip = Container::new(
                     Text::new_inline(
-                        "Select a git repository to enable worktree support".to_string(),
+                        "Selecione um repositório Git para habilitar o suporte a worktrees"
+                            .to_string(),
                         font_family,
                         12.,
                     )
@@ -400,7 +401,7 @@ where
         blended_colors::text_sub(theme, theme.background())
     };
     let label = Text::new(
-        "Automatically create a worktree when opening a new tab",
+        "Criar uma worktree automaticamente ao abrir uma nova aba",
         appearance.ui_font_family(),
         12.,
     )
@@ -414,7 +415,7 @@ where
         .finish()
 }
 
-/// Renders the "Autogenerate worktree branch name" checkbox with label and tooltip.
+/// Renders the checkbox for generating a worktree branch name automatically.
 pub fn render_autogenerate_worktree_branch_name_checkbox<F>(
     checked: bool,
     enable_worktree: bool,
@@ -534,7 +535,7 @@ where
     };
 
     let label = Text::new(
-        "Auto-generate worktree branch name",
+        "Gerar automaticamente o nome da branch da worktree",
         appearance.ui_font_family(),
         12.,
     )

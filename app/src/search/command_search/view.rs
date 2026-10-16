@@ -57,7 +57,7 @@ use crate::terminal::resizable_data::{DEFAULT_UNIVERSAL_SEARCH_WIDTH, ModalType,
 use crate::terminal::{History, HistoryEvent};
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
-const DEFAULT_PLACEHOLDER_TEXT: &str = "Search your history, workflows, and more";
+const DEFAULT_PLACEHOLDER_TEXT: &str = "Buscar no histórico, nos fluxos de trabalho e mais";
 const PANEL_POSITION_ID: &str = "CommandSearchViewPanel";
 const DETAILS_PANEL_MARGIN: f32 = 4.;
 const MIN_WIDTH_RATIO: f32 = 0.25;
@@ -485,13 +485,14 @@ impl CommandSearchView {
 
             let (a11y_content, a11y_help_content) = if was_immediately_executed {
                 (
-                    "Result executed".to_owned(),
-                    "Press Cmd-Up to navigate to the command's output.".to_owned(),
+                    "Comando executado".to_owned(),
+                    "Pressione Cmd-Up para ir à saída do comando.".to_owned(),
                 )
             } else {
                 (
-                    "Result accepted.".to_owned(),
-                    "You can edit the command here before pressing Enter to execute it.".to_owned(),
+                    "Comando selecionado.".to_owned(),
+                    "Você pode editar o comando aqui antes de pressionar Enter para executá-lo."
+                        .to_owned(),
                 )
             };
             ctx.emit_a11y_content(AccessibilityContent::new(
@@ -971,8 +972,8 @@ impl View for CommandSearchView {
 
     fn accessibility_contents(&self, _ctx: &AppContext) -> Option<AccessibilityContent> {
         Some(AccessibilityContent::new(
-            "Command Search".to_owned(),
-            "Search your history, workflows, and more.  Use the Up and Down arrows to browse search results after typing.  Press Enter to accept a selected result, inserting it into the terminal input.  Press Escape to close.".to_owned(),
+            "Busca de comandos".to_owned(),
+            "Busque no histórico, nos fluxos de trabalho e mais. Use as setas para cima e para baixo para percorrer os resultados após digitar. Pressione Enter para selecionar um resultado e inseri-lo na entrada do terminal. Pressione Escape para fechar.".to_owned(),
             WarpA11yRole::MenuRole,
         ))
     }
