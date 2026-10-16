@@ -481,3 +481,8 @@
 
 - Traduzi a descrição da configuração que controla a exibição de ligaduras no terminal.
 - Mantive a chave TOML e a feature flag.
+
+## Tradução — configurações de teclas de atalho
+
+- Traduzi descrições de Quake Mode, atalhos globais, teclas meta e o comportamento de Ctrl+Tab.
+- Preservei os caminhos de configuração, exemplos de atalhos e os nomes das teclas.

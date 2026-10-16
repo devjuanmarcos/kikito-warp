@@ -20,7 +20,7 @@ define_settings_group!(KeysSettings, settings: [
         private: false,
         toml_path: "global_hotkey.dedicated_window.settings",
         max_table_depth: 2,
-        description: "Configuration options for Quake Mode window behavior.",
+        description: "Opções de configuração do comportamento da janela Quake Mode.",
     },
     quake_mode_enabled: QuakeModeEnabled {
         type: bool,
@@ -30,7 +30,9 @@ define_settings_group!(KeysSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "global_hotkey.dedicated_window.enabled",
-        description: "Whether the dedicated hotkey window is enabled. Mutually exclusive with `global_hotkey.toggle_all_windows.enabled`; only one should be true at a time.",
+        description: "Define se a janela dedicada à tecla de atalho está ativada. Esta opção é \
+            mutuamente exclusiva com `global_hotkey.toggle_all_windows.enabled`; apenas uma delas \
+            pode estar ativada por vez.",
     },
     activation_hotkey_enabled: ActivationHotkeyEnabled {
         type: bool,
@@ -40,7 +42,9 @@ define_settings_group!(KeysSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "global_hotkey.toggle_all_windows.enabled",
-        description: "Whether the hotkey that toggles visibility of all windows is enabled. Mutually exclusive with `global_hotkey.dedicated_window.enabled`; only one should be true at a time.",
+        description: "Define se a tecla de atalho que alterna a visibilidade de todas as janelas está \
+            ativada. Esta opção é mutuamente exclusiva com `global_hotkey.dedicated_window.enabled`; \
+            apenas uma delas pode estar ativada por vez.",
     },
     activation_hotkey_keybinding: ActivationHotkeyKeybinding {
         type: Option<Keystroke>,
@@ -50,7 +54,11 @@ define_settings_group!(KeysSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "global_hotkey.toggle_all_windows.keybinding",
-        description: "The keybinding used for the global activation hotkey. Format: modifiers (cmd, ctrl, alt, shift, meta) and a key joined by '-', e.g. \"cmd-shift-a\" or \"alt-enter\". Bindings are case-sensitive: when shift is present, the key must be its shifted form (e.g., \"ctrl-shift-E\", not \"ctrl-shift-e\").",
+        description: "Atalho usado para ativar todas as janelas. Formato: modificadores (cmd, ctrl, alt, \
+            shift, meta) e uma tecla separados por '-', por exemplo, \"cmd-shift-a\" ou \
+            \"alt-enter\". Os atalhos diferenciam maiúsculas de minúsculas: quando shift estiver \
+            presente, a tecla deve usar a forma correspondente (por exemplo, \"ctrl-shift-E\", e \
+            não \"ctrl-shift-e\").",
     }
     extra_meta_keys: ExtraMetaKeys {
         type: ExtraMetaKeysEnum,
@@ -60,7 +68,7 @@ define_settings_group!(KeysSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "terminal.input.extra_meta_keys",
-        description: "Controls which additional keys are treated as meta keys.",
+        description: "Controla quais teclas adicionais são tratadas como teclas meta.",
     }
     ctrl_tab_behavior: CtrlTabBehaviorSetting {
         type: CtrlTabBehavior,
@@ -70,7 +78,7 @@ define_settings_group!(KeysSettings, settings: [
         surface: settings::SettingSurfaces::GUI,
         private: false,
         toml_path: "keys.ctrl_tab_behavior_setting",
-        description: "Controls the behavior of Ctrl+Tab.",
+        description: "Controla o comportamento de Ctrl+Tab.",
     }
 ]);
 
