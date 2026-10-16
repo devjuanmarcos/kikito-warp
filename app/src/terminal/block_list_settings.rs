@@ -11,7 +11,7 @@ define_settings_group!(BlockListSettings, settings: [
        surface: settings::SettingSurfaces::GUI,
        private: false,
        toml_path: "appearance.blocks.show_jump_to_bottom_of_block_button",
-       description: "Whether to show the jump-to-bottom button in long command output.",
+       description: "Se o botão para ir ao fim deve aparecer em saídas longas de comandos.",
    },
    snackbar_enabled: SnackbarEnabled {
        type: bool,
@@ -21,7 +21,7 @@ define_settings_group!(BlockListSettings, settings: [
        surface: settings::SettingSurfaces::GUI,
        private: false,
        toml_path: "general.snackbar_enabled",
-       description: "Whether to show snackbar notifications.",
+       description: "Se notificações do tipo snackbar devem ser exibidas.",
    }
    // When enabled, the input box retains focus when selecting a block in shell mode
    // (useful for quickly attaching context). When disabled, selecting a block focuses
@@ -34,7 +34,7 @@ define_settings_group!(BlockListSettings, settings: [
        surface: settings::SettingSurfaces::GUI,
        private: false,
        toml_path: "general.preserve_input_focus_on_block_selection",
-       description: "Whether to preserve input box focus when selecting a block.",
+       description: "Se o campo de entrada deve manter o foco ao selecionar um bloco.",
    }
    show_block_dividers: ShowBlockDividers {
        type: bool,
@@ -44,6 +44,6 @@ define_settings_group!(BlockListSettings, settings: [
        surface: settings::SettingSurfaces::GUI,
        private: false,
        toml_path: "appearance.blocks.show_block_dividers",
-       description: "Whether to show dividers between terminal blocks.",
+       description: "Se divisórias devem aparecer entre blocos do terminal.",
    }
 ]);

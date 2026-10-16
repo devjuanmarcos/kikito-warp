@@ -412,6 +412,11 @@
 - Traduzi as ações visíveis para pedir ajuda ao agente, anexar contexto e perguntar à IA do Kikito Terminal.
 - Mantive as actions e o comportamento dos botões.
 
+## Tradução — descrições das configurações de blocos
+
+- Traduzi as descrições das preferências de notificação, foco da entrada e divisórias dos blocos.
+- Mantive as chaves TOML, valores e comportamento das configurações.
+
 ## Tradução — rótulo de agente CLI desconhecido
 
 - Traduzi o nome exibido para agentes CLI personalizados ou não reconhecidos.
