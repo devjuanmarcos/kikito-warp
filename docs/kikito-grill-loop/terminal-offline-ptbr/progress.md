@@ -642,3 +642,9 @@
 - Traduzi os rótulos acessíveis e as instruções para abrir configurações de inicialização e iniciar
   sessões.
 - Preservei os itens selecionados, as ações e as configurações carregadas.
+
+## Tradução — ações de links em notebooks
+
+- Traduzi as ações acessíveis para iniciar uma sessão no diretório vinculado e abrir arquivos
+  Markdown no editor.
+- Preservei os destinos e o comportamento de abertura dos links.
