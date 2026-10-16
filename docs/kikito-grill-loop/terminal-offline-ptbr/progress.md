@@ -665,3 +665,9 @@
 
 - Traduzi os estados vazios, as instruções e o título da lista de versões instaladas.
 - Mantive os nomes `Node.js` e `nvm` e o comando exibido para instalar a versão mais recente.
+
+## Tradução — comandos de notebook
+
+- Traduzi descrições dos comandos para aumentar, diminuir e restaurar o tamanho da fonte e focar a
+  entrada do terminal.
+- Preservei IDs, ações, contextos e atalhos registrados.
