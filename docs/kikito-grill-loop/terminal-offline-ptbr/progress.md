@@ -371,3 +371,8 @@
 
 - Traduzi os títulos das configurações geradas para novos worktrees.
 - Mantive nomes de repositórios, branches e dados de configuração.
+
+## Tradução — falha ao exportar logs
+
+- Traduzi a mensagem exibida quando a criação do pacote local de logs falha.
+- Mantive os detalhes do erro e o contexto técnico dos registros internos.

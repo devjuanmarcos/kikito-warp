@@ -6921,7 +6921,7 @@ impl Workspace {
                     ctx.open_file_path_in_explorer(&path);
                 }
                 Ok(Err(err)) => {
-                    let error_message = format!("Failed to create log bundle: {err}");
+                    let error_message = format!("Falha ao criar o pacote de logs: {err}");
                     report_error!(err.context("Failed to create log bundle"));
                     me.toast_stack.update(ctx, |toast_stack, ctx| {
                         let toast = DismissibleToast::error(error_message);
@@ -6929,7 +6929,7 @@ impl Workspace {
                     });
                 }
                 Err(err) => {
-                    let error_message = format!("Failed to create log bundle: {err}");
+                    let error_message = format!("Falha ao criar o pacote de logs: {err}");
                     report_error!(anyhow::Error::new(err).context("Failed to create log bundle"));
                     me.toast_stack.update(ctx, |toast_stack, ctx| {
                         let toast = DismissibleToast::error(error_message);
