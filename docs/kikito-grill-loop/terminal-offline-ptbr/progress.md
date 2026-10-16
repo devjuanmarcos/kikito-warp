@@ -159,3 +159,10 @@
 - Traduzi os rótulos de configuração das teclas Option/Alt esquerda e direita usadas como Meta.
 - Mantive os termos técnicos Option, Alt e Meta, assim como actions e armazenamento da configuração.
 - A varredura da página de recursos continua; recursos remotos e nomes técnicos permanecem fora deste lote.
+
+
+## Tradução — inicialização e encerramento do aplicativo
+
+- Traduzi as preferências de restauração de janelas/abas/painéis, aviso ao sair, inicialização com o sistema e encerramento após fechar as janelas.
+- Traduzi também o aviso local do Wayland; mantive flags, actions, links e comportamento.
+- A varredura da página de recursos segue em andamento.
