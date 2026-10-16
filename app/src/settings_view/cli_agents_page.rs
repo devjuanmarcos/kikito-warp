@@ -429,7 +429,7 @@ impl SettingsWidget for CLIAgentWidget {
         let ai_settings = AISettings::as_ref(app);
 
         let cli_agent_footer_toggle = render_ai_setting_toggle::<ShouldRenderCLIAgentToolbar>(
-            "Show coding agent toolbar",
+            "Mostrar a barra de ferramentas do agente de programação",
             CLIAgentsPageAction::ToggleCLIAgentToolbar,
             *ai_settings.should_render_cli_agent_footer,
             true,
@@ -440,12 +440,13 @@ impl SettingsWidget for CLIAgentWidget {
 
         let description_fragments = vec![
             FormattedTextFragment::plain_text(
-                "Show a toolbar with quick actions when running coding agents like ",
+                "Exibe uma barra de ferramentas com ações rápidas ao executar agentes de programação \
+                 como ",
             ),
             FormattedTextFragment::inline_code("claude"),
             FormattedTextFragment::plain_text(", "),
             FormattedTextFragment::inline_code("codex"),
-            FormattedTextFragment::plain_text(", or "),
+            FormattedTextFragment::plain_text(", ou "),
             FormattedTextFragment::inline_code("gemini"),
             FormattedTextFragment::plain_text("."),
         ];
@@ -508,14 +509,16 @@ impl SettingsWidget for CLIAgentAutoToggleRichInputWidget {
         }
 
         let label = render_body_item_label::<CLIAgentsPageAction>(
-            "Auto show/hide Rich Input based on agent status".into(),
+            "Mostrar/ocultar automaticamente a Entrada avançada de acordo com \
+             o estado do agente"
+                .into(),
             Some(styles::header_font_color(true, app)),
             Some(AdditionalInfo {
                 mouse_state: self.info_tooltip.clone(),
                 on_click_action: None,
                 secondary_text: None,
                 tooltip_override_text: Some(
-                    "Requires the Warp plugin for your coding agent".to_owned(),
+                    "Requer o plugin de integração no agente de programação".to_owned(),
                 ),
             }),
             LocalOnlyIconState::for_setting(
@@ -570,7 +573,8 @@ impl SettingsWidget for CLIAgentAutoOpenRichInputWidget {
         }
 
         render_ai_setting_toggle::<AutoOpenRichInputOnCLIAgentStart>(
-            "Auto open Rich Input when a coding agent session starts",
+            "Abrir automaticamente a Entrada avançada quando uma sessão de agente de programação \
+             iniciar",
             CLIAgentsPageAction::ToggleAutoOpenRichInputOnCLIAgentStart,
             *AISettings::as_ref(app).auto_open_rich_input_on_cli_agent_start,
             true,
@@ -608,7 +612,7 @@ impl SettingsWidget for CLIAgentAutoDismissRichInputWidget {
         }
 
         render_ai_setting_toggle::<AutoDismissRichInputAfterSubmit>(
-            "Auto dismiss Rich Input after prompt submission",
+            "Fechar automaticamente a Entrada avançada após o envio do prompt",
             CLIAgentsPageAction::ToggleAutoDismissRichInputAfterSubmit,
             *AISettings::as_ref(app).auto_dismiss_rich_input_after_submit,
             true,
@@ -646,7 +650,7 @@ impl SettingsWidget for CLIAgentSubmitRichInputWidget {
         }
 
         render_ai_setting_toggle::<SubmitRichInputOnCtrlEnter>(
-            "Submit Rich Input with Ctrl+Enter",
+            "Enviar a Entrada avançada com Ctrl+Enter",
             CLIAgentsPageAction::ToggleSubmitRichInputOnCtrlEnter,
             *AISettings::as_ref(app).submit_on_ctrl_enter,
             true,

@@ -322,3 +322,9 @@
 
 - Traduzi o título da página e os textos para configurar comandos regex que exibem a barra de ferramentas.
 - Mantive `CLI`, regex, nomes de agentes, actions e comportamento.
+
+
+## Tradução - controles de agentes CLI e entrada avançada
+
+- Traduzi controles e descrições de barra de ferramentas, abertura/fechamento automáticos da Entrada avançada e envio com Ctrl+Enter.
+- Mantive nomes dos comandos, tecla de atalho, actions e comportamento.
