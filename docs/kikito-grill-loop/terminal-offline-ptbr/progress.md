@@ -328,3 +328,9 @@
 
 - Traduzi controles e descrições de barra de ferramentas, abertura/fechamento automáticos da Entrada avançada e envio com Ctrl+Enter.
 - Mantive nomes dos comandos, tecla de atalho, actions e comportamento.
+
+
+## Tradução - seletor de agente CLI
+
+- Traduzi o item Outro e o cabeçalho do seletor de agente de programação, mantendo o rótulo de seleção consistente.
+- Preservei o valor de agente desconhecido, actions e comportamento do seletor.

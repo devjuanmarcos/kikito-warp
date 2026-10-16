@@ -179,7 +179,7 @@ impl CLIAgentsPageView {
                     }
 
                     items.push(
-                        MenuItemFields::new("Other")
+                        MenuItemFields::new("Outro")
                             .with_on_select_action(DropdownAction::select_action_and_close(
                                 CLIAgentsPageAction::SetCLIAgentForCommand {
                                     pattern: pattern_clone.clone(),
@@ -192,15 +192,15 @@ impl CLIAgentsPageView {
                     dropdown.set_rich_items(items, ctx);
 
                     dropdown.set_menu_header_text_override(|label| {
-                        if label == "Other" {
-                            "Select coding agent".to_string()
+                        if label == "Outro" {
+                            "Selecione o agente de programação".to_string()
                         } else {
                             label.to_string()
                         }
                     });
 
                     let selected_name = if matches!(current_agent, CLIAgent::Unknown) {
-                        "Other"
+                        "Outro"
                     } else {
                         current_agent.display_name()
                     };
