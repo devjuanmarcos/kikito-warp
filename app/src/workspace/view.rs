@@ -20790,7 +20790,7 @@ impl Workspace {
                         icons::Icon::Grid,
                         &self.mouse_states.agent_management_view_button,
                         WorkspaceAction::ToggleAgentManagementView,
-                        "Agent management panel".to_string(),
+                        "Painel de gerenciamento de agentes".to_string(),
                         keybinding_name_to_display_string(
                             "workspace:toggle_agent_management_view",
                             ctx,
@@ -22117,7 +22117,7 @@ impl Workspace {
                 icons::Icon::Gear,
                 &self.mouse_states.settings_icon,
                 WorkspaceAction::ShowSettings,
-                "Settings".to_string(),
+                "Configurações".to_string(),
                 self.cached_keybindings[SHOW_SETTINGS_KEYBINDING_NAME].clone(),
                 false,
                 false,
@@ -22130,7 +22130,7 @@ impl Workspace {
     fn render_offline_button(&self, appearance: &Appearance) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder().clone();
 
-        let tool_tip_label_text = "Some features may be unavailable offline".to_string();
+        let tool_tip_label_text = "Alguns recursos podem ficar indisponíveis offline".to_string();
         let icon = ConstrainedBox::new(
             Container::new(
                 icons::Icon::CloudOffline
@@ -24167,7 +24167,13 @@ impl TypedActionView for Workspace {
         match action {
             WorkspaceAction::SetA11yVerbosityLevel(verbosity) => {
                 ActionAccessibilityContent::Custom(AccessibilityContent::new_without_help(
-                    format!("{verbosity:?} accessibility announcements set"),
+                    format!(
+                        "Anúncios do leitor de tela definidos como {}",
+                        match verbosity {
+                            AccessibilityVerbosity::Verbose => "detalhado",
+                            AccessibilityVerbosity::Concise => "conciso",
+                        }
+                    ),
                     WarpA11yRole::UserAction,
                 ))
             }

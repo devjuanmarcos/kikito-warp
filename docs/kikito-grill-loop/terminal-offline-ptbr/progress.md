@@ -1166,3 +1166,8 @@
 ## Auditoria de tooltips em pane_group
 
 - Os tooltips em inglês de `pane_group/pane/view/header/sharing.rs` pertencem aos controles de compartilhamento e permissão de conteúdo compartilhado; não são superfícies locais do perfil OSS offline e ficaram fora do lote.
+
+## Tooltips e acessibilidade do workspace
+
+- Traduzi o tooltip do painel de gerenciamento de agentes, o rótulo de Configurações e o aviso de recursos indisponíveis offline. Os controles aparecem no workspace desktop; o painel de agentes está entre os recursos padrão do app.
+- Localizei o anúncio acessível de alteração da verbosidade do leitor de tela, com rótulos detalhado/conciso sem alterar os valores persistidos. Ignorei mensagens de handoff e conta/cloud.
