@@ -1176,3 +1176,7 @@
 
 - Revisei `vertical_tabs.rs` e os controles de abas em `workspace/view.rs`: tooltips, busca e estado sem resultados estão em português; as strings restantes são nomes de produtos/dados dinâmicos, identificadores ou comentários.
 - O caminho `app/src/workspace/tab.rs` não existe nesta estrutura; `tab_group.rs` não contém copy visível. Não encontrei novos textos locais para alterar neste lote.
+
+## Falha ao localizar shell alternativo
+
+- Traduzi a mensagem exibida quando nenhum shell alternativo pode ser encontrado; mantive PowerShell e WSL como referências e indiquei selecioná-los nas configurações de shell. Removi a instrução para abrir uma issue externa.

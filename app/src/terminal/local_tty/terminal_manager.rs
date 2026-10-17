@@ -861,7 +861,10 @@ fn on_shell_determined<S: TerminalSurface>(
             report_error!("Could not compute fallback shell");
             manager.view.update(ctx, |surface, ctx| {
                 surface.on_pty_spawn_failed(
-                    anyhow::Error::msg("Could not find a fallback shell. If you have PowerShell or WSL installed, please file an issue."),
+                    anyhow::Error::msg(
+                        "Não foi possível encontrar um shell alternativo. Se o PowerShell ou o WSL estiver \
+                        instalado, selecione-o nas configurações de shell e tente novamente.",
+                    ),
                     ctx,
                 );
             });
