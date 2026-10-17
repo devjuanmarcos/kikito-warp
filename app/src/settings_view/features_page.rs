@@ -4004,7 +4004,7 @@ impl FeaturesPageView {
                 .with_child(
                     appearance
                         .ui_builder()
-                        .span("Autohides on loss of keyboard focus")
+                        .span("Ocultar automaticamente ao perder o foco do teclado")
                         .build()
                         .with_margin_left(5.)
                         .finish(),

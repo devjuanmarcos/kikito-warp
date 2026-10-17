@@ -849,3 +849,8 @@
 
 - Traduzi o rótulo do atalho de teclado e a instrução para definir o atalho global.
 - Preservei a captura e a gravação dos atalhos.
+
+## Tradução — ocultar janela Quake Mode
+
+- Traduzi a opção de ocultar a janela ao perder o foco do teclado.
+- Preservei o controle e o estado configurável do Quake Mode.
