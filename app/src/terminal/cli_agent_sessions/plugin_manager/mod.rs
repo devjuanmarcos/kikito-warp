@@ -200,12 +200,12 @@ pub(crate) trait CliAgentPluginManager: Send + Sync {
 
     /// Toast message shown after a successful auto-install.
     fn install_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal instalado. Reinicie a sessão para ativá-lo."
+        "Plugin do Warp instalado. Reinicie a sessão para ativá-lo."
     }
 
     /// Toast message shown after a successful auto-update.
     fn update_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal atualizado. Reinicie a sessão para ativá-lo."
+        "Plugin do Warp atualizado. Reinicie a sessão para ativá-lo."
     }
 
     /// Manual installation instructions for the modal UI.

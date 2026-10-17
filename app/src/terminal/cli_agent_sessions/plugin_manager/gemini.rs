@@ -106,11 +106,11 @@ impl CliAgentPluginManager for GeminiPluginManager {
     }
 
     fn install_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal instalado. Reinicie o Gemini CLI para ativá-lo."
+        "Plugin do Warp instalado. Reinicie o Gemini CLI para ativá-lo."
     }
 
     fn update_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal atualizado. Reinicie o Gemini CLI para ativá-lo."
+        "Plugin do Warp atualizado. Reinicie o Gemini CLI para ativá-lo."
     }
 
     fn install_instructions(&self) -> &'static PluginInstructions {
@@ -123,10 +123,10 @@ impl CliAgentPluginManager for GeminiPluginManager {
 }
 
 static INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Instalar plugin do Kikito Terminal para Gemini CLI",
+    title: "Instalar plugin do Warp para Gemini CLI",
     subtitle: "Execute o comando a seguir e reinicie o Gemini CLI.",
     steps: &[PluginInstructionStep {
-        description: "Instalar a extensão do Kikito Terminal",
+        description: "Instalar a extensão do Warp",
         command: "gemini extensions install https://github.com/warpdotdev/gemini-cli-warp --consent",
         executable: true,
         link: None,
@@ -135,10 +135,10 @@ static INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| Plu
 });
 
 static UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Atualizar plugin do Kikito Terminal para Gemini CLI",
+    title: "Atualizar plugin do Warp para Gemini CLI",
     subtitle: "Execute o comando a seguir e reinicie o Gemini CLI.",
     steps: &[PluginInstructionStep {
-        description: "Atualizar a extensão do Kikito Terminal",
+        description: "Atualizar a extensão do Warp",
         command: "gemini extensions update gemini-warp",
         executable: true,
         link: None,

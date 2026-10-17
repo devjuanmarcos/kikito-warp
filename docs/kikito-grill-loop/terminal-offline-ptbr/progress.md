@@ -960,3 +960,8 @@
 - Traduzi mensagens de instalação e atualização bem-sucedidas, erros e instruções de ativação/reinício para Claude Code, Codex e Gemini CLI.
 - Traduzi os textos compartilhados dos botões e erros de comando; preservei comandos, nomes dos agentes, caminhos, URLs e configurações literais.
 - Substituí as referências visíveis de marca Warp por Kikito Terminal.
+
+## Tradução — aviso da AWS CLI e identidade do plugin externo
+
+- Traduzi o título, a descrição e o botão do aviso local de instalação da AWS CLI.
+- Preservei “Warp” nas referências ao plugin e marketplace de terceiros, evitando atribuir essa integração ao Kikito Terminal; comandos, URLs, IDs e ações permanecem intactos.

@@ -193,11 +193,11 @@ impl CliAgentPluginManager for CodexPluginManager {
     }
 
     fn install_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal instalado. Reinicie o Codex para ativá-lo."
+        "Plugin do Warp instalado. Reinicie o Codex para ativá-lo."
     }
 
     fn update_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal atualizado. Reinicie o Codex para ativá-lo."
+        "Plugin do Warp atualizado. Reinicie o Codex para ativá-lo."
     }
 
     fn install_instructions(&self) -> &'static PluginInstructions {
@@ -273,17 +273,17 @@ impl CliAgentPluginManager for CodexPluginManager {
 
 static PLUGIN_INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> =
     LazyLock::new(|| PluginInstructions {
-        title: "Instalar plugin do Kikito Terminal para Codex",
+        title: "Instalar plugin do Warp para Codex",
         subtitle: "Execute os comandos a seguir e reinicie o Codex.",
         steps: &[
             PluginInstructionStep {
-                description: "Adicionar o repositório do marketplace de plugins do Kikito Terminal",
+                description: "Adicionar o repositório do marketplace de plugins do Warp",
                 command: "codex plugin marketplace add warpdotdev/codex-warp",
                 executable: true,
                 link: None,
             },
             PluginInstructionStep {
-                description: "Instalar o plugin do Kikito Terminal",
+                description: "Instalar o plugin do Warp",
                 command: "codex plugin add warp@codex-warp",
                 executable: true,
                 link: None,
@@ -294,8 +294,8 @@ static PLUGIN_INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> =
 
 static NATIVE_INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| {
     PluginInstructions {
-        title: "Ativar notificações do Kikito Terminal no Codex",
-        subtitle: "Atualize o Codex para a versão mais recente e ative as notificações em foco para que o Kikito Terminal possa exibi-las enquanto você trabalha.",
+        title: "Ativar notificações do Warp no Codex",
+        subtitle: "Atualize o Codex para a versão mais recente e ative as notificações em foco para que o Warp possa exibi-las enquanto você trabalha.",
         steps: &[
             PluginInstructionStep {
                 description: "Atualize o Codex para a versão mais recente.",
@@ -323,7 +323,7 @@ static EMPTY_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| Plugi
 
 static PLUGIN_UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| {
     PluginInstructions {
-        title: "Atualizar plugin do Kikito Terminal para Codex",
+        title: "Atualizar plugin do Warp para Codex",
         subtitle: "Execute os comandos a seguir e reinicie o Codex.",
         steps: &[
             PluginInstructionStep {
@@ -333,7 +333,7 @@ static PLUGIN_UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(
                 link: None,
             },
             PluginInstructionStep {
-                description: "Reinstalar o plugin do Kikito Terminal",
+                description: "Reinstalar o plugin do Warp",
                 command: "codex plugin add warp@codex-warp",
                 executable: true,
                 link: None,

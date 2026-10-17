@@ -145,11 +145,11 @@ impl CliAgentPluginManager for ClaudeCodePluginManager {
     }
 
     fn install_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal instalado. Execute /reload-plugins para ativá-lo."
+        "Plugin do Warp instalado. Execute /reload-plugins para ativá-lo."
     }
 
     fn update_success_message(&self) -> &'static str {
-        "Plugin do Kikito Terminal atualizado. Execute /reload-plugins para ativá-lo."
+        "Plugin do Warp atualizado. Execute /reload-plugins para ativá-lo."
     }
 
     fn install_instructions(&self) -> &'static PluginInstructions {
@@ -210,17 +210,17 @@ impl CliAgentPluginManager for ClaudeCodePluginManager {
 }
 
 static INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Instalar plugin do Kikito Terminal para Claude Code",
+    title: "Instalar plugin do Warp para Claude Code",
     subtitle: "Verifique se jq está instalado. Em seguida, execute estes comandos.",
     steps: &[
         PluginInstructionStep {
-            description: "Adicionar o repositório do marketplace de plugins do Kikito Terminal",
+            description: "Adicionar o repositório do marketplace de plugins do Warp",
             command: "claude plugin marketplace add warpdotdev/claude-code-warp",
             executable: true,
             link: None,
         },
         PluginInstructionStep {
-            description: "Instalar o plugin do Kikito Terminal",
+            description: "Instalar o plugin do Warp",
             command: "claude plugin install warp@claude-code-warp",
             executable: true,
             link: None,
@@ -234,7 +234,7 @@ static INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| Plu
 });
 
 static UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Atualizar plugin do Kikito Terminal para Claude Code",
+    title: "Atualizar plugin do Warp para Claude Code",
     subtitle: "Execute os comandos a seguir.",
     steps: &[
         PluginInstructionStep {
