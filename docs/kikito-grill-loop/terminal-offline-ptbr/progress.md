@@ -1502,3 +1502,8 @@
 
 - O banner de compra de créditos e o modal de recarga automática agora ficam indisponíveis no canal OSS: guarda na inserção, renderização, ações e encaminhamento/abertura dos eventos. Canais não OSS mantêm o comportamento existente.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Menu local de histórico inline
+
+- Traduzi o cabeçalho do menu de histórico e o título padrão das conversas sem nome.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
