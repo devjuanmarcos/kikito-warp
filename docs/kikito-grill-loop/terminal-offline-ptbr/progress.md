@@ -1871,3 +1871,9 @@
 - Em `app/src/settings_view/warpify_page.rs`, traduzi o cabeçalho fixo `Subshells` para `Shells aninhados`. Em `app/src/settings_view/mod.rs`, defini o rótulo visível da página `SettingsSection::Warpify` como `Integração de shells`, removendo o fallback de depuração `Warpify` da navegação. Os textos descritivos da página já usavam `Kikito Terminal`.
 - Revisei `scripting_page.rs`: o copy visível já está em português; mantive `warpctrl` porque é o nome do comando CLI e os IDs de telemetria. Essa página só aparece quando `WarpControlCli` está habilitada. Excluí `show_blocks_view.rs`, que trata de blocos compartilhados hospedados e não aparece quando a sessão OSS está desconectada/anônima.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Cobertura — navegação de configurações no OSS
+
+- Conferi o registro em `app/src/settings_view/mod.rs`: no canal OSS, `settings_pages` e a navegação são filtrados para `Appearance`, `Keybindings` e `About`. Essas três páginas, a busca e seus diálogos/dicas locais já foram auditados em lotes anteriores; o shell de configurações não expõe páginas locais adicionais no OSS.
+- Páginas como recursos, integrações de shell, editor/revisão, privacidade e blocos compartilhados não entram nessa lista OSS. Não reabri esses lotes; `show_blocks_view.rs` e as páginas hospedadas permanecem excluídas por dependerem de conta/serviços externos.
+- Não encontrei nova string fixa para traduzir nesta verificação de cobertura. Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
