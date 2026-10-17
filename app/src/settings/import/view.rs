@@ -411,19 +411,19 @@ impl SettingsImportView {
                 .any(|setting| setting.setting_type == SettingType::Theme)
             {
                 if num_prefs == 1 {
-                    preference_text_elements.push(self.render_secondary_text(appearance, "Theme"));
+                    preference_text_elements.push(self.render_secondary_text(appearance, "Tema"));
                 } else {
-                    preference_text_elements.push(self.render_secondary_text(appearance, "Theme,"));
+                    preference_text_elements.push(self.render_secondary_text(appearance, "Tema,"));
                 }
                 theme_subtraction = 1;
             }
             match num_prefs - theme_subtraction {
                 1 => preference_text_elements
-                    .push(self.render_secondary_text(appearance, "1 other setting")),
+                    .push(self.render_secondary_text(appearance, "1 outra configuração")),
                 0 => (),
                 _ => preference_text_elements.push(self.render_secondary_text(
                     appearance,
-                    format!("{} other settings", num_prefs - theme_subtraction),
+                    format!("{} outras configurações", num_prefs - theme_subtraction),
                 )),
             }
         }
@@ -988,8 +988,8 @@ impl View for SettingsImportView {
             })
             .with_button_vertical_offset(DROPDOWN_VERTICAL_PADDING);
 
-        const WELCOME_TEXT: &str = "Select a settings profile to import:";
-        const LOADING_TEXT: &str = "Looking for settings to import...";
+        const WELCOME_TEXT: &str = "Selecione um perfil de configurações para importar:";
+        const LOADING_TEXT: &str = "Procurando configurações para importar...";
 
         let mut display_new_session_text = false;
 
@@ -1013,7 +1013,7 @@ impl View for SettingsImportView {
         if display_new_session_text {
             new_session_setting_text = Container::new(
                 Text::new(
-                    "Some settings will take effect when you open a new session.",
+                    "Algumas configurações só entram em vigor quando você abrir uma nova sessão.",
                     font_family,
                     font_size,
                 )

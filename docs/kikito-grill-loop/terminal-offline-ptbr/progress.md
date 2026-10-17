@@ -1419,3 +1419,9 @@
 
 - Traduzi para pt-BR os avisos locais exibidos quando um objeto sincronizado não é encontrado ou o acesso é negado, incluindo os caminhos de abertura por link.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Importação de configurações e dicas do agente
+
+- Traduzi os estados e resumos do importador de configurações locais, incluindo carregamento, perfil selecionado, opções e aviso de sessão nova.
+- Traduzi as dicas do agente, os rótulos de ações e o atalho “Saiba mais”. No OSS, as dicas do Warp Drive são omitidas e nenhuma dica oferece links para documentação hospedada.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
