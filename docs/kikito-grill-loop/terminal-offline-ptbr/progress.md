@@ -929,3 +929,8 @@
 
 - Traduzi os avisos sobre demora ao iniciar o shell e falha no preenchimento automático, incluindo botões e links de ajuda.
 - Preservei as URLs, o atalho para abrir configurações e a ação para mostrar o bloco de inicialização.
+
+## Tradução — aviso de atalhos Emacs no terminal
+
+- Traduzi a pergunta sobre o uso de Ctrl+A/Ctrl+E e os botões para escolher entre atalhos Emacs e IDE.
+- Preservei as teclas exibidas e as ações de dispensa temporária ou permanente.
