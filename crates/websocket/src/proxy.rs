@@ -7,6 +7,7 @@
 //! module: <https://github.com/snapview/tungstenite-rs/pull/530>
 
 use std::env;
+use std::net::IpAddr;
 use std::time::Duration;
 
 use anyhow::{Context, bail};
@@ -53,13 +54,22 @@ pub fn resolve_proxy(uri: &http::Uri) -> anyhow::Result<Option<ProxyInfo>> {
         return Ok(None);
     };
 
-    if is_no_proxy(target_host) {
+    if is_loopback_host(target_host) || is_no_proxy(target_host) {
         return Ok(None);
     }
 
     parse_proxy_url(&proxy_url)
         .with_context(|| format!("Invalid proxy URL configured in {proxy_env_name}"))
         .map(Some)
+}
+
+fn is_loopback_host(host: &str) -> bool {
+    let host = host.trim_start_matches('[').trim_end_matches(']');
+    host.eq_ignore_ascii_case("localhost")
+        || host.to_ascii_lowercase().ends_with(".localhost")
+        || host
+            .parse::<IpAddr>()
+            .is_ok_and(|address| address.is_loopback())
 }
 
 /// Establishes a TCP connection through an HTTP proxy using the CONNECT method.

@@ -1898,3 +1898,5 @@
 - Revisei as chamadas de conexão WebSocket e confirmei que `crates/websocket` usa TCP diretamente, fora da política central de `crates/http_client`.
 - Os fluxos de sessões compartilhadas e recursos cloud encontrados dependem de flags que `app/src/features.rs::init_feature_flags` desativa no canal OSS; as actions para abrir sessões compartilhadas também só são registradas quando a flag correspondente está habilitada.
 - A proteção de WebSocket é feita nos consumidores conhecidos, não por um bloqueio central de rede. A auditoria estática não garante ausência de conexões em todos os fluxos nem cobre processos filhos; a verificação runtime segue parcial. Detalhes em `evidence/network-boundaries.md`.
+- Corrigi `crates/websocket/src/proxy.rs` para não enviar destinos loopback por proxies de ambiente, mesmo sem uma entrada correspondente em `NO_PROXY`. O TTY remoto local usa `127.0.0.1:3030`.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p websocket` passaram; nenhum teste foi executado.
