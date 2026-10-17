@@ -1290,3 +1290,7 @@
 ## Indicador de inicialização do shell no TUI
 
 - Traduzi o estado local exibido enquanto o terminal inicia: `Starting terminal...` para `Iniciando o terminal...`. Mantive fora desta revisão as telas de autenticação e recuperação de conversas.
+
+## Preferências locais no TUI
+
+- Traduzi as mensagens de alteração e persistência do tema e do modo Vim no ciclo de sessão do TUI. Mantive `auto`, `light` e `dark` como valores aceitos pelo comando.

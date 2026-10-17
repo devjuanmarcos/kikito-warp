@@ -363,7 +363,7 @@ const SWITCH_CONVERSATION_RUNNING_HINT: &str =
 const SWITCH_LOADING_HINT: &str = "Another conversation is already loading.";
 const SWITCH_UNAVAILABLE_HINT: &str = "That conversation is no longer available.";
 const LOADING_CONVERSATION_HINT: &str = "Loading conversation…";
-const THEME_INVALID_ARGUMENT_HINT: &str = "Theme must be auto, light, or dark.";
+const THEME_INVALID_ARGUMENT_HINT: &str = "O tema deve ser auto, light ou dark.";
 
 /// Footer label shown while the input is in `!` shell mode. The how-to-exit
 /// guidance lives in the input's placeholder ghost text, so the footer only
@@ -378,10 +378,10 @@ const LOG_BUNDLE_FAILED_HINT: &str = "Failed to create log bundle (check logs)";
 const NLD_ENABLED_HINT: &str = "Natural language detection enabled.";
 const NLD_DISABLED_HINT: &str = "Natural language detection disabled.";
 const NLD_PERSISTENCE_FAILED_HINT: &str = "Could not save the natural language detection setting.";
-const VIM_MODE_ENABLED_HINT: &str = "Vim mode enabled.";
-const VIM_MODE_DISABLED_HINT: &str = "Vim mode disabled.";
-const VIM_MODE_PERSISTENCE_FAILED_HINT: &str = "Could not save the vim mode setting.";
-const THEME_PERSISTENCE_FAILED_HINT: &str = "Could not save the theme setting.";
+const VIM_MODE_ENABLED_HINT: &str = "Modo Vim ativado.";
+const VIM_MODE_DISABLED_HINT: &str = "Modo Vim desativado.";
+const VIM_MODE_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração do modo Vim.";
+const THEME_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração do tema.";
 const ZERO_STATE_ASCII_INITIAL_LOAD_FAILED_HINT: &str =
     "Could not load custom ASCII art. Using the built-in Warp logo.";
 const ZERO_STATE_ASCII_RELOAD_FAILED_HINT: &str =
