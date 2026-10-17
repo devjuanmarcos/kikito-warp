@@ -353,6 +353,7 @@ impl Display for SettingsSection {
             SettingsSection::Keybindings => write!(f, "Atalhos de teclado"),
             SettingsSection::SharedBlocks => write!(f, "Blocos compartilhados"),
             SettingsSection::Scripting => write!(f, "Automação"),
+            SettingsSection::Warpify => write!(f, "Integração de shells"),
             SettingsSection::WarpDrive => write!(f, "Drive"),
             SettingsSection::WarpAgent => write!(f, "Agente de IA"),
             SettingsSection::AgentProfiles => write!(f, "Perfis"),

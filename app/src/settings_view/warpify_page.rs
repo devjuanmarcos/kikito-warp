@@ -151,7 +151,8 @@ impl WarpifyPageView {
         let mut categories = vec![
             Category::new("", vec![Box::new(TitleWidget::default())]),
             Category::with_header(
-                CategoryHeader::new("Subshells").with_subtitle("Compatível com bash, zsh e fish."),
+                CategoryHeader::new("Shells aninhados")
+                    .with_subtitle("Compatível com bash, zsh e fish."),
                 vec![Box::new(SubshellsWidget::default())],
             ),
         ];

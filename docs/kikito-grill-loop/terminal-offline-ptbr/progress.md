@@ -1865,3 +1865,9 @@
 - Revisei os widgets de inicialização do shell, diretório de trabalho, reabertura de sessões fechadas e editor externo nos arquivos `app/src/settings_view/features_page.rs` e `app/src/settings_view/features/`. Os títulos, descrições, opções, placeholders e rótulos fixos visíveis já estão em português; não precisei alterar código. Os nomes reconhecidos de shells, aplicativos externos, `$EDITOR` e caminhos do usuário foram preservados.
 - O editor externo aparece na página local de editor/revisão de código; mantive os nomes de editores e atalhos técnicos. Strings de busca interna, IDs de view, telemetria, comentários e mensagens de diagnóstico em inglês não são copy visível. Não incluí outros widgets da página de recursos ligados a IA, workflow ou serviços hospedados.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — automação e integração de shells nas configurações
+
+- Em `app/src/settings_view/warpify_page.rs`, traduzi o cabeçalho fixo `Subshells` para `Shells aninhados`. Em `app/src/settings_view/mod.rs`, defini o rótulo visível da página `SettingsSection::Warpify` como `Integração de shells`, removendo o fallback de depuração `Warpify` da navegação. Os textos descritivos da página já usavam `Kikito Terminal`.
+- Revisei `scripting_page.rs`: o copy visível já está em português; mantive `warpctrl` porque é o nome do comando CLI e os IDs de telemetria. Essa página só aparece quando `WarpControlCli` está habilitada. Excluí `show_blocks_view.rs`, que trata de blocos compartilhados hospedados e não aparece quando a sessão OSS está desconectada/anônima.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
