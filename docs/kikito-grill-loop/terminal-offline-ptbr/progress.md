@@ -844,3 +844,8 @@
 
 - Traduzi os cabeçalhos de pastas indexadas e servidores LSP.
 - Mantive o acrônimo técnico e os dados de indexação.
+
+## Tradução — atalhos globais nas configurações
+
+- Traduzi o rótulo do atalho de teclado e a instrução para definir o atalho global.
+- Preservei a captura e a gravação dos atalhos.
