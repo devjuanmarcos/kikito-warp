@@ -1582,3 +1582,10 @@
 
 - A inspeção de processo/socket identificou o processo ativo como `C:\Program Files\Warp\warp.exe`, a instalação oficial já existente, não o binário Kikito Terminal OSS. As duas conexões HTTPS a `34.117.41.85:443` pertenciam somente a esse processo e não foram usadas como evidência sobre o Kikito.
 - Não havia processo OSS ativo para observar; portanto, a captura runtime do OSS enquanto ações da interface são usadas continua pendente.
+
+## Auditoria de preferências locais no TUI OSS
+
+- Auditei as telas locais de aparência/tema, atalhos e configuração da linha de status. Os títulos, descrições de ações, rótulos de itens, rodapés e confirmações verificados já estão em pt-BR; não alterei código neste lote.
+- Mantive `auto`, `light` e `dark` como valores aceitos pelo comando `/theme` e pelos arquivos de configuração. A tela de atalhos não tem um menu de edição dedicado; ela lista os atalhos ativos, com descrições localizadas. Não encontrei uma tela geral de preferências no TUI OSS neste escopo.
+- Uma superfície próxima que ainda pode merecer auditoria separada é a documentação em inglês embutida nos metadados de configurações em `app/src/settings`, que não é texto destas telas TUI.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
