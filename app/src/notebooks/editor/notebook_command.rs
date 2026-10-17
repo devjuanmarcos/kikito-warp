@@ -686,7 +686,7 @@ impl RunnableCommandModel for NotebookCommand {
             .with_active_styles(active_highlight)
             .with_tooltip(move || {
                 tooltip_builder_raw
-                    .tool_tip("Raw".to_string())
+                    .tool_tip("Código-fonte".to_string())
                     .build()
                     .finish()
             })
@@ -711,7 +711,7 @@ impl RunnableCommandModel for NotebookCommand {
             .with_active_styles(active_highlight)
             .with_tooltip(move || {
                 tooltip_builder_rendered
-                    .tool_tip("Rendered".to_string())
+                    .tool_tip("Visualização".to_string())
                     .build()
                     .finish()
             })
@@ -752,7 +752,7 @@ impl RunnableCommandModel for NotebookCommand {
                             self.mouse_state_handles
                                 .mermaid_fullscreen_button_state
                                 .clone(),
-                            "Open full screen",
+                            "Abrir em tela cheia",
                             None,
                         )
                         .on_click(move |ctx, app, _| {

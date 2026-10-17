@@ -778,3 +778,8 @@
 
 - Traduzi os placeholders e o botão para inserir links em cadernos.
 - Preservei o modelo do editor e a ação que aplica o link selecionado.
+
+## Tradução — visualização de diagramas Mermaid
+
+- Traduzi as dicas dos modos de código-fonte e visualização, além do comando de tela cheia.
+- Preservei os modos Mermaid e a ação de abrir o diagrama ampliado.
