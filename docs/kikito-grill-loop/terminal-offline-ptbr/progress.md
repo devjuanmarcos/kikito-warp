@@ -7,7 +7,7 @@
 - Bloqueios no perfil OSS cobrem clientes HTTP compartilhados, assets remotos, subscriptions GraphQL, MCP, telemetria, crash reporting, tracing OTLP, credenciais AWS/SSO, OIDC/STS e abertura de links HTTP/HTTPS externos. Endereços loopback continuam permitidos.
 - Fluxos de autorização de provedores integrados (SuperGrok, assinatura ChatGPT e Gemini Enterprise) também ficam desativados no perfil OSS, inclusive quando havia preferências antigas persistidas.
 - A interface OSS oculta menus e páginas que dependem de conta, Drive, colaboração ou serviços remotos. Identificadores técnicos herdados, como `dev.warp.WarpOss`, foram mantidos para compatibilidade com dados e integrações locais.
-- Nome, ícones, metadados e instaladores do canal OSS usam Kikito Terminal e a identidade KT aprovada. A tradução pt-BR avançou em menus, configurações, paleta e busca, mas ainda não cobre toda a interface.
+- Nome, ícones, metadados e instaladores do canal OSS usam Kikito Terminal e a identidade KT aprovada. A varredura residual não encontrou mais texto fixo local em inglês sem auditoria na GUI OSS; conteúdo dinâmico, termos técnicos e fluxos hospedados permanecem fora desse escopo.
 
 ## Colagem de imagens em CLIs
 
@@ -27,10 +27,10 @@
 ## Pendências
 
 - **Isolamento de rede:** verificar conexões enquanto ações da interface são usadas; a inspeção em repouso e os bloqueios de código não cobrem cada fluxo em runtime.
-- **Tradução:** completar a localização das superfícies locais visíveis em pt-BR, incluindo diálogos, tooltips, mensagens, acessibilidade e estados vazios. Conteúdo exclusivamente remoto deve permanecer fora do escopo OSS.
+- **Tradução:** revisar visualmente a GUI OSS após a ampla auditoria de código de rótulos, diálogos, tooltips, acessibilidade e estados vazios. Saída do shell, conteúdo dinâmico de provedores e termos técnicos não são strings fixas de interface e permanecem como estão.
 - **TUI:** manter `PROTOC` disponível no `PATH` ou configurado em `PROTOC` para builds locais.
 
-**Status: EM ANDAMENTO.** A colagem de imagens está resolvida e confirmada pelo usuário. A localização e a verificação abrangente de rede continuam em andamento.
+**Status: EM ANDAMENTO.** A colagem de imagens está resolvida e confirmada pelo usuário. A localização fixa da GUI OSS passou por uma varredura ampla; falta a revisão visual. A captura de rede durante ações reais da GUI também continua pendente.
 
 ## Tradução — paleta, busca, abas e worktrees
 
