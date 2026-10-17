@@ -965,3 +965,8 @@
 
 - Traduzi o título, a descrição e o botão do aviso local de instalação da AWS CLI.
 - Preservei “Warp” nas referências ao plugin e marketplace de terceiros, evitando atribuir essa integração ao Kikito Terminal; comandos, URLs, IDs e ações permanecem intactos.
+
+## Tradução — avisos de notificação no terminal
+
+- Traduzi os estados, explicações e ações do banner local de notificações.
+- Atualizei a referência ao aplicativo para Kikito Terminal; nomes de ações, eventos e modos de notificação foram preservados.
