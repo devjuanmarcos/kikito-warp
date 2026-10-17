@@ -839,3 +839,8 @@
 
 - Traduzi o botão que inicia a criação de um perfil de agente.
 - Preservei o acionamento e a habilitação conforme a disponibilidade de agentes.
+
+## Tradução — cabeçalhos de indexação local
+
+- Traduzi os cabeçalhos de pastas indexadas e servidores LSP.
+- Mantive o acrônimo técnico e os dados de indexação.
