@@ -2302,7 +2302,7 @@ impl SettingsWidget for AgentsWidget {
                 .finish(),
             );
             agents_header.add_child(render_ai_setting_description(
-                "Set the boundaries for how your Agent operates. Choose what it can access, how much autonomy it has, and when it must ask for your approval. You can also fine-tune behavior around natural language input, codebase awareness, and more.",
+                "Defina os limites de atuação do Agente Kikito. Escolha o que ele pode acessar, o nível de autonomia e quando deve pedir sua aprovação. Você também pode ajustar o comportamento para entrada em linguagem natural, compreensão da base de código e outros aspectos.",
                 ai_settings.is_any_ai_enabled(app),
                 app,
             ));
@@ -2349,7 +2349,7 @@ impl AgentsWidget {
             .with_child(
                 Container::new(
                     render_ai_setting_description(
-                        "Profiles let you define how your Agent operates — from the actions it can take and when it needs approval, to the models it uses for tasks like coding and planning. You can also scope them to individual projects.",
+                        "Os perfis definem como o agente atua — quais ações pode executar, quando precisa de aprovação e quais modelos usa em tarefas como programação e planejamento. Também é possível vinculá-los a projetos específicos.",
                         is_any_ai_enabled,
                         app,
                     )
@@ -2817,8 +2817,8 @@ impl AgentsWidget {
             appearance,
         );
         render_ai_list(
-            "Command denylist",
-            "Regular expressions to match commands that the Warp Agent should always ask permission to execute.",
+            "Lista de bloqueio de comandos",
+            "Expressões regulares para identificar comandos cuja execução o Agente Kikito deve sempre confirmar com você.",
             list,
             view,
             ai_settings,
@@ -2855,8 +2855,8 @@ impl AgentsWidget {
         );
 
         render_ai_list(
-            "Command allowlist",
-            "Regular expressions to match commands that can be automatically executed by the Warp Agent.",
+            "Lista de permissão de comandos",
+            "Expressões regulares para identificar comandos que o Agente Kikito pode executar automaticamente.",
             list,
             view,
             ai_settings,
@@ -2957,9 +2957,9 @@ impl AgentsWidget {
 
         render_dropdown_item(
             appearance,
-            "Base model",
+            "Modelo principal",
             Some(
-                "This model serves as the primary engine behind the Warp Agent. It powers most interactions and invokes other models for tasks like planning or code generation when necessary. Warp may automatically switch to alternate models based on model availability or for auxiliary tasks such as conversation summarization.",
+                "Este modelo é o principal mecanismo do Agente Kikito. Ele conduz a maioria das interações e aciona outros modelos para tarefas como planejamento ou geração de código quando necessário. O Kikito Terminal pode alternar automaticamente para outros modelos conforme a disponibilidade ou para tarefas auxiliares, como resumir conversas.",
             ),
             Some(show_in_prompt_checkbox),
             LocalOnlyIconState::Hidden,
@@ -2979,7 +2979,7 @@ impl AgentsWidget {
     ) -> Box<dyn Element> {
         let code_settings = CodeSettings::as_ref(app);
         let toggle = render_ai_setting_toggle::<CodebaseContextEnabled>(
-            "Codebase Context",
+            "Contexto da base de código",
             AgentProfilesPageAction::ToggleCodebaseContext,
             *code_settings.codebase_context_enabled,
             ai_settings.is_any_ai_enabled(app),
@@ -2990,10 +2990,10 @@ impl AgentsWidget {
 
         let codebase_context_description = vec![
             FormattedTextFragment::plain_text(
-                "Allow the Warp Agent to generate an outline of your codebase that can be used for context. No code is ever stored on our servers. ",
+                "Permita que o Agente Kikito gere uma visão geral da sua base de código para usar como contexto. ",
             ),
             FormattedTextFragment::hyperlink(
-                "Learn more",
+                "Saiba mais",
                 "https://docs.warp.dev/agents/capabilities/codebase-context",
             ),
         ];
@@ -3046,7 +3046,7 @@ impl AgentsWidget {
         app: &AppContext,
     ) -> Box<dyn Element> {
         let header = Container::new(render_body_item_label_with_icon::<AgentProfilesPageAction>(
-            "Call MCP servers".into(),
+            "Acessar servidores MCP".into(),
             Icon::Dataflow,
             Some(styles::header_font_color(
                 ai_settings.is_any_ai_enabled(app),
@@ -3063,15 +3063,15 @@ impl AgentsWidget {
         let subtext = {
             let subtext_fragments = vec![
                 FormattedTextFragment::plain_text(
-                    "You haven't added any MCP servers yet. Once you do, you'll be able to control how much autonomy the Warp Agent has when interacting with them. ",
+                    "Você ainda não adicionou servidores MCP. Depois de adicioná-los, poderá definir o nível de autonomia do Agente Kikito ao interagir com eles. ",
                 ),
                 FormattedTextFragment::hyperlink_action(
-                    "Add a server",
+                    "Adicionar servidor",
                     AgentProfilesPageAction::OpenMCPServerCollection,
                 ),
                 FormattedTextFragment::plain_text(" or "),
                 FormattedTextFragment::hyperlink(
-                    "learn more about MCPs.",
+                    "saiba mais sobre MCP.",
                     "https://docs.warp.dev/agents/capabilities/mcp",
                 ),
             ];
@@ -3130,7 +3130,7 @@ impl AgentsWidget {
             BlocklistAIPermissions::as_ref(app).get_mcp_permissions_setting(app, None);
 
         let permission_setting = self.render_execution_profile_dropdown(
-            "Call MCP servers",
+            "Acessar servidores MCP",
             Icon::Dataflow,
             current_mcp_setting.description(),
             &view.mcp_permissions_dropdown_menu,
@@ -3144,8 +3144,8 @@ impl AgentsWidget {
             || current_mcp_setting == ActionPermission::AgentDecides
         {
             let allowlist = self.render_mcp_list(
-                "MCP allowlist",
-                "Allow the Warp Agent to call these MCP servers.",
+                "Lista de permissão MCP",
+                "Permita que o Agente Kikito acesse estes servidores MCP.",
                 &view.mcp_allowlist_dropdown,
                 BlocklistAIPermissions::as_ref(app).get_mcp_allowlist(app, None),
                 view.mcp_allowlist_mouse_state_handles.clone(),
@@ -3161,8 +3161,8 @@ impl AgentsWidget {
             || current_mcp_setting == ActionPermission::AgentDecides
         {
             let denylist = self.render_mcp_list(
-                "MCP denylist",
-                "The Warp Agent will always ask for permission before calling any MCP servers on this list.",
+                "Lista de bloqueio MCP",
+                "O Agente Kikito sempre pedirá permissão antes de acessar os servidores MCP desta lista.",
                 &view.mcp_denylist_dropdown,
                 BlocklistAIPermissions::as_ref(app).get_mcp_denylist(app, None),
                 view.mcp_denylist_mouse_state_handles.clone(),

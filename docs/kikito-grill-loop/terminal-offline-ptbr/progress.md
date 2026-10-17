@@ -1088,3 +1088,9 @@
 
 - Traduzi o título do diálogo de abertura de configuração de aba de “Open: {nome}” para “Abrir: {nome}”, sem alterar o fluxo.
 - Revisei menus locais de abas, grupos e sessões; as ações restantes já estavam em português.
+
+
+## Perfis do Agente Kikito
+
+- Traduzi descrições de limites, perfis, listas de comandos, modelo principal, contexto da base de código e permissões MCP em `agent_profiles_page.rs`; atualizei as menções visíveis do agente próprio para Agente Kikito.
+- Preservei ações, modelos, siglas, links e configurações.
