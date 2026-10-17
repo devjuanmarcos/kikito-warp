@@ -985,3 +985,7 @@
 
 - Traduzi o título, a explicação e o botão do banner de configuração do Agent Mode.
 - Atualizei a referência de marca para Kikito Terminal e preservei o comando `/init`, as ações e os identificadores técnicos.
+
+## Revisão — banner do modo Vim
+
+- Revisei o banner local do modo Vim: o título e a ação já estavam em português do Brasil. Mantive o nome Vim e as ações existentes sem alterações no código.
