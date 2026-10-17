@@ -829,3 +829,8 @@
 
 - Traduzi o selo que identifica a sessão atual nos resultados da paleta de navegação.
 - Preservei o contexto da sessão e a navegação existentes.
+
+## Tradução — caminhos de shell e diretório
+
+- Traduzi os placeholders de caminho do executável do shell e do diretório de trabalho.
+- Preservei os valores personalizados e as configurações de sessão.

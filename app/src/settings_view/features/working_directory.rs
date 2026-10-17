@@ -368,7 +368,7 @@ fn create_editor(
         };
         ctx.add_typed_action_view(|ctx| {
             let mut editor = EditorView::single_line(options, ctx);
-            editor.set_placeholder_text("Directory path", ctx);
+            editor.set_placeholder_text("Caminho do diretório", ctx);
             editor
         })
     };
