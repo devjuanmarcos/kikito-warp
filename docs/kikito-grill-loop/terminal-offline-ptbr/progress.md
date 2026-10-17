@@ -1892,3 +1892,9 @@
 - Classifiquei as ocorrências encontradas: atalhos, tipos, erros de Rust, nomes de ações internas e logs não são texto da interface; os prompts de criação assistida dependem de IA; cadernos, revisão compartilhada, conta, autenticação, Drive, cobrança, atualização e gerenciamento de agentes dependem de serviços externos; as telas locais de entrada de projetos, dicas, aparência/temas e configurações correspondentes já constam como auditadas acima.
 - Não alterei nomes de produtos/protocolos, texto do usuário, saída dinâmica de processos, identificadores, comandos ou conteúdo técnico. Este passe cobre a busca residual e não substitui a revisão visual dos fluxos hospedados, que permanecem fora do escopo offline OSS.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria estática — conexões WebSocket
+
+- Revisei as chamadas de conexão WebSocket e confirmei que `crates/websocket` usa TCP diretamente, fora da política central de `crates/http_client`.
+- Os fluxos de sessões compartilhadas e recursos cloud encontrados dependem de flags que `app/src/features.rs::init_feature_flags` desativa no canal OSS; as actions para abrir sessões compartilhadas também só são registradas quando a flag correspondente está habilitada.
+- A proteção de WebSocket é feita nos consumidores conhecidos, não por um bloqueio central de rede. A auditoria estática não garante ausência de conexões em todos os fluxos nem cobre processos filhos; a verificação runtime segue parcial. Detalhes em `evidence/network-boundaries.md`.

@@ -9,6 +9,8 @@ Esta evidência reúne a revisão estática dos caminhos de rede do próprio pro
 - `app/src/lib.rs` registra a abertura de URL da GUI e bloqueia HTTP/HTTPS fora de loopback no canal OSS.
 - `crates/mcp/src/runtime.rs::spawn_server` retorna antes de criar o transporte ou iniciar um servidor MCP no canal OSS. Assim, também não executa comandos configurados para servidores MCP.
 - `crates/warp_core/src/channel/state.rs` configura o canal OSS com URLs locais `127.0.0.1:0`, sem endpoint de compartilhamento, telemetria, atualizador ou configuração de crash reporting. Os caminhos de inicialização/reporte correspondentes também têm condições explícitas para ignorar o canal OSS.
+- `app/src/features.rs::init_feature_flags` força para desativado no canal OSS as flags de criação/visualização de sessões compartilhadas, sessões compartilhadas por agentes, Cloud Mode, conversas cloud e outros fluxos hospedados. Isso impede o registro das actions que iniciam esses fluxos, incluindo as actions de WebSocket de sessão compartilhada registradas em `app/src/root_view.rs`.
+- O crate `websocket` abre conexões TCP diretamente e não aplica a política OSS do cliente HTTP. Os caminhos identificados no app pertencem a recursos hospedados condicionados pelas flags OSS acima; não há uma barreira central de rede que bloqueie todo WebSocket externo caso um novo chamador seja adicionado sem gate.
 
 ## Limites e interpretação
 
@@ -22,3 +24,9 @@ Esta evidência reúne a revisão estática dos caminhos de rede do próprio pro
 - Em 2026-10-17, iniciei novamente o binário com o perfil temporário `offline-ui-audit-20261017f` e validei que o handle pertencia à janela `Kikito Terminal`. Antes e depois da interação, a consulta ao PID principal encontrou somente `LISTEN 127.0.0.1:9282`, sem conexões externas naquele processo.
 - O clique de teste atingiu o controle X e abriu a confirmação local de saída, com o título `Sair do Kikito Terminal?`. A captura confirmou que esse diálogo aparece em português. A paleta e as configurações não foram abertas; a janela foi fechada sem executar comandos do usuário.
 - Esta amostra observou somente o processo GUI principal, não os processos filhos. Encerrei a árvore criada para a auditoria, confirmei que não restou `warp-oss.exe` ativo e removi a captura temporária.
+
+## Auditoria estática de WebSocket
+
+- Revisei os pontos de criação de WebSocket e os usos de `websocket::WebSocket::connect*`. No app, os fluxos encontrados pertencem a GraphQL/subscriptions, sessões compartilhadas e serviços hospedados. As actions de entrada de sessões compartilhadas dependem de `ViewingSharedSessions`; `init_feature_flags` fixa em `false` as flags OSS de sessões compartilhadas e recursos cloud antes da inicialização da interface.
+- A política de `crates/http_client` não cobre WebSocket, porque o crate `websocket` conecta diretamente via TCP. A proteção atual é por disponibilidade/gating dos consumidores, e não por bloqueio de socket no nível do processo.
+- Esta é uma inspeção estática dos pontos encontrados no código; não comprova, por si só, ausência de outros sockets durante todos os fluxos ou em processos filhos. A validação runtime permanece parcial.
