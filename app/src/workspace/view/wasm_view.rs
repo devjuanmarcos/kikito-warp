@@ -59,9 +59,11 @@ impl Workspace {
     ) -> ViewHandle<ActionButton> {
         let url = build_oz_runs_url();
         ctx.add_typed_action_view(|_ctx| {
-            ActionButton::new("Ver todas as execuções na nuvem", SecondaryTheme).on_click(move |ctx| {
-                ctx.dispatch_typed_action(WorkspaceAction::OpenLink(url.clone()));
-            })
+            ActionButton::new("Ver todas as execuções na nuvem", SecondaryTheme).on_click(
+                move |ctx| {
+                    ctx.dispatch_typed_action(WorkspaceAction::OpenLink(url.clone()));
+                },
+            )
         })
     }
 

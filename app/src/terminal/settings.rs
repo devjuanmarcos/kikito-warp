@@ -27,9 +27,13 @@ pub enum Osc52ClipboardAccess {
     #[default]
     #[schemars(description = "Impede todo acesso à área de transferência por OSC 52.")]
     Deny,
-    #[schemars(description = "Permite que programas do terminal gravem na área de transferência, mas não leiam seu conteúdo.")]
+    #[schemars(
+        description = "Permite que programas do terminal gravem na área de transferência, mas não leiam seu conteúdo."
+    )]
     WriteOnly,
-    #[schemars(description = "Permite que programas do terminal leiam e gravem na área de transferência.")]
+    #[schemars(
+        description = "Permite que programas do terminal leiam e gravem na área de transferência."
+    )]
     ReadWrite,
 }
 
@@ -63,7 +67,10 @@ impl Osc52ClipboardAccess {
     schemars::JsonSchema,
     settings_value::SettingsValue,
 )]
-#[schemars(description = "Espaçamento entre blocos do terminal.", rename_all = "snake_case")]
+#[schemars(
+    description = "Espaçamento entre blocos do terminal.",
+    rename_all = "snake_case"
+)]
 pub enum SpacingMode {
     #[default]
     #[schemars(description = "Normal")]

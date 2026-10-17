@@ -27,7 +27,10 @@ pub enum NewSessionSource {
     schemars::JsonSchema,
     settings_value::SettingsValue,
 )]
-#[schemars(description = "Where new sessions start.", rename_all = "snake_case")]
+#[schemars(
+    description = "Diretório inicial de novas sessões.",
+    rename_all = "snake_case"
+)]
 pub enum WorkingDirectoryMode {
     /// Start a new session in the user's home directory.
     HomeDir,
@@ -61,11 +64,13 @@ impl WorkingDirectoryMode {
     schemars::JsonSchema,
     settings_value::SettingsValue,
 )]
-#[schemars(description = "Working directory settings for a specific session source.")]
+#[schemars(
+    description = "Configurações do diretório de trabalho para uma origem específica de sessão."
+)]
 pub struct WorkingDirectoryPerSourceConfig {
-    #[schemars(description = "How the working directory is determined.")]
+    #[schemars(description = "Como o diretório de trabalho é definido.")]
     pub mode: WorkingDirectoryMode,
-    #[schemars(description = "Custom directory path, used when mode is CustomDir.")]
+    #[schemars(description = "Caminho personalizado, usado quando o modo é CustomDir.")]
     pub custom_dir: String,
 }
 
@@ -108,17 +113,19 @@ impl WorkingDirectoryPerSourceConfig {
     schemars::JsonSchema,
     settings_value::SettingsValue,
 )]
-#[schemars(description = "Configuration for the initial working directory of new sessions.")]
+#[schemars(description = "Configuração do diretório inicial de novas sessões.")]
 pub struct WorkingDirectoryConfig {
-    #[schemars(description = "Whether to use separate settings per session source.")]
+    #[schemars(description = "Define se cada origem de sessão deve ter configurações separadas.")]
     pub advanced_mode: bool,
-    #[schemars(description = "Default working directory settings used when advanced mode is off.")]
+    #[schemars(
+        description = "Configurações padrão do diretório quando o modo avançado está desativado."
+    )]
     pub global: WorkingDirectoryPerSourceConfig,
-    #[schemars(description = "Working directory settings for split pane sessions.")]
+    #[schemars(description = "Configurações do diretório para sessões em painéis divididos.")]
     pub split_pane: WorkingDirectoryPerSourceConfig,
-    #[schemars(description = "Working directory settings for new tab sessions.")]
+    #[schemars(description = "Configurações do diretório para novas abas.")]
     pub new_tab: WorkingDirectoryPerSourceConfig,
-    #[schemars(description = "Working directory settings for new window sessions.")]
+    #[schemars(description = "Configurações do diretório para novas janelas.")]
     pub new_window: WorkingDirectoryPerSourceConfig,
 }
 

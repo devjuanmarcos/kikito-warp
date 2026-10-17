@@ -2872,9 +2872,9 @@ impl Workspace {
                             .with_onclick_action(WorkspaceAction::OpenInExplorer { path }),
                     )
             }
-            Err(err) => DismissibleToast::error(format!(
-                "Falha ao salvar o perfil de heap: {err:#}"
-            )),
+            Err(err) => {
+                DismissibleToast::error(format!("Falha ao salvar o perfil de heap: {err:#}"))
+            }
         };
 
         self.toast_stack.update(ctx, |toast_stack, ctx| {
@@ -10738,9 +10738,13 @@ impl Workspace {
                                 .with_main_axis_size(MainAxisSize::Max)
                                 .with_cross_axis_alignment(CrossAxisAlignment::Center)
                                 .with_child(
-                                    Text::new_inline(" + Adicionar repositório", font_family, font_size)
-                                        .with_color(text_color.into())
-                                        .finish(),
+                                    Text::new_inline(
+                                        " + Adicionar repositório",
+                                        font_family,
+                                        font_size,
+                                    )
+                                    .with_color(text_color.into())
+                                    .finish(),
                                 )
                                 .finish(),
                         )
@@ -14161,9 +14165,8 @@ impl Workspace {
             Err(e) => {
                 report_error!(e.context("Conversation forking failed"));
                 WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                    let toast = DismissibleToast::error(
-                        "Falha ao criar uma cópia da conversa.".to_owned(),
-                    );
+                    let toast =
+                        DismissibleToast::error("Falha ao criar uma cópia da conversa.".to_owned());
                     toast_stack.add_ephemeral_toast(toast, window_id, ctx);
                 });
                 return;
@@ -18147,10 +18150,9 @@ impl Workspace {
 
         if !ContextFlag::CreateNewSession.is_enabled() {
             self.toast_stack.update(ctx, |toast_stack, ctx| {
-                let toast =
-                    DismissibleToast::error(
-                        "Não foi possível abrir uma nova sessão de terminal".to_string(),
-                    );
+                let toast = DismissibleToast::error(
+                    "Não foi possível abrir uma nova sessão de terminal".to_string(),
+                );
                 toast_stack.add_ephemeral_toast(toast, ctx);
             });
             return None;

@@ -380,7 +380,8 @@ const NLD_DISABLED_HINT: &str = "Natural language detection disabled.";
 const NLD_PERSISTENCE_FAILED_HINT: &str = "Could not save the natural language detection setting.";
 const VIM_MODE_ENABLED_HINT: &str = "Modo Vim ativado.";
 const VIM_MODE_DISABLED_HINT: &str = "Modo Vim desativado.";
-const VIM_MODE_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração do modo Vim.";
+const VIM_MODE_PERSISTENCE_FAILED_HINT: &str =
+    "Não foi possível salvar a configuração do modo Vim.";
 const THEME_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração do tema.";
 const ZERO_STATE_ASCII_INITIAL_LOAD_FAILED_HINT: &str =
     "Não foi possível carregar a arte ASCII personalizada. Usando o logotipo do Kikito Terminal.";
@@ -392,7 +393,8 @@ const AUTO_APPROVE_ENABLED_HINT: &str = "Auto approve on";
 const AUTO_APPROVE_DISABLED_HINT: &str = "Auto approve off";
 const STATUSLINE_SAVED_HINT: &str = "Configuração da linha de status salva.";
 const STATUSLINE_RESET_HINT: &str = "Linha de status redefinida para o padrão.";
-const STATUSLINE_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração da linha de status.";
+const STATUSLINE_PERSISTENCE_FAILED_HINT: &str =
+    "Não foi possível salvar a configuração da linha de status.";
 const COST_NO_ACTIVE_CONVERSATION_HINT: &str =
     "Cannot show conversation cost: no active conversation";
 const COST_EMPTY_CONVERSATION_HINT: &str = "Cannot show conversation cost: conversation is empty";

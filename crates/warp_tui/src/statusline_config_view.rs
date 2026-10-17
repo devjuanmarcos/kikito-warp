@@ -40,7 +40,7 @@ pub(crate) fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "tui:statusline:toggle",
-            "Toggle the highlighted statusline item",
+            "Alternar o item selecionado da linha de status",
             TuiStatuslineConfigAction::Toggle,
         )
         .with_context_predicate(active.clone())
@@ -48,7 +48,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("enter"),
         EditableBinding::new(
             "tui:statusline:save",
-            "Save and close the statusline configuration",
+            "Salvar e fechar a configuração da linha de status",
             TuiStatuslineConfigAction::Save,
         )
         .with_context_predicate(active)
@@ -56,7 +56,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("escape"),
         EditableBinding::new(
             "tui:statusline:move_left",
-            "Move the highlighted statusline item left",
+            "Mover o item selecionado da linha de status para a esquerda",
             TuiStatuslineConfigAction::MoveBackward,
         )
         .with_context_predicate(reorder.clone())
@@ -64,7 +64,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("left"),
         EditableBinding::new(
             "tui:statusline:move_right",
-            "Move the highlighted statusline item right",
+            "Mover o item selecionado da linha de status para a direita",
             TuiStatuslineConfigAction::MoveForward,
         )
         .with_context_predicate(reorder)
@@ -253,11 +253,14 @@ impl TuiStatuslineConfigView {
         let builder = TuiUiBuilder::from_app(app);
         TuiText::from_spans([
             ("Enter ".to_owned(), builder.primary_text_style()),
-            ("to toggle  ".to_owned(), builder.muted_text_style()),
+            ("para alternar  ".to_owned(), builder.muted_text_style()),
             ("Esc ".to_owned(), builder.primary_text_style()),
-            ("to save and close  ".to_owned(), builder.muted_text_style()),
+            (
+                "para salvar e fechar  ".to_owned(),
+                builder.muted_text_style(),
+            ),
             ("← → ".to_owned(), builder.primary_text_style()),
-            ("to reorder".to_owned(), builder.muted_text_style()),
+            ("para reordenar".to_owned(), builder.muted_text_style()),
         ])
         .truncate()
         .finish()
@@ -269,7 +272,7 @@ impl TuiStatuslineConfigView {
 fn statusline_question() -> AskUserQuestionItem {
     AskUserQuestionItem {
         question_id: STATUSLINE_QUESTION_ID.to_owned(),
-        question: "Configure statusline".to_owned(),
+        question: "Configurar a linha de status".to_owned(),
         question_type: AskUserQuestionType::MultipleChoice {
             is_multiselect: true,
             options: TuiStatuslineItem::ALL
@@ -308,7 +311,7 @@ impl TuiView for TuiStatuslineConfigView {
 
     fn render(&self, app: &AppContext) -> Box<dyn TuiElement> {
         let builder = TuiUiBuilder::from_app(app);
-        let title = TuiText::new("Configure statusline")
+        let title = TuiText::new("Configurar a linha de status")
             .with_style(builder.primary_text_style().add_modifier(Modifier::BOLD))
             .finish();
         let body = TuiFlex::column()

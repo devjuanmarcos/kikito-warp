@@ -5089,9 +5089,7 @@ impl SettingsWidget for MouseScrollMultiplierWidget {
                 mouse_state: self.additional_info_link.clone(),
                 on_click_action: None,
                 secondary_text: None,
-                tooltip_override_text: Some(
-                    "Aceita valores decimais entre 1 e 20.".to_string(),
-                ),
+                tooltip_override_text: Some("Aceita valores decimais entre 1 e 20.".to_string()),
             }),
             LocalOnlyIconState::for_setting(
                 MouseScrollMultiplier::storage_key(),
@@ -6263,9 +6261,9 @@ impl SettingsWidget for RightClickBehaviorWidget {
                 render_dropdown_item(
                     appearance,
                     "Clique com o botão direito:",
-                    selection_settings
-                        .right_click_pastes()
-                        .then_some("Shift + clique com o botão direito para abrir o menu de contexto."),
+                    selection_settings.right_click_pastes().then_some(
+                        "Shift + clique com o botão direito para abrir o menu de contexto.",
+                    ),
                     None,
                     LocalOnlyIconState::for_setting(
                         RightClickBehaviorSetting::storage_key(),
@@ -7578,7 +7576,8 @@ impl SettingsWidget for LinuxSelectionClipboardWidget {
                 on_click_action: None,
                 secondary_text: None,
                 tooltip_override_text: Some(
-                    "Indica se a área de transferência primária do Linux deve ser habilitada.".into(),
+                    "Indica se a área de transferência primária do Linux deve ser habilitada."
+                        .into(),
                 ),
             }),
             LocalOnlyIconState::for_setting(

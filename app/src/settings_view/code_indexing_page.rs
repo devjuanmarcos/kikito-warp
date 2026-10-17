@@ -78,8 +78,10 @@ const CODEBASE_INDEX_DESCRIPTION: &str = "O Kikito Terminal pode indexar automat
 const WARP_INDEXING_IGNORE_DESCRIPTION: &str = "Para excluir arquivos ou diretórios específicos da indexação, adicione-os ao arquivo .warpindexingignore no diretório do repositório. Esses arquivos continuarão acessíveis aos recursos de IA, mas não serão incluídos nos embeddings da base de código.";
 const AUTO_INDEX_FEATURE_NAME: &str = "Indexar novas pastas por padrão";
 const AUTO_INDEX_DESCRIPTION: &str = "Quando ativada, esta opção indexa automaticamente os repositórios de código durante a navegação, ajudando os agentes a entender o contexto rapidamente e oferecer soluções direcionadas.";
-const INDEXING_DISABLED_ADMIN_TEXT: &str = "Os administradores da equipe desativaram a indexação da base de código.";
-const INDEXING_WORKSPACE_ENABLED_ADMIN_TEXT: &str = "Os administradores da equipe ativaram a indexação da base de código.";
+const INDEXING_DISABLED_ADMIN_TEXT: &str =
+    "Os administradores da equipe desativaram a indexação da base de código.";
+const INDEXING_WORKSPACE_ENABLED_ADMIN_TEXT: &str =
+    "Os administradores da equipe ativaram a indexação da base de código.";
 const INDEXING_DISABLED_GLOBAL_AI_TEXT: &str =
     "Os recursos de IA precisam estar ativados para usar a indexação da base de código.";
 const CODEBASE_INDEX_LIMIT_REACHED: &str = "Você atingiu o limite de índices da base de código do seu plano. Exclua índices existentes para indexar novas bases automaticamente.";
@@ -108,7 +110,9 @@ fn codebase_indexing_disabled_admin_text(
     blocking_team_name.map_or_else(
         || INDEXING_DISABLED_ADMIN_TEXT.to_string(),
         |team_name| {
-            format!("A indexação da base de código está indisponível porque {team_name} a desativou.")
+            format!(
+                "A indexação da base de código está indisponível porque {team_name} a desativou."
+            )
         },
     )
 }
@@ -2169,7 +2173,10 @@ impl CodePageWidget {
                     }
                 }
             }
-            None => (theme.disabled_ui_text_color().into_solid(), "Não está em execução"),
+            None => (
+                theme.disabled_ui_text_color().into_solid(),
+                "Não está em execução",
+            ),
         }
     }
 }

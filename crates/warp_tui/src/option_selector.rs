@@ -46,7 +46,7 @@ pub(crate) fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "tui:option-selector:previous",
-            "Select the previous option",
+            "Selecionar a opção anterior",
             TuiOptionSelectorAction::MoveUp,
         )
         .with_context_predicate(predicate.clone())
@@ -54,7 +54,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("up"),
         EditableBinding::new(
             "tui:option-selector:next",
-            "Select the next option",
+            "Selecionar a próxima opção",
             TuiOptionSelectorAction::MoveDown,
         )
         .with_context_predicate(predicate)
@@ -1094,7 +1094,7 @@ impl TuiOptionSelector {
         let position = TuiText::from_spans([
             ("←".to_string(), previous_style),
             (format!(" {current} "), builder.primary_text_style()),
-            (format!("of {total} "), builder.muted_text_style()),
+            (format!("de {total} "), builder.muted_text_style()),
             ("→".to_string(), next_style),
         ])
         .truncate()
@@ -1287,7 +1287,7 @@ impl TuiOptionSelector {
                 .any(|item| matches!(item, SelectorItem::Row(_)))
         {
             column.add_child(
-                TuiText::new("No matches")
+                TuiText::new("Nenhum resultado encontrado")
                     .with_style(builder.dim_text_style())
                     .truncate()
                     .finish(),
@@ -1461,7 +1461,7 @@ impl TuiView for TuiOptionSelector {
         {
             content.add_child(self.render_editor_field(
                 String::new(),
-                "Search",
+                "Buscar",
                 search_field,
                 None,
                 None,

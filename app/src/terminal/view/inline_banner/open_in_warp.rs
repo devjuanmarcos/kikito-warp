@@ -48,7 +48,8 @@ impl OpenInWarpBannerState {
 fn file_title_text(openable_path: &OpenablePath) -> String {
     match openable_path.file_type {
         OpenableFileType::Markdown => {
-            "Você sabia que o Kikito Terminal pode exibir arquivos Markdown diretamente?".to_string()
+            "Você sabia que o Kikito Terminal pode exibir arquivos Markdown diretamente?"
+                .to_string()
         }
         OpenableFileType::Code | OpenableFileType::Text => {
             cfg_if::cfg_if! {

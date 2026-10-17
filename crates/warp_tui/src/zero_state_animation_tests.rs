@@ -30,14 +30,14 @@ use super::config::{
     ZeroStateAnimationLoadFailure, ZeroStateShape, resolve_ascii_art_path,
 };
 use super::{
-    ActivePress, BUILT_IN_LOGO_CELL_ASPECT_RATIO, FLICK_RELEASE_VELOCITY_GAIN, LogoCell, LogoGlyph,
-    LogoProjector, LogoSurface, MAX_INTERACTIVE_RADIANS_PER_SECOND, MIN_ANIMATION_COLS,
-    MIN_ANIMATION_ROWS, MOMENTUM_SETTLE_DURATION, REPAINT_INTERVAL, WarpLogoStyles,
+    ActivePress, BUILT_IN_LOGO_CELL_ASPECT_RATIO, FLICK_RELEASE_VELOCITY_GAIN, KikitoLogoStyles,
+    LogoCell, LogoGlyph, LogoProjector, LogoSurface, MAX_INTERACTIVE_RADIANS_PER_SECOND,
+    MIN_ANIMATION_COLS, MIN_ANIMATION_ROWS, MOMENTUM_SETTLE_DURATION, REPAINT_INTERVAL,
     ZeroStateAnimationElement, ZeroStateInteractionHandle, configured_idle_velocity,
     face_linger_angle, fitted_logo_size, glyph_for_tangent, idle_angle, is_ghost_stipple_cell,
-    logo_frame_at, object_frame_at, object_frame_at_angle, object_frame_at_angle_with_background,
-    object_frame_at_with_background, rotation_angle, star_count_for_size, starfield_emitter_x,
-    warp_logo_contains,
+    kikito_logo_contains, logo_frame_at, object_frame_at, object_frame_at_angle,
+    object_frame_at_angle_with_background, object_frame_at_with_background, rotation_angle,
+    star_count_for_size, starfield_emitter_x,
 };
 
 const PANEL_SIZE: TuiSize = TuiSize::new(52, 20);
@@ -160,7 +160,7 @@ impl TuiView for AnimationTestView {
             AnimationClock::starting_at(Duration::ZERO),
             self.config.clone(),
             super::ZeroStateInteractionHandle::default(),
-            WarpLogoStyles {
+            KikitoLogoStyles {
                 front: style,
                 back: style,
                 side: style,
@@ -172,11 +172,11 @@ impl TuiView for AnimationTestView {
 }
 
 #[test]
-fn logo_mask_preserves_the_offset_warp_faces() {
-    assert!(warp_logo_contains(0.25, -0.65));
-    assert!(warp_logo_contains(-0.55, 0.45));
-    assert!(!warp_logo_contains(-0.85, -0.85));
-    assert!(!warp_logo_contains(0.0, 0.9));
+fn logo_mask_matches_kikito_monogram() {
+    assert!(kikito_logo_contains(0.55, -0.65));
+    assert!(kikito_logo_contains(-0.65, 0.45));
+    assert!(!kikito_logo_contains(0.34, 0.263));
+    assert!(!kikito_logo_contains(0.95, 0.95));
 }
 
 #[test]
@@ -396,16 +396,16 @@ fn one_revolution_returns_to_the_initial_frame() {
 fn logo_scales_down_while_preserving_cell_aspect() {
     assert_eq!(
         fitted_logo_size(TuiSize::new(100, 40), BUILT_IN_LOGO_CELL_ASPECT_RATIO),
-        Some((43, 17))
+        Some((33, 17))
     );
     assert_eq!(
         fitted_logo_size(TuiSize::new(30, 12), BUILT_IN_LOGO_CELL_ASPECT_RATIO),
-        Some((25, 10))
+        Some((19, 10))
     );
     assert_eq!(fitted_logo_size(TuiSize::new(100, 40), 4.0), Some((68, 17)));
     assert_eq!(
         fitted_logo_size(TuiSize::new(32, 28), BUILT_IN_LOGO_CELL_ASPECT_RATIO),
-        Some((30, 12)),
+        Some((30, 16)),
         "the layout panel should keep the restored dev animation compact"
     );
 }
@@ -512,7 +512,10 @@ fn startup_loader_falls_back_for_missing_or_invalid_art_only() {
             temp_dir.path(),
         );
 
-        assert!(matches!(config.shape.as_ref(), ZeroStateShape::BuiltInWarp));
+        assert!(matches!(
+            config.shape.as_ref(),
+            ZeroStateShape::BuiltInKikito
+        ));
         assert_eq!(config.rotation_period, Duration::from_secs(7));
         assert_eq!(config.extrusion_depth, 0.4);
         assert_eq!(
@@ -1478,7 +1481,7 @@ fn drag_starts_only_inside_current_object_bounds_and_captures_through_release() 
                 AnimationClock::starting_at(Duration::ZERO),
                 config,
                 interaction,
-                WarpLogoStyles {
+                KikitoLogoStyles {
                     front: style,
                     back: style,
                     side: style,

@@ -35,7 +35,7 @@ use crate::tui_block_list_viewport_source::{
 use crate::tui_builder::TuiUiBuilder;
 use crate::zero_state::build_zero_state_layout;
 use crate::zero_state_animation::{
-    LogoProjector, WarpLogoStyles, ZeroStateAnimationConfig, ZeroStateAnimationElement,
+    KikitoLogoStyles, LogoProjector, ZeroStateAnimationConfig, ZeroStateAnimationElement,
     ZeroStateInteractionHandle, ZeroStateStarfieldElement, benchmark_logo_projection,
 };
 
@@ -146,7 +146,7 @@ impl TuiView for BenchmarkZeroStateView {
             self.clock,
             self.config.clone(),
             self.interaction.clone(),
-            WarpLogoStyles {
+            KikitoLogoStyles {
                 front: style,
                 back: style,
                 side: style,

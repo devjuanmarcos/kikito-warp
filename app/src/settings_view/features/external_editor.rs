@@ -357,7 +357,8 @@ impl View for ExternalEditorView {
         }
 
         column.add_child(render_body_item::<ExternalEditorAction>(
-            "Abrir arquivos Markdown por padrão no visualizador Markdown do Kikito Terminal".to_string(),
+            "Abrir arquivos Markdown por padrão no visualizador Markdown do Kikito Terminal"
+                .to_string(),
             Some(AdditionalInfo {
                 mouse_state: self.markdown_viewer_mouse_state.clone(),
                 on_click_action: Some(ExternalEditorAction::OpenUrl(

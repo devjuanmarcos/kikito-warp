@@ -72,14 +72,14 @@ impl NavBar {
         });
 
         let up_label_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new("Previous", NakedTheme)
+            ActionButton::new("Anterior", NakedTheme)
                 .with_size(ButtonSize::InlineActionHeader)
                 .with_icon(Icon::ArrowUp)
                 .on_click(|ctx| ctx.dispatch_typed_action(NavBarAction::NavigateUp))
         });
 
         let down_label_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new("Next", NakedTheme)
+            ActionButton::new("Próxima", NakedTheme)
                 .with_size(ButtonSize::InlineActionHeader)
                 .with_icon(Icon::ArrowDown)
                 .on_click(|ctx| ctx.dispatch_typed_action(NavBarAction::NavigateDown))
@@ -148,7 +148,7 @@ impl NavBar {
     ) -> Box<dyn Element> {
         let diff_text = appearance
             .ui_builder()
-            .span("Hunk:")
+            .span("Trecho:")
             .with_style(UiComponentStyles {
                 font_color: Some(appearance.theme().sub_text_color(background).into()),
                 ..Default::default()

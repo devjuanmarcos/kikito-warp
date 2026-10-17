@@ -14,7 +14,7 @@ use crate::transient_hint::TransientHintTone;
 use crate::tui_builder::TuiUiBuilder;
 use crate::warping_indicator::render_spinner;
 use crate::zero_state_animation::{
-    WarpLogoStyles, ZeroStateAnimationConfig, ZeroStateAnimationElement,
+    KikitoLogoStyles, ZeroStateAnimationConfig, ZeroStateAnimationElement,
     ZeroStateInteractionHandle, ZeroStateStarfieldElement,
 };
 
@@ -524,7 +524,7 @@ fn auth_layout(
         clock,
         animation_config,
         ZeroStateInteractionHandle::non_interactive(),
-        WarpLogoStyles {
+        KikitoLogoStyles {
             front: builder.accent_text_style(),
             back: builder.primary_text_style(),
             side: builder.dim_text_style(),

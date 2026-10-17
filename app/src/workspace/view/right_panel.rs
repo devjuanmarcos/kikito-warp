@@ -1080,10 +1080,14 @@ impl RightPanelView {
 
         let title = Shrinkable::new(
             1.0,
-            Text::new_inline("Revisão de código".to_string(), appearance.ui_font_family(), 12.)
-                .with_style(Properties::default().weight(Weight::Bold))
-                .with_color(sub_text_color.into())
-                .finish(),
+            Text::new_inline(
+                "Revisão de código".to_string(),
+                appearance.ui_font_family(),
+                12.,
+            )
+            .with_style(Properties::default().weight(Weight::Bold))
+            .with_color(sub_text_color.into())
+            .finish(),
         )
         .finish();
 

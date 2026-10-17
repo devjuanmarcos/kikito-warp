@@ -460,5 +460,5 @@ settings::macros::implement_setting_for_enum!(
     private: false,
     toml_path: "session.working_directory_config",
     max_table_depth: 1,
-    description: "Controls the working directory used when opening new sessions.",
+    description: "Controla o diretório de trabalho usado ao abrir novas sessões.",
 );

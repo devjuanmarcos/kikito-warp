@@ -45,7 +45,8 @@ const ENABLE_SHELL_DEBUG_MODE_MENU_ITEM_NAME: &str =
     "Ativar modo de depuração do shell (-x) para novas sessões";
 const DISABLE_SHELL_DEBUG_MODE_MENU_ITEM_NAME: &str =
     "Desativar modo de depuração do shell (-x) para novas sessões";
-const ENABLE_IN_BAND_GENERATORS_MENU_ITEM_NAME: &str = "Ativar geradores in-band para novas sessões";
+const ENABLE_IN_BAND_GENERATORS_MENU_ITEM_NAME: &str =
+    "Ativar geradores in-band para novas sessões";
 const DISABLE_IN_BAND_GENERATORS_MENU_ITEM_NAME: &str =
     "Desativar geradores in-band para novas sessões";
 const ENABLE_PTY_RECORDING: &str = "Ativar modo de gravação PTY (warp.pty.recording)";

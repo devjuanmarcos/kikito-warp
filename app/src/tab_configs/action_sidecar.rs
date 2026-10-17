@@ -133,12 +133,7 @@ pub(crate) fn render_action_sidecar(
             .with_style(disabled_style)
             .with_tooltip({
                 let ui_builder = appearance.ui_builder().clone();
-                move || {
-                    ui_builder
-                        .tool_tip("Já é o padrão".into())
-                        .build()
-                        .finish()
-                }
+                move || ui_builder.tool_tip("Já é o padrão".into()).build().finish()
             })
             .with_tooltip_position(ButtonTooltipPosition::Above)
             .set_clicked_styles(None)

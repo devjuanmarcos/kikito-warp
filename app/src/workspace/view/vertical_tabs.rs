@@ -5873,24 +5873,18 @@ fn subtitle_options_for_primary(
 ) -> [(VerticalTabsCompactSubtitle, &'static str); 2] {
     match primary {
         VerticalTabsPrimaryInfo::Command => [
-            (VerticalTabsCompactSubtitle::Branch, "Branch"),
+            (VerticalTabsCompactSubtitle::Branch, "Ramificação"),
             (
                 VerticalTabsCompactSubtitle::WorkingDirectory,
                 "Diretório de trabalho",
             ),
         ],
         VerticalTabsPrimaryInfo::WorkingDirectory => [
-            (VerticalTabsCompactSubtitle::Branch, "Branch"),
-            (
-                VerticalTabsCompactSubtitle::Command,
-                "Comando / conversa",
-            ),
+            (VerticalTabsCompactSubtitle::Branch, "Ramificação"),
+            (VerticalTabsCompactSubtitle::Command, "Comando / conversa"),
         ],
         VerticalTabsPrimaryInfo::Branch => [
-            (
-                VerticalTabsCompactSubtitle::Command,
-                "Comando / conversa",
-            ),
+            (VerticalTabsCompactSubtitle::Command, "Comando / conversa"),
             (
                 VerticalTabsCompactSubtitle::WorkingDirectory,
                 "Diretório de trabalho",
@@ -6143,7 +6137,7 @@ pub(super) fn render_settings_popup(
     );
 
     let branch_option = render_primary_info_option(
-        "Branch",
+        "Ramificação",
         matches!(current_primary_info, VerticalTabsPrimaryInfo::Branch),
         state.branch_option_mouse_state.clone(),
         VerticalTabsPrimaryInfo::Branch,

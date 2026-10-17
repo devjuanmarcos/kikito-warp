@@ -282,7 +282,9 @@ impl TuiSlashCommandModel {
             Some(if list.is_loading() {
                 TuiInlineMenuStatus::Loading("Carregando comandos…".to_owned())
             } else {
-                TuiInlineMenuStatus::Empty("Nenhum comando iniciado por / foi encontrado".to_owned())
+                TuiInlineMenuStatus::Empty(
+                    "Nenhum comando iniciado por / foi encontrado".to_owned(),
+                )
             })
         } else {
             None

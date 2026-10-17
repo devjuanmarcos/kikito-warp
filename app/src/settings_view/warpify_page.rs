@@ -151,8 +151,7 @@ impl WarpifyPageView {
         let mut categories = vec![
             Category::new("", vec![Box::new(TitleWidget::default())]),
             Category::with_header(
-                CategoryHeader::new("Subshells")
-                    .with_subtitle("Compatível com bash, zsh e fish."),
+                CategoryHeader::new("Subshells").with_subtitle("Compatível com bash, zsh e fish."),
                 vec![Box::new(SubshellsWidget::default())],
             ),
         ];
@@ -163,7 +162,8 @@ impl WarpifyPageView {
             .is_supported_on_current_platform()
         {
             categories.push(Category::with_header(
-                CategoryHeader::new("SSH").with_subtitle("Integre shells em suas sessões SSH interativas."),
+                CategoryHeader::new("SSH")
+                    .with_subtitle("Integre shells em suas sessões SSH interativas."),
                 vec![Box::new(SSHWidget::default())],
             ));
         }
@@ -488,11 +488,9 @@ struct TitleWidget {
 
 impl TitleWidget {
     fn render_top_of_page(&self, appearance: &Appearance, _app: &AppContext) -> Box<dyn Element> {
-        let warpify_description = vec![
-            FormattedTextFragment::plain_text(
-                "Configure se o Kikito Terminal deve integrar determinados shells, adicionando suporte a blocos, modos de entrada e outros recursos. "
-            ),
-        ];
+        let warpify_description = vec![FormattedTextFragment::plain_text(
+            "Configure se o Kikito Terminal deve integrar determinados shells, adicionando suporte a blocos, modos de entrada e outros recursos. ",
+        )];
 
         let warpify_description = FormattedTextElement::new(
             FormattedText::new([FormattedTextLine::Line(warpify_description)]),
@@ -509,7 +507,11 @@ impl TitleWidget {
         .finish();
 
         Flex::column()
-            .with_child(render_page_title("Integração de shells", HEADER_FONT_SIZE, appearance))
+            .with_child(render_page_title(
+                "Integração de shells",
+                HEADER_FONT_SIZE,
+                appearance,
+            ))
             .with_child(warpify_description)
             .finish()
     }

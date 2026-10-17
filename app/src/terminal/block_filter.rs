@@ -46,7 +46,8 @@ const BLOCK_FILTER_ICON_CORNER_RADIUS: f32 = 4.;
 const MAXIMUM_CONTEXT_LINES: u16 = 99;
 /// The maximum buffer length that we allow in the context line editor.
 const MAXIMUM_CONTEXT_LINE_EDITOR_BUFFER_LENGTH: usize = 2;
-const CONTEXT_LINE_EDITOR_TOOLTIP_LABEL: &str = "Mostrar linhas de contexto ao redor das correspondências";
+const CONTEXT_LINE_EDITOR_TOOLTIP_LABEL: &str =
+    "Mostrar linhas de contexto ao redor das correspondências";
 const REGEX_TOOLTIP_LABEL: &str = "Alternar regex";
 const CASE_SENSITIVITY_TOOLTIP_LABEL: &str = "Alternar distinção entre maiúsculas e minúsculas";
 const INVERT_FILTER_TOOLTIP_LABEL: &str = "Inverter filtro";

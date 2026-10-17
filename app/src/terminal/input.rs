@@ -495,7 +495,8 @@ fn get_stable_agent_mode_hint_text(cached_hint: &mut Option<&'static str>) -> &'
 const AGENT_MODE_AI_ENABLED_STEER_HINT_TEXT_UDI: &str = "Oriente o agente em execução";
 const AGENT_MODE_AI_ENABLED_STEER_HINT_TEXT_CLASSIC: &str =
     "Oriente o agente em execução ou pressione Backspace para sair";
-const AGENT_MODE_AI_ENABLED_QUEUE_HINT_TEXT_UDI: &str = "Enfileire uma mensagem para o agente em execução";
+const AGENT_MODE_AI_ENABLED_QUEUE_HINT_TEXT_UDI: &str =
+    "Enfileire uma mensagem para o agente em execução";
 const AGENT_MODE_AI_ENABLED_QUEUE_HINT_TEXT_CLASSIC: &str =
     "Enfileire uma mensagem para o agente em execução ou pressione Backspace para sair";
 const AGENT_MODE_AI_ENABLED_FOLLOW_UP_HINT_TEXT_UDI: &str = "Envie uma pergunta complementar";
@@ -8828,10 +8829,12 @@ impl Input {
             .as_ref()
             .and_then(|selected_workflow_state| {
                 selected_workflow_state.more_info_view.read(ctx, |view, _| {
-                    view.selected_argument()
-                        .map(|argument| {
-                            format!("Argumento selecionado do fluxo de trabalho {}", argument.name())
-                        })
+                    view.selected_argument().map(|argument| {
+                        format!(
+                            "Argumento selecionado do fluxo de trabalho {}",
+                            argument.name()
+                        )
+                    })
                 })
             })
     }

@@ -96,7 +96,10 @@ impl std::fmt::Display for SettingsFileError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::FileParseFailed(_) => {
-                write!(f, "Não foi possível interpretar devido a um erro de sintaxe")
+                write!(
+                    f,
+                    "Não foi possível interpretar devido a um erro de sintaxe"
+                )
             }
             Self::InvalidSettings(keys) => match keys.as_slice() {
                 [key] => write!(f, "Valor inválido para '{key}'"),

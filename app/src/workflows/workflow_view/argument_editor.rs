@@ -591,7 +591,8 @@ impl WorkflowView {
                 .finish(),
             )
         } else {
-            arguments_section_row.add_child(Shrinkable::new(
+            arguments_section_row.add_child(
+                Shrinkable::new(
                     1.,
                     Container::new(
                         appearance
@@ -610,10 +611,10 @@ impl WorkflowView {
                             .finish(),
                     )
                     .with_margin_left(40.)
-                    .finish()
+                    .finish(),
                 )
-                .finish()
-                );
+                .finish(),
+            );
         }
 
         arguments_section_row.finish()

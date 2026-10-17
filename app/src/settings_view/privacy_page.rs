@@ -150,34 +150,38 @@ impl PrivacyPageView {
         });
 
         let add_regex_modal_view = ctx.add_typed_action_view(|ctx| {
-            Modal::new(Some("Adicionar padrão de regex".to_string()), add_regex_body, ctx)
-                .with_modal_style(UiComponentStyles {
-                    width: Some(600.),
-                    height: Some(400.),
-                    ..Default::default()
-                })
-                .with_header_style(UiComponentStyles {
-                    padding: Some(Coords {
-                        top: 24.,
-                        bottom: 0.,
-                        left: 24.,
-                        right: 24.,
-                    }),
-                    font_size: Some(16.),
-                    font_weight: Some(Weight::Bold),
-                    ..Default::default()
-                })
-                .with_body_style(UiComponentStyles {
-                    padding: Some(Coords {
-                        top: 0.,
-                        bottom: 24.,
-                        left: 24.,
-                        right: 24.,
-                    }),
-                    ..Default::default()
-                })
-                .with_background_opacity(100)
-                .with_dismiss_on_click()
+            Modal::new(
+                Some("Adicionar padrão de regex".to_string()),
+                add_regex_body,
+                ctx,
+            )
+            .with_modal_style(UiComponentStyles {
+                width: Some(600.),
+                height: Some(400.),
+                ..Default::default()
+            })
+            .with_header_style(UiComponentStyles {
+                padding: Some(Coords {
+                    top: 24.,
+                    bottom: 0.,
+                    left: 24.,
+                    right: 24.,
+                }),
+                font_size: Some(16.),
+                font_weight: Some(Weight::Bold),
+                ..Default::default()
+            })
+            .with_body_style(UiComponentStyles {
+                padding: Some(Coords {
+                    top: 0.,
+                    bottom: 24.,
+                    left: 24.,
+                    right: 24.,
+                }),
+                ..Default::default()
+            })
+            .with_background_opacity(100)
+            .with_dismiss_on_click()
         });
         ctx.subscribe_to_view(&add_regex_modal_view, |me, _, event, ctx| {
             me.handle_modal_event(event, ctx);
@@ -1021,7 +1025,8 @@ impl SecretRedactionWidget {
                                         self.add_all_button_mouse_state.clone(),
                                     )
                                     .with_text_and_icon_label(Self::add_button(
-                                        "Adicionar todas", appearance,
+                                        "Adicionar todas",
+                                        appearance,
                                     ))
                                     .with_style(Self::add_button_style())
                                     .build()
@@ -1325,7 +1330,10 @@ impl SettingsWidget for SecretRedactionWidget {
                                 ButtonVariant::Secondary,
                                 self.add_regex_button_mouse_state.clone(),
                             )
-                            .with_text_and_icon_label(Self::add_button("Adicionar regex", appearance))
+                            .with_text_and_icon_label(Self::add_button(
+                                "Adicionar regex",
+                                appearance,
+                            ))
                             .with_style(Self::add_button_style())
                             .build()
                             .on_click(move |ctx, _, _| {

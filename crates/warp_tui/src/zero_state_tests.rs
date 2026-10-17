@@ -31,7 +31,7 @@ use super::{
 use crate::autoupdate::TuiAutoupdateStatus;
 use crate::tui_builder::TuiUiBuilder;
 use crate::zero_state_animation::{
-    WarpLogoStyles, ZeroStateAnimationConfig, ZeroStateAnimationElement,
+    KikitoLogoStyles, ZeroStateAnimationConfig, ZeroStateAnimationElement,
     ZeroStateInteractionHandle, ZeroStateStarfieldElement,
 };
 
@@ -520,7 +520,7 @@ fn zero_state_animation_is_centered_in_remaining_space_and_hidden_when_space_is_
                     AnimationClock::starting_at(Duration::ZERO),
                     Arc::new(ZeroStateAnimationConfig::default()),
                     ZeroStateInteractionHandle::default(),
-                    WarpLogoStyles {
+                    KikitoLogoStyles {
                         front: style,
                         back: style,
                         side: style,

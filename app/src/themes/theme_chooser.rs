@@ -117,16 +117,12 @@ impl ThemeChooserMode {
             ThemeChooserMode::SystemAgnostic => appearance
                 .ui_builder()
                 .paragraph("Alterar o tema atual.".to_string()),
-            ThemeChooserMode::SystemLight => appearance
-                .ui_builder()
-                .paragraph(
-                    "Escolha um tema para quando o sistema estiver no modo claro.".to_string(),
-                ),
-            ThemeChooserMode::SystemDark => appearance
-                .ui_builder()
-                .paragraph(
-                    "Escolha um tema para quando o sistema estiver no modo escuro.".to_string(),
-                ),
+            ThemeChooserMode::SystemLight => appearance.ui_builder().paragraph(
+                "Escolha um tema para quando o sistema estiver no modo claro.".to_string(),
+            ),
+            ThemeChooserMode::SystemDark => appearance.ui_builder().paragraph(
+                "Escolha um tema para quando o sistema estiver no modo escuro.".to_string(),
+            ),
         };
         hint_text
             .build()

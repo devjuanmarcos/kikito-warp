@@ -13,26 +13,26 @@ use warpui_core::{AppContext, Entity};
 
 use super::{
     BUILT_IN_LOGO_CELL_ASPECT_RATIO, MAX_ASCII_ART_BYTES, MAX_ASCII_ART_COLS, MAX_ASCII_ART_ROWS,
-    warp_logo_contains,
+    kikito_logo_contains,
 };
 
 #[derive(Clone, Debug)]
 pub(super) enum ZeroStateShape {
-    BuiltInWarp,
+    BuiltInKikito,
     Ascii(AsciiArtMask),
 }
 
 impl ZeroStateShape {
     pub(super) fn contains(&self, x: f64, y: f64) -> bool {
         match self {
-            Self::BuiltInWarp => warp_logo_contains(x, y),
+            Self::BuiltInKikito => kikito_logo_contains(x, y),
             Self::Ascii(mask) => mask.contains(x, y),
         }
     }
 
     pub(super) fn cell_aspect_ratio(&self) -> f64 {
         match self {
-            Self::BuiltInWarp => BUILT_IN_LOGO_CELL_ASPECT_RATIO,
+            Self::BuiltInKikito => BUILT_IN_LOGO_CELL_ASPECT_RATIO,
             Self::Ascii(mask) => mask.cell_aspect_ratio(),
         }
     }
@@ -201,7 +201,7 @@ impl Default for ZeroStateAnimationConfig {
     fn default() -> Self {
         Self {
             active_object: TuiZeroStateObject::BuiltIn,
-            shape: Arc::new(ZeroStateShape::BuiltInWarp),
+            shape: Arc::new(ZeroStateShape::BuiltInKikito),
             rotation_period: Duration::from_secs_f64(
                 warp::settings::DEFAULT_TUI_ZERO_STATE_ROTATION_PERIOD_SECONDS,
             ),
@@ -279,16 +279,16 @@ impl ZeroStateAnimationConfig {
             Err((path, error)) => {
                 safe_warn!(
                     safe: (
-                        "Could not load custom Warp Agent CLI zero-state ASCII art; using the built-in Warp logo"
+                        "Não foi possível carregar a arte ASCII personalizada do Kikito Terminal; usando o logotipo embutido"
                     ),
                     full: (
-                        "Could not load custom Warp Agent CLI zero-state ASCII art; using the built-in Warp logo: path={} error={error}",
+                        "Não foi possível carregar a arte ASCII personalizada do Kikito Terminal; usando o logotipo embutido: caminho={} erro={error}",
                         path.display()
                     )
                 );
                 (
                     TuiZeroStateObject::BuiltIn,
-                    ZeroStateShape::BuiltInWarp,
+                    ZeroStateShape::BuiltInKikito,
                     Some(ZeroStateAnimationLoadFailure::InitialLoad),
                 )
             }
@@ -326,10 +326,10 @@ impl ZeroStateAnimationConfig {
             Err((path, error)) => {
                 safe_warn!(
                     safe: (
-                        "Could not reload custom Warp Agent CLI zero-state ASCII art; keeping the current object"
+                        "Não foi possível recarregar a arte ASCII personalizada do Kikito Terminal; mantendo o objeto atual"
                     ),
                     full: (
-                        "Could not reload custom Warp Agent CLI zero-state ASCII art; keeping the current object: path={} error={error}",
+                        "Não foi possível recarregar a arte ASCII personalizada do Kikito Terminal; mantendo o objeto atual: caminho={} erro={error}",
                         path.display()
                     )
                 );
@@ -353,7 +353,7 @@ fn load_object_shape(
     config_dir: &Path,
 ) -> Result<ZeroStateShape, (PathBuf, AsciiArtError)> {
     match object {
-        TuiZeroStateObject::BuiltIn => Ok(ZeroStateShape::BuiltInWarp),
+        TuiZeroStateObject::BuiltIn => Ok(ZeroStateShape::BuiltInKikito),
         TuiZeroStateObject::AsciiFile { path } => {
             let path = resolve_ascii_art_path(path, config_dir);
             load_ascii_art(&path)

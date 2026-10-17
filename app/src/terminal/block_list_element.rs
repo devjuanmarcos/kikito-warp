@@ -3449,10 +3449,7 @@ impl Element for BlockListElement {
 
                     let separator_text =
                         if let Some(ts) = (*model).block_list().restored_session_ts() {
-                            format!(
-                                "{banner_intro_text} de {}",
-                                ts.format("%d/%m/%Y às %H:%M")
-                            )
+                            format!("{banner_intro_text} de {}", ts.format("%d/%m/%Y às %H:%M"))
                         } else {
                             banner_intro_text
                         };

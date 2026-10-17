@@ -166,10 +166,9 @@ impl View for SummarizationCancelDialog {
             "Cancelar o resumo?".to_string(),
             Some(
                 concat!(
-                    "A geração do resumo já está em andamento. Se você cancelar agora, "
-                    "a solicitação ainda poderá gerar custos, todo o progresso será perdido "
-                    "e reiniciar levará "
-                    "mais tempo.\n\nTem certeza de que deseja cancelar?"
+                    "A gera\u{00e7}\u{00e3}o do resumo j\u{00e1} est\u{00e1} em andamento. Se voc\u{00ea} cancelar agora, ",
+                    "a solicita\u{00e7}\u{00e3}o ainda poder\u{00e1} gerar custos, todo o progresso ser\u{00e1} perdido ",
+                    "e reiniciar levar\u{00e1} mais tempo.\n\nTem certeza de que deseja cancelar?"
                 )
                 .to_string(),
             ),

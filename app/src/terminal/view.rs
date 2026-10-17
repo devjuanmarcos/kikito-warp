@@ -18021,14 +18021,14 @@ impl TerminalView {
                                     MenuItemFields::new(
                                         "Criar cópia a partir daqui (somente desenvolvimento)",
                                     )
-                                        .with_on_select_action(TerminalAction::ContextMenu(
-                                            ContextMenuAction::ForkAIConversationFromExactExchange {
-                                                ai_block_view_id: *rich_content_view_id,
-                                                exchange_id: ai_metadata.exchange_id,
-                                                conversation_id: ai_metadata.conversation_id,
-                                            },
-                                        ))
-                                        .into_item(),
+                                    .with_on_select_action(TerminalAction::ContextMenu(
+                                        ContextMenuAction::ForkAIConversationFromExactExchange {
+                                            ai_block_view_id: *rich_content_view_id,
+                                            exchange_id: ai_metadata.exchange_id,
+                                            conversation_id: ai_metadata.conversation_id,
+                                        },
+                                    ))
+                                    .into_item(),
                                 );
                             }
                         }
@@ -23505,7 +23505,9 @@ impl TerminalView {
                         "estas instruções",
                         P10K_UPDATE_INSTRUCTIONS_URL,
                     ),
-                    FormattedTextFragment::plain_text(" para atualizar para a versão mais recente."),
+                    FormattedTextFragment::plain_text(
+                        " para atualizar para a versão mais recente.",
+                    ),
                 ]))
             } else if shell_plugins.contains("pure") {
                 Some(BannerTextContent::formatted_text(vec![
@@ -25318,11 +25320,7 @@ impl TerminalView {
                             .finish(),
                     )
                     .with_child(
-                        Text::new_inline(
-                            "Carregando sessão...",
-                            appearance.ui_font_family(),
-                            14.,
-                        )
+                        Text::new_inline("Carregando sessão...", appearance.ui_font_family(), 14.)
                             .with_color(color.into())
                             .finish(),
                     )

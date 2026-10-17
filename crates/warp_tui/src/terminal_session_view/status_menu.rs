@@ -28,7 +28,10 @@ pub(super) fn menu(status_info: TuiStatusInfo, builder: &TuiUiBuilder) -> TuiRea
         ("Versão", status_info.version.as_str()),
         ("Sessão", status_info.session.as_str()),
         ("ID da conversa", status_info.conversation_id.as_str()),
-        ("Diretório de trabalho", status_info.working_directory.as_str()),
+        (
+            "Diretório de trabalho",
+            status_info.working_directory.as_str(),
+        ),
         ("Organização", status_info.org.as_str()),
         ("E-mail", status_info.email.as_str()),
     ]

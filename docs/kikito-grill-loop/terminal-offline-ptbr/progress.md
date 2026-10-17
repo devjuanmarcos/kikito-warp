@@ -1306,3 +1306,31 @@
 ## Primeiro uso e marca do TUI
 
 - Atualizei títulos e apresentação inicial para Kikito Terminal em português. Removi da tela de primeiro uso as promessas de agentes, modelos e orquestração hospedados; agora ela apresenta abas, painéis, shells, CLIs e contexto local do projeto.
+
+## Marca do TUI
+
+- Substituí a silhueta animada antiga por um monograma KT adaptado da marca aprovada, ajustando a proporção para a grade de caracteres do terminal. Traduzi também as mensagens de falha ao carregar arte ASCII personalizada.
+
+## Ajuda de edição do TUI
+
+- Traduzi descrições dos atalhos locais para inserir/apagar texto, mover o cursor, ampliar seleções, copiar, recortar, colar e desfazer/refazer. Os nomes e atalhos não mudaram.
+
+## Configuração local da linha de status no TUI
+
+- Traduzi as instruções de teclado/rodapé da tela de configuração e os rótulos locais de diretório, Git, Vim, data e hora. Mantive opções de modelo, equipe, créditos, agente e voz fora do escopo.
+
+## Navegação da seleção no TUI
+
+- Traduzi o título da configuração da linha de status e os textos genéricos do seletor usados nessa tela: busca, paginação, estado sem resultados e navegação entre opções.
+
+## Navegação local do editor
+
+- Traduzi o comando `Go to line` e o título da janela de navegação para `Ir para a linha`, além de `Find in code editor` para `Localizar no editor de código`.
+- Traduzi os estados locais de carregamento e contagem da janela de referências, assim como nomes de atalhos de navegação, seleção, edição, Vim e área de transferência. Atalhos, IDs e ações permanecem intactos.
+
+## Navegação local do workspace
+
+- Traduzi os rótulos `Branch` para `Ramificação` nas opções compactas das abas verticais.
+- Traduzi os nomes de fallback `File` e `Folder` na árvore de arquivos para `Arquivo` e `Pasta`.
+- Traduzi o estado local `Enable {server}` para `Ativar {server}` no rodapé de suporte a linguagens; as mensagens dinâmicas do servidor permanecem como recebidas.
+- Traduzi descrições dos campos de configuração do diretório inicial das novas sessões, incluindo configuração global e opções separadas para painel, aba e janela.

@@ -327,10 +327,7 @@ fn signed_out_welcome_uses_figma_brand_colors_in_dark_and_light_themes() {
                     cell_color("✶ Organize abas, painéis e sessões locais", 0),
                     brand_accent
                 );
-                assert_eq!(
-                    cell_color("✶ Personalize temas e atalhos", 0),
-                    brand_accent
-                );
+                assert_eq!(cell_color("✶ Personalize temas e atalhos", 0), brand_accent);
             });
         }
     });

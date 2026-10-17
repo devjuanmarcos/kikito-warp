@@ -265,7 +265,10 @@ impl SettingsWidget for WarpControlCliInstallWidget {
             ToggleState::Enabled,
             appearance,
             button,
-            Some("Instale o comando warpctrl para automatizar o Kikito Terminal pelo terminal.".to_owned()),
+            Some(
+                "Instale o comando warpctrl para automatizar o Kikito Terminal pelo terminal."
+                    .to_owned(),
+            ),
         )
     }
 }
@@ -296,7 +299,10 @@ impl SettingsWidget for LocalControlModeWidget {
             ToggleState::Enabled,
             appearance,
             ChildView::new(&view.local_control_mode_dropdown).finish(),
-            Some("O warpctrl permite automatizar a interface do Kikito Terminal. Use com cuidado.".to_owned()),
+            Some(
+                "O warpctrl permite automatizar a interface do Kikito Terminal. Use com cuidado."
+                    .to_owned(),
+            ),
         )
     }
 }

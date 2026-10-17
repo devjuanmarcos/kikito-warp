@@ -136,7 +136,7 @@ impl View for GoToLineView {
         let theme = appearance.theme();
 
         let label = Text::new_inline(
-            "Go to line",
+            "Ir para a linha",
             appearance.ui_font_family(),
             GOTO_LINE_LABEL_FONT_SIZE,
         )

@@ -40,7 +40,7 @@ use crate::autoupdate::{
 use crate::tui_builder::TuiUiBuilder;
 use crate::ui::{abbreviate_home_prefix, append_welcome_capability_section, render_welcome_title};
 use crate::zero_state_animation::{
-    WarpLogoStyles, ZeroStateAnimationConfig, ZeroStateAnimationConfigEvent,
+    KikitoLogoStyles, ZeroStateAnimationConfig, ZeroStateAnimationConfigEvent,
     ZeroStateAnimationElement, ZeroStateInteractionHandle, ZeroStateStarfieldElement,
 };
 
@@ -247,7 +247,7 @@ impl TuiZeroStateView {
             self.clock,
             self.animation_config.clone(),
             self.interaction.clone(),
-            WarpLogoStyles {
+            KikitoLogoStyles {
                 front: builder.accent_text_style(),
                 back: builder.primary_text_style(),
                 side: builder.dim_text_style(),
