@@ -738,3 +738,8 @@
 
 - Traduzi o texto de orientação para buscar sessões, agentes e arquivos.
 - Preservei o controle e o comportamento de busca existentes.
+
+## Tradução — confirmação de cancelamento do resumo
+
+- Traduzi o aviso e as opções para cancelar ou continuar a geração do resumo.
+- Preservei as ações e a tecla Escape para continuar.
