@@ -1779,8 +1779,15 @@
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
 
 
+
 ## Auditoria — confirmação local de saída
 
 - Revisei `app/src/quit_warning/mod.rs`, que apresenta confirmações ao fechar abas, painéis, janelas ou o aplicativo e avisa sobre processos em execução e alterações de arquivos não salvas. Os textos exibidos já estão em português; não foi necessária alteração de código.
 - A referência a sessões compartilhadas é conteúdo dinâmico de um recurso hospedado e não foi alterada. IDs, contagens, nomes de arquivos e demais dados dinâmicos permanecem intactos.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — footer do editor e menu LSP
+
+- Revisei os rótulos de ativação/instalação, estados de disponibilidade e mensagens de suporte a linguagens no footer, além das ações do menu LSP para abrir registros, iniciar, parar, reiniciar, remover e gerenciar servidores. O copy fixo local já está em português; não precisei alterar código.
+- Preservei nomes/binários dos servidores, nomes de linguagem e arquivo, além de progresso e detalhes de erro recebidos dos próprios servidores, pois são conteúdo técnico dinâmico. A chamada da skill `/update-tab-config` já usa texto em português e permanece identificada pelo nome de comando.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
