@@ -1170,4 +1170,9 @@
 ## Tooltips e acessibilidade do workspace
 
 - Traduzi o tooltip do painel de gerenciamento de agentes, o rótulo de Configurações e o aviso de recursos indisponíveis offline. Os controles aparecem no workspace desktop; o painel de agentes está entre os recursos padrão do app.
-- Localizei o anúncio acessível de alteração da verbosidade do leitor de tela, com rótulos detalhado/conciso sem alterar os valores persistidos. Ignorei mensagens de handoff e conta/cloud.
+- Localizei o anúncio acessível de alteração da verbosidade do leitor de tela, com rótulos detalhado/conciso sem alterar os valores persistidos. Ignorei mensagens de transferência, conta e nuvem.
+
+## Revisão de tooltips e acessibilidade de abas
+
+- Revisei `vertical_tabs.rs` e os controles de abas em `workspace/view.rs`: tooltips, busca e estado sem resultados estão em português; as strings restantes são nomes de produtos/dados dinâmicos, identificadores ou comentários.
+- O caminho `app/src/workspace/tab.rs` não existe nesta estrutura; `tab_group.rs` não contém copy visível. Não encontrei novos textos locais para alterar neste lote.
