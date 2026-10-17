@@ -1044,3 +1044,8 @@
 
 - Traduzi a ação para gerenciar perfis, o indicador de perfil selecionado e o prefixo do rótulo de acessibilidade.
 - Mantive IDs de perfil, resultados de busca e ações intactos.
+
+## Tradução — menu de conversas do campo de entrada
+
+- Traduzi as abas de escopo, o indicador de conversa aberta em outro painel e o prefixo do rótulo de acessibilidade.
+- Mantive IDs, filtros, títulos de conversa e a lógica de seleção sem alterações.
