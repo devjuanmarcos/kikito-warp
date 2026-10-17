@@ -804,3 +804,8 @@
 
 - Traduzi as orientações dos modos claro, escuro e geral, além do estado sem resultados.
 - Preservei os modos do sistema e o filtro de temas.
+
+## Tradução — inserção de blocos em cadernos
+
+- Traduzi a dica do controle que abre o menu de inserção de blocos.
+- Preservei o identificador do botão e o comportamento do menu.
