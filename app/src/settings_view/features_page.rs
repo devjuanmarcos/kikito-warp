@@ -526,7 +526,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "Vim unnamed register as system clipboard",
+            "Usar o registrador sem nome do Vim como área de transferência do sistema",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleVimUnnamedSystemClipboard,
             )),
@@ -542,7 +542,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "Vim status bar",
+            "Mostrar barra de status do Vim",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleVimStatusBar,
             )),
@@ -2415,22 +2415,22 @@ impl FeaturesPageView {
             let mut dropdown = Dropdown::new(ctx);
 
             let top = DropdownItem::new(
-                "Pin to top",
+                "Fixar no topo",
                 FeaturesPageAction::QuakeEditorSetPinPosition(QuakeModePinPosition::Top),
             );
 
             let bottom = DropdownItem::new(
-                "Pin to bottom",
+                "Fixar na parte inferior",
                 FeaturesPageAction::QuakeEditorSetPinPosition(QuakeModePinPosition::Bottom),
             );
 
             let left = DropdownItem::new(
-                "Pin to left",
+                "Fixar à esquerda",
                 FeaturesPageAction::QuakeEditorSetPinPosition(QuakeModePinPosition::Left),
             );
 
             let right = DropdownItem::new(
-                "Pin to right",
+                "Fixar à direita",
                 FeaturesPageAction::QuakeEditorSetPinPosition(QuakeModePinPosition::Right),
             );
 
@@ -3090,18 +3090,18 @@ impl FeaturesPageView {
         }
 
         let categories = vec![
-            Category::new("General", general_widgets),
-            Category::new("Session", session_widgets),
-            Category::new("Keys", keys_widgets),
-            Category::new("Text Editing", text_editing_widgets),
-            Category::new("Terminal Input", editor_widgets),
+            Category::new("Geral", general_widgets),
+            Category::new("Sessão", session_widgets),
+            Category::new("Teclas", keys_widgets),
+            Category::new("Edição de texto", text_editing_widgets),
+            Category::new("Entrada do terminal", editor_widgets),
             Category::new("Terminal", terminal_widgets),
-            Category::new("Notifications", notifications_widgets),
+            Category::new("Notificações", notifications_widgets),
             Category::new(
-                "Workflows",
+                "Fluxos de trabalho",
                 vec![Box::new(WorkflowsInCommandSearch::default())],
             ),
-            Category::new("System", system_widgets),
+            Category::new("Sistema", system_widgets),
         ];
 
         PageType::new_categorized(categories, None)
@@ -3558,7 +3558,7 @@ impl FeaturesPageView {
         self.graphics_backend_dropdown.update(ctx, |dropdown, ctx| {
             if let Some(window) = ctx.windows().platform_window(ctx.window_id()) {
                 let mut items = vec![DropdownItem::new(
-                    "Default",
+                    "Padrão",
                     FeaturesPageAction::SetPreferredGraphicsBackend(None),
                 )];
                 items.extend(window.supported_backends().into_iter().map(|backend| {
@@ -3574,7 +3574,7 @@ impl FeaturesPageView {
                 gpu_settings
                     .preferred_backend
                     .map(|backend| backend.to_label())
-                    .unwrap_or("Default"),
+                    .unwrap_or("Padrão"),
                 ctx,
             );
         });
@@ -4294,7 +4294,7 @@ impl FeaturesPageView {
                 padding: Some(Coords::default().right(10.)),
                 ..Default::default()
             })
-            .with_text_label("Cancel".to_string())
+            .with_text_label("Cancelar".to_string())
             .build()
             .on_click(move |ctx, _, _| {
                 ctx.dispatch_typed_action(cancel_action.clone());
@@ -4306,7 +4306,7 @@ impl FeaturesPageView {
             appearance
                 .ui_builder()
                 .button(ButtonVariant::Text, save_button_mouse_state)
-                .with_text_label("Save".to_string())
+                .with_text_label("Salvar".to_string())
                 .build()
                 .on_click(move |ctx, _, _| {
                     ctx.dispatch_typed_action(save_action.clone());
@@ -4330,7 +4330,7 @@ impl FeaturesPageView {
                                 2.,
                                 Align::new(
                                     Text::new_inline(
-                                        "Press new keyboard shortcut",
+                                        "Pressione as teclas do novo atalho",
                                         appearance.ui_font_family(),
                                         13.,
                                     )
@@ -4547,7 +4547,7 @@ fn init_display_count_dropdown(
     ctx: &mut ViewContext<Dropdown<FeaturesPageAction>>,
 ) {
     let no_preference = DropdownItem::new(
-        "Active Screen",
+        "Tela ativa",
         //|| {
         FeaturesPageAction::QuakeEditorSetPinScreen(None), //}
     );
@@ -4571,7 +4571,7 @@ fn init_display_count_dropdown(
         Some(idx) if idx.is_valid_given_display_count(display_count) => {
             dropdown.set_selected_by_name(format!("{idx}"), ctx)
         }
-        _ => dropdown.set_selected_by_name("Active Screen", ctx),
+        _ => dropdown.set_selected_by_name("Tela ativa", ctx),
     };
 }
 
@@ -5788,7 +5788,7 @@ impl SettingsWidget for AutocompleteSymbolsWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Autocomplete quotes, parentheses, and brackets".into(),
+            "Completar aspas, parênteses e colchetes automaticamente".into(),
             None,
             LocalOnlyIconState::for_setting(
                 AutocompleteSymbols::storage_key(),
@@ -5834,7 +5834,7 @@ impl SettingsWidget for ErrorUnderliningWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Error underlining for commands".into(),
+            "Sublinhar erros nos comandos".into(),
             None,
             LocalOnlyIconState::for_setting(
                 ErrorUnderliningEnabled::storage_key(),
@@ -5880,7 +5880,7 @@ impl SettingsWidget for SyntaxHighlightingWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Syntax highlighting for commands".into(),
+            "Realce de sintaxe nos comandos".into(),
             None,
             LocalOnlyIconState::for_setting(
                 SyntaxHighlighting::storage_key(),
@@ -5926,7 +5926,7 @@ impl SettingsWidget for CompletionsMenuWhileTypingWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Open completions menu as you type".into(),
+            "Abrir o menu de sugestões enquanto digita".into(),
             None,
             LocalOnlyIconState::for_setting(
                 CompletionsOpenWhileTyping::storage_key(),
@@ -5980,7 +5980,7 @@ impl SettingsWidget for WarpCompletionsWidget {
 
         let mut column = Flex::column();
         column.add_child(render_body_item::<FeaturesPageAction>(
-            "Warp completions".into(),
+            "Sugestões do Kikito Terminal".into(),
             None,
             LocalOnlyIconState::for_setting(
                 WarpCompletionsEnabled::storage_key(),
@@ -6029,7 +6029,7 @@ impl SettingsWidget for WarpCompletionsWidget {
                     app,
                 ),
                 as_you_type_switch,
-                "Open completions menu as you type".into(),
+                "Abrir o menu de sugestões enquanto digita".into(),
             );
             column.add_child(render_group([as_you_type_item], appearance));
         }
@@ -6064,7 +6064,7 @@ impl SettingsWidget for NativeShellCompletionsWidget {
         let description = if warp_on && as_you_type_on && native_on {
             let keystroke = &*view.completions_keystroke;
             keystroke.is_empty().not().then_some(format!(
-                "Native shell completions aren't generated as you type; press {keystroke} to fetch them."
+                "As sugestões nativas do shell não aparecem enquanto você digita; pressione {keystroke} para buscá-las."
             ))
         } else {
             None
@@ -6072,7 +6072,7 @@ impl SettingsWidget for NativeShellCompletionsWidget {
 
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Native shell completions".into(),
+            "Sugestões nativas do shell".into(),
             None,
             LocalOnlyIconState::for_setting(
                 NativeShellCompletionsEnabled::storage_key(),
@@ -6118,7 +6118,7 @@ impl SettingsWidget for CommandCorrectionsWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Suggest corrected commands".into(),
+            "Sugerir correções para comandos".into(),
             None,
             LocalOnlyIconState::for_setting(
                 CommandCorrections::storage_key(),
@@ -6165,7 +6165,7 @@ impl SettingsWidget for AliasExpansionWidget {
         let alias_expansion_settings = AliasExpansionSettings::as_ref(app);
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Expand aliases as you type".into(),
+            "Expandir aliases enquanto digita".into(),
             None,
             LocalOnlyIconState::for_setting(
                 AliasExpansionEnabled::storage_key(),
@@ -6212,7 +6212,7 @@ impl SettingsWidget for MiddleClickPasteWidget {
         let ui_builder = appearance.ui_builder();
         let selection_settings = SelectionSettings::as_ref(app);
         render_body_item::<FeaturesPageAction>(
-            "Middle-click to paste".into(),
+            "Colar com o botão do meio".into(),
             None,
             LocalOnlyIconState::for_setting(
                 MiddleClickPasteEnabled::storage_key(),
@@ -6262,10 +6262,10 @@ impl SettingsWidget for RightClickBehaviorWidget {
             || {
                 render_dropdown_item(
                     appearance,
-                    "Right-click:",
+                    "Clique com o botão direito:",
                     selection_settings
                         .right_click_pastes()
-                        .then_some("Shift+right-click to open the context menu."),
+                        .then_some("Shift + clique com o botão direito para abrir o menu de contexto."),
                     None,
                     LocalOnlyIconState::for_setting(
                         RightClickBehaviorSetting::storage_key(),
@@ -6416,7 +6416,7 @@ impl SettingsWidget for AtContextMenuInTerminalModeWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Enable '@' context menu in terminal mode".into(),
+            "Ativar o menu de contexto '@' no modo terminal".into(),
             None,
             LocalOnlyIconState::for_setting(
                 AtContextMenuInTerminalMode::storage_key(),
@@ -6472,7 +6472,7 @@ impl SettingsWidget for SlashCommandsInTerminalModeWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Enable slash commands in terminal mode".into(),
+            "Ativar comandos slash no modo terminal".into(),
             None,
             LocalOnlyIconState::for_setting(
                 EnableSlashCommandsInTerminal::storage_key(),
@@ -6524,7 +6524,7 @@ impl SettingsWidget for OutlineCodebaseSymbolsForAtContextMenuWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         render_body_item::<FeaturesPageAction>(
-            "Outline codebase symbols for '@' context menu".into(),
+            "Gerar um esboço dos símbolos da base de código para o menu de contexto '@'".into(),
             None,
             LocalOnlyIconState::for_setting(
                 OutlineCodebaseSymbolsForAtContextMenu::storage_key(),
@@ -7304,7 +7304,7 @@ impl SettingsWidget for ShowTerminalZeroStateBlockWidget {
         let ui_builder = appearance.ui_builder();
         let terminal_settings = TerminalSettings::as_ref(app);
         render_body_item::<FeaturesPageAction>(
-            "Show help block in new sessions".into(),
+            "Mostrar bloco de ajuda em novas sessões".into(),
             None,
             LocalOnlyIconState::for_setting(
                 ShowTerminalZeroStateBlock::storage_key(),
@@ -7517,7 +7517,7 @@ impl SettingsWidget for WorkflowsInCommandSearch {
         let ui_builder = appearance.ui_builder();
         let workflow_settings = CommandSearchSettings::as_ref(app);
         render_body_item::<FeaturesPageAction>(
-            "Show Global Workflows in Command Search (ctrl-r)".into(),
+            "Mostrar fluxos de trabalho globais na Busca de comandos (Ctrl+R)".into(),
             Some(AdditionalInfo {
                 mouse_state: self.additional_info_link.clone(),
                 on_click_action: Some(FeaturesPageAction::OpenUrl(
@@ -7572,13 +7572,13 @@ impl SettingsWidget for LinuxSelectionClipboardWidget {
         app: &AppContext,
     ) -> Box<dyn Element> {
         render_body_item::<FeaturesPageAction>(
-            "Honor linux selection clipboard".into(),
+            "Usar a área de transferência primária do Linux".into(),
             Some(AdditionalInfo {
                 mouse_state: self.additional_info_link.clone(),
                 on_click_action: None,
                 secondary_text: None,
                 tooltip_override_text: Some(
-                    "Whether the Linux primary clipboard should be supported.".into(),
+                    "Indica se a área de transferência primária do Linux deve ser habilitada.".into(),
                 ),
             }),
             LocalOnlyIconState::for_setting(

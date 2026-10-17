@@ -1104,4 +1104,15 @@
 ## Aparência: painel de ferramentas
 
 - Traduzi a descrição visível do controle do painel de ferramentas e atualizei o nome apresentado de Warp Drive para Kikito Drive.
-- Mantive nomes de features e identificadores internos sem alteração.
+- Mantive nomes de recursos e identificadores internos sem alteração.
+
+
+## Recursos do terminal
+
+- Traduzi as categorias da página, controles de posição da janela Quake, preferências de terminal, sugestões, edição de texto, atalhos e área de transferência.
+- Rebatizei o rótulo visível de Warp completions para Sugestões do Kikito Terminal; preservei identificadores, ações, nomes internos e atalhos.
+
+### Complementos da página de recursos
+
+- Traduzi controles adicionais de Vim, preenchimento automático, sugestões do shell, correções de comandos, expansão de aliases e captura de atalhos.
+- O rótulo do seletor de tela ativa e a dica da área de transferência primária do Linux também foram localizados.
