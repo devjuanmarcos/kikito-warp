@@ -3972,12 +3972,12 @@ impl TerminalView {
             Banner::<TerminalAction>::new_with_buttons(
                 BannerTextContent::formatted_text(vec![
                     FormattedTextFragment::plain_text(
-                        "Seems like your shell is taking a while to start...  ",
+                        "Parece que o shell está demorando para iniciar...  ",
                     ),
-                    FormattedTextFragment::hyperlink("More info", KNOWN_ISSUES_URL),
+                    FormattedTextFragment::hyperlink("Mais informações", KNOWN_ISSUES_URL),
                 ]),
                 vec![BannerTextButton::new(
-                    "Show initialization block".to_string(),
+                    "Mostrar bloco de inicialização".to_string(),
                     Rc::new(|event_ctx, _ctx, _position| {
                         event_ctx.dispatch_typed_action(BannerAction::<TerminalAction>::Action(
                             TerminalAction::ShowInitializationBlock,
@@ -3997,14 +3997,16 @@ impl TerminalView {
 
         let control_master_error_banner = ctx.add_typed_action_view(|_| {
             Banner::new_permanently_dismissible(BannerTextContent::formatted_text(vec![
-                FormattedTextFragment::plain_text("Seems like your completions are not working ("),
-                FormattedTextFragment::hyperlink("more info", CONTROLMASTER_ISSUES_URL),
-                FormattedTextFragment::plain_text("). Enabling the SSH extension in "),
+                FormattedTextFragment::plain_text(
+                    "Parece que o preenchimento automático não está funcionando (",
+                ),
+                FormattedTextFragment::hyperlink("mais informações", CONTROLMASTER_ISSUES_URL),
+                FormattedTextFragment::plain_text("). Ativar a extensão SSH em "),
                 FormattedTextFragment::hyperlink_action(
-                    "settings",
+                    "configurações",
                     TerminalAction::ShowWarpifySettings,
                 ),
-                FormattedTextFragment::plain_text(" may resolve this issue."),
+                FormattedTextFragment::plain_text(" pode resolver o problema."),
             ]))
         });
 
@@ -4017,7 +4019,7 @@ impl TerminalView {
                 FormattedTextFragment::plain_text(
                     "A configuração do shell é incompatível com o Kikito Terminal...  ",
                 ),
-                FormattedTextFragment::hyperlink("More info", KNOWN_ISSUES_URL),
+                FormattedTextFragment::hyperlink("Mais informações", KNOWN_ISSUES_URL),
             ]))
         });
 
