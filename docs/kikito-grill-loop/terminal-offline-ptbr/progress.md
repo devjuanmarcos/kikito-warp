@@ -1265,3 +1265,7 @@
 ## Menus locais do aplicativo
 
 - Auditei os menus de janela, aba, depuração e arquivo em `app_menus.rs`; os rótulos locais visíveis já estão em português. Excluí privacidade/documentação externas, logout e itens de conta/IA não disponíveis no OSS. Nenhuma alteração de código neste lote.
+
+## Opções de worktree em configurações de aba
+
+- Traduzi a dica que explica a dependência da opção de nome automático de branch em relação à criação automática de worktree. Os demais textos visíveis do modal de configuração de sessão já estavam em português.

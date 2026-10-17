@@ -488,8 +488,7 @@ where
             if state.is_hovered() {
                 let tooltip = Container::new(
                     Text::new_inline(
-                        "You must select that you want to automatically create a \
-                         worktree in order to select this"
+                        "Para escolher esta opção, ative a criação automática de worktree."
                             .to_string(),
                         font_family,
                         12.,
