@@ -252,7 +252,7 @@ impl AgentProfilesPageView {
                 let expanded = host_native_absolute_path(s, &None, &None);
                 Path::new(&expanded).is_dir()
             });
-            input.set_placeholder_text("e.g. ~/code-repos/repo", ctx);
+            input.set_placeholder_text("ex.: ~/code-repos/repo", ctx);
             input
         });
         update_editor_interaction_state(
@@ -275,7 +275,7 @@ impl AgentProfilesPageView {
         let command_execution_allowlist_editor = ctx.add_typed_action_view(|ctx| {
             let mut input =
                 SubmittableTextInput::new(ctx).validate_on_edit(|s| Regex::new(s).is_ok());
-            input.set_placeholder_text("e.g. ls .*", ctx);
+            input.set_placeholder_text("ex.: ls .*", ctx);
             input
         });
         update_editor_interaction_state(
@@ -307,7 +307,7 @@ impl AgentProfilesPageView {
         let command_execution_denylist_editor = ctx.add_typed_action_view(|ctx| {
             let mut input =
                 SubmittableTextInput::new(ctx).validate_on_edit(|s| Regex::new(s).is_ok());
-            input.set_placeholder_text("e.g. rm .*", ctx);
+            input.set_placeholder_text("ex.: rm .*", ctx);
             input
         });
         update_editor_interaction_state(
@@ -554,15 +554,15 @@ impl AgentProfilesPageView {
             dropdown.set_items(
                 vec![
                     DropdownItem::new(
-                        "Agent decides",
+                        "O agente decide",
                         AgentProfilesPageAction::SetApplyCodeDiffs(ActionPermission::AgentDecides),
                     ),
                     DropdownItem::new(
-                        "Always allow",
+                        "Sempre permitir",
                         AgentProfilesPageAction::SetApplyCodeDiffs(ActionPermission::AlwaysAllow),
                     ),
                     DropdownItem::new(
-                        "Always ask",
+                        "Sempre perguntar",
                         AgentProfilesPageAction::SetApplyCodeDiffs(ActionPermission::AlwaysAsk),
                     ),
                 ],
@@ -584,15 +584,15 @@ impl AgentProfilesPageView {
             dropdown.set_items(
                 vec![
                     DropdownItem::new(
-                        "Agent decides",
+                        "O agente decide",
                         AgentProfilesPageAction::SetReadFiles(ActionPermission::AgentDecides),
                     ),
                     DropdownItem::new(
-                        "Always allow",
+                        "Sempre permitir",
                         AgentProfilesPageAction::SetReadFiles(ActionPermission::AlwaysAllow),
                     ),
                     DropdownItem::new(
-                        "Always ask",
+                        "Sempre perguntar",
                         AgentProfilesPageAction::SetReadFiles(ActionPermission::AlwaysAsk),
                     ),
                 ],
@@ -614,15 +614,15 @@ impl AgentProfilesPageView {
             dropdown.set_items(
                 vec![
                     DropdownItem::new(
-                        "Agent decides",
+                        "O agente decide",
                         AgentProfilesPageAction::SetExecuteCommands(ActionPermission::AgentDecides),
                     ),
                     DropdownItem::new(
-                        "Always allow",
+                        "Sempre permitir",
                         AgentProfilesPageAction::SetExecuteCommands(ActionPermission::AlwaysAllow),
                     ),
                     DropdownItem::new(
-                        "Always ask",
+                        "Sempre perguntar",
                         AgentProfilesPageAction::SetExecuteCommands(ActionPermission::AlwaysAsk),
                     ),
                 ],
@@ -644,15 +644,15 @@ impl AgentProfilesPageView {
             dropdown.set_items(
                 vec![
                     DropdownItem::new(
-                        "Always allow",
+                        "Sempre permitir",
                         AgentProfilesPageAction::SetWriteToPty(WriteToPtyPermission::AlwaysAllow),
                     ),
                     DropdownItem::new(
-                        "Always ask",
+                        "Sempre perguntar",
                         AgentProfilesPageAction::SetWriteToPty(WriteToPtyPermission::AlwaysAsk),
                     ),
                     DropdownItem::new(
-                        "Ask on first write",
+                        "Perguntar na primeira gravação",
                         AgentProfilesPageAction::SetWriteToPty(
                             WriteToPtyPermission::AskOnFirstWrite,
                         ),
@@ -676,15 +676,15 @@ impl AgentProfilesPageView {
             dropdown.set_items(
                 vec![
                     DropdownItem::new(
-                        "Agent decides",
+                        "O agente decide",
                         AgentProfilesPageAction::SetMCPPermissions(ActionPermission::AgentDecides),
                     ),
                     DropdownItem::new(
-                        "Always allow",
+                        "Sempre permitir",
                         AgentProfilesPageAction::SetMCPPermissions(ActionPermission::AlwaysAllow),
                     ),
                     DropdownItem::new(
-                        "Always ask",
+                        "Sempre perguntar",
                         AgentProfilesPageAction::SetMCPPermissions(ActionPermission::AlwaysAsk),
                     ),
                 ],
@@ -758,7 +758,7 @@ impl AgentProfilesPageView {
                 let expanded = host_native_absolute_path(s, &None, &None);
                 Path::new(&expanded).is_dir()
             });
-            input.set_placeholder_text("e.g. ~/code-repos/repo", ctx);
+            input.set_placeholder_text("ex.: ~/code-repos/repo", ctx);
             input
         });
 
@@ -792,7 +792,7 @@ impl AgentProfilesPageView {
         let command_denylist_editor = ctx.add_typed_action_view(|ctx| {
             let mut input =
                 SubmittableTextInput::new(ctx).validate_on_edit(|s| Regex::new(s).is_ok());
-            input.set_placeholder_text("e.g. rm .*", ctx);
+            input.set_placeholder_text("ex.: rm .*", ctx);
             input
         });
         update_editor_interaction_state(
@@ -830,7 +830,7 @@ impl AgentProfilesPageView {
         let command_allowlist_editor = ctx.add_typed_action_view(|ctx| {
             let mut input =
                 SubmittableTextInput::new(ctx).validate_on_edit(|s| Regex::new(s).is_ok());
-            input.set_placeholder_text("e.g. ls .*", ctx);
+            input.set_placeholder_text("ex.: ls .*", ctx);
             input
         });
         update_editor_interaction_state(
@@ -1152,11 +1152,11 @@ impl AgentProfilesPageView {
             menu.set_items(
                 vec![
                     DropdownItem::new(
-                        "Read only",
+                        "Somente leitura",
                         AgentProfilesPageAction::SetAutonomyReadonlyCommandsSetting,
                     ),
                     DropdownItem::new(
-                        "Supervised",
+                        "Supervisionado",
                         AgentProfilesPageAction::SetAutonomySupervisedSetting,
                     ),
                 ],
@@ -1348,10 +1348,12 @@ impl AgentProfilesPageView {
                 AgentModeCodingPermissionsType::iter()
                     .map(|t| {
                         let display = match t {
-                            AgentModeCodingPermissionsType::AlwaysAskBeforeReading => "Always ask",
-                            AgentModeCodingPermissionsType::AlwaysAllowReading => "Always allow",
+                            AgentModeCodingPermissionsType::AlwaysAskBeforeReading => {
+                                "Sempre perguntar"
+                            }
+                            AgentModeCodingPermissionsType::AlwaysAllowReading => "Sempre permitir",
                             AgentModeCodingPermissionsType::AllowReadingSpecificFiles => {
-                                "Allow in specific directories"
+                                "Permitir em diretórios específicos"
                             }
                         };
                         DropdownItem::new(display, AgentProfilesPageAction::SetCodingPermission(t))
@@ -2313,7 +2315,7 @@ impl SettingsWidget for AgentsWidget {
             agents_header.add_child(
                 build_sub_header(
                     appearance,
-                    "Agents",
+                    "Agentes",
                     Some(styles::header_font_color(is_any_ai_enabled, app)),
                 )
                 .with_padding_bottom(HEADER_PADDING)
@@ -2359,7 +2361,7 @@ impl AgentsWidget {
             .with_child(
                 build_sub_header(
                     appearance,
-                    "Profiles",
+                    "Perfis",
                     Some(styles::header_font_color(is_any_ai_enabled, app)),
                 )
                 .finish(),
@@ -2417,7 +2419,7 @@ impl AgentsWidget {
         let is_any_ai_enabled = ai_settings.is_any_ai_enabled(app);
         let model_subheader = Container::new(render_custom_size_header(
             appearance,
-            "Models",
+            "Modelos",
             14.0,
             Some(styles::header_font_color(is_any_ai_enabled, app)),
         ))
@@ -2461,7 +2463,7 @@ impl AgentsWidget {
         let max = cw.max;
 
         let label = Container::new(render_body_item_label::<AgentProfilesPageAction>(
-            "Context window (tokens)".to_string(),
+            "Janela de contexto (tokens)".to_string(),
             None,
             None,
             LocalOnlyIconState::Hidden,
@@ -2581,7 +2583,7 @@ impl AgentsWidget {
         let scope = view.team_context(app);
         let permissions_subheader = Container::new(render_custom_size_header(
             appearance,
-            "Permissions",
+            "Permissões",
             14.0,
             Some(styles::header_font_color(is_any_ai_enabled, app)),
         ))
@@ -2591,7 +2593,7 @@ impl AgentsWidget {
         let code_diff_setting =
             BlocklistAIPermissions::as_ref(app).get_apply_code_diffs_setting(None, &scope, app);
         let code_diffs = self.render_execution_profile_dropdown(
-            "Apply code diffs",
+            "Aplicar alterações no código",
             Icon::Code2,
             code_diff_setting.description(),
             &view.apply_code_diffs_dropdown_menu,
@@ -2604,7 +2606,7 @@ impl AgentsWidget {
             BlocklistAIPermissions::as_ref(app).get_read_files_setting(None, &scope, app);
         let mut read_files_flex = Flex::column().with_main_axis_size(MainAxisSize::Min);
         read_files_flex.add_child(self.render_execution_profile_dropdown(
-            "Read files",
+            "Ler arquivos",
             Icon::Notebook,
             read_files_setting.description(),
             &view.read_files_dropdown_menu,
@@ -2634,7 +2636,7 @@ impl AgentsWidget {
             BlocklistAIPermissions::as_ref(app).get_execute_commands_setting(None, &scope, app);
         let mut execute_commands_flex = Flex::column().with_main_axis_size(MainAxisSize::Min);
         execute_commands_flex.add_child(self.render_execution_profile_dropdown(
-            "Execute commands",
+            "Executar comandos",
             Icon::Terminal,
             execute_commands_setting.description(),
             &view.execute_commands_dropdown_menu,
@@ -2684,7 +2686,7 @@ impl AgentsWidget {
         {
             widget_children.push(
                 Container::new(render_settings_info_banner(
-                    "Some of your permissions are managed by your workspace.",
+                    "Algumas permissões são gerenciadas pelo seu espaço de trabalho.",
                     None,
                     appearance,
                 ))
@@ -2698,7 +2700,7 @@ impl AgentsWidget {
         let write_to_pty_setting =
             BlocklistAIPermissions::as_ref(app).get_write_to_pty_setting(None, &scope, app);
         let write_to_pty = self.render_execution_profile_dropdown(
-            "Interact with running commands",
+            "Interagir com comandos em execução",
             Icon::Workflow,
             write_to_pty_setting.description(),
             &view.write_to_pty_autonomy_dropdown_menu,
@@ -2912,8 +2914,8 @@ impl AgentsWidget {
         );
 
         render_ai_list(
-            "Directory allowlist",
-            "Give the agent file access to certain directories.",
+            "Lista de diretórios permitidos",
+            "Permita que o agente acesse arquivos em diretórios específicos.",
             list,
             view,
             ai_settings,

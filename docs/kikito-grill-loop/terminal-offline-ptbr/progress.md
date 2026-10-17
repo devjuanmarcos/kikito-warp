@@ -1451,3 +1451,9 @@
 - Atualizei as asserções existentes do modal para refletir os textos traduzidos; não adicionei testes nem os executei.
 - A revisão de rede confirmou no código que o perfil OSS neutraliza a abertura de URLs HTTP(S) externas e rejeita requisições do cliente HTTP fora de endereços loopback. Essa inspeção não substitui a captura de conexões durante todos os fluxos em execução.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram.
+## Perfis locais de agentes e auditoria de configurações
+
+- Traduzi para pt-BR os rótulos dos perfis de agente: níveis de permissão/autonomia, campos de exemplo, ações e regras de diretórios permitidos. A página de perfis não entra na navegação OSS atual, que mantém Aparência, Atalhos e Sobre, mas os textos locais ficaram consistentes no código.
+- A página de ambientes e seu botão de criação são exclusivos do gerenciamento de ambientes cloud e não aparecem na navegação OSS; mantive esse conteúdo sem mudanças.
+- `cli_agents_page.rs` já estava traduzido nos textos locais; não precisou de alterações.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `PROTOC=(WinGet protoc) cargo check -p warp_tui --bin warp-tui-oss` passaram. Não executei testes.
