@@ -753,3 +753,8 @@
 
 - Traduzi a mensagem exibida enquanto uma sessão está sendo carregada.
 - Mantive o estado e a renderização de carregamento.
+
+## Tradução — conclusão das dicas de boas-vindas
+
+- Traduzi o título, a mensagem e o botão do estado final das dicas.
+- Mantive a ação de fechar e um rótulo curto para caber no botão.
