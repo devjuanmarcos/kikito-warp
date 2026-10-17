@@ -1642,3 +1642,8 @@
 
 - A mesma varredura identificou modais de Oz, orquestração multiagente e anúncio de código aberto do Warp. Eles promovem agentes em cloud, serviços hosted ou links para o repositório oficial do Warp; desativei `OzLaunchModal`, `OrchestrationLaunchModal` e `OpenWarpLaunchModal` no canal OSS junto ao bloqueio anterior de `AgentCliLaunchModal`.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
+## Auditoria estática de chamadas externas na UI
+
+- Revisei chamadas `ctx.open_url` em `app/src`: suporte do Agent Mode, docs de launch configs, Wayland, links de download WebAssembly, citações de documentação/memória e páginas administrativas.
+- As chamadas de suporte/citações dependem de Agent Mode ou conteúdo de agentes/cloud desativado no OSS; o fluxo de download é `wasm` e não compõe a GUI desktop OSS; a ação de docs de launch config não tem ponto de construção de item na busca atual; e o botão de documentação do Wayland já é ocultado no canal OSS. O Resource Center e modais de lançamento com links Warp também foram ocultados em etapas anteriores.
+- A abertura global de URLs mantém o bloqueio OSS para destinos HTTP(S) externos, permitindo somente intenções locais de loopback. Esta revisão é estática; captura de sockets com o binário OSS em execução continua pendente porque não havia processo OSS ativo durante a inspeção anterior.
