@@ -859,3 +859,8 @@
 
 - Traduzi o rótulo da opção para exibir o seletor de modelos no prompt.
 - Preservei a configuração e a interface de seleção.
+
+## Tradução — título e acessibilidade do seletor de temas
+
+- Traduzi o título da janela de temas e suas instruções de acessibilidade.
+- Preservei o papel da janela e a instrução para fechá-la com Esc.

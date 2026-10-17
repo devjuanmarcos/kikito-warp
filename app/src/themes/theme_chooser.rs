@@ -46,7 +46,7 @@ use crate::window_settings::WindowSettings;
 use crate::workspace::PANEL_HEADER_HEIGHT;
 
 // All units in px
-const THEME_CHOOSER_TITLE: &str = "Themes";
+const THEME_CHOOSER_TITLE: &str = "Temas";
 const CLOSE_BUTTON_MARGIN_RIGHT: f32 = 6.;
 const TITLE_FONT_SIZE: f32 = 16.;
 const TITLE_MARGIN: f32 = 12.;
@@ -846,8 +846,8 @@ impl View for ThemeChooser {
 
     fn accessibility_contents(&self, _: &AppContext) -> Option<AccessibilityContent> {
         Some(AccessibilityContent::new(
-            "Theme chooser. Unfortunately, theme chooser window isn't compatible with screen readers yet.",
-            "Press escape to close.",
+            "Seletor de temas. No momento, esta janela não é compatível com leitores de tela.",
+            "Pressione Esc para fechar.",
             WarpA11yRole::WindowRole,
         ))
     }
