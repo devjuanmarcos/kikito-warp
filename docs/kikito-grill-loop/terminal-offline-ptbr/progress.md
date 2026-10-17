@@ -1348,3 +1348,4 @@
 - `cargo check -p http_client -p asset_cache -p local_control`, `cargo clippy -p http_client -p asset_cache -p local_control --all-targets -- -D warnings` e `cargo check -p warp --bin warp-oss` passaram após a correção. Não executei testes.
 - A verificação de rede enquanto ações da interface são usadas continua pendente; a auditoria estática e a observação em repouso não cobrem todos os fluxos em runtime.
 - Os clientes OSS também ignoram proxies de ambiente nesse tráfego local; isso impede que uma URL loopback seja enviada a um proxy externo.
+- Após a correção, executei o `warp-oss.exe` por 20 segundos em repouso: só apareceu o listener `127.0.0.1:9282`, sem conexões TCP de saída. Encerrei o processo e o helper iniciado junto dele; fluxos acionados na interface continuam sem captura.
