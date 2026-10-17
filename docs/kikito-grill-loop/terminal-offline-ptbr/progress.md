@@ -975,3 +975,8 @@
 
 - Traduzi os títulos de encerramento normal e prematuro do processo do shell, além da orientação de depuração.
 - Atualizei a referência ao script de inicialização para Kikito Terminal; lógica e valores técnicos permanecem iguais.
+
+## Tradução — banner de expansão de aliases
+
+- Traduzi o título e a ação do banner que oferece expansão automática de aliases.
+- Atualizei a referência de marca para Kikito Terminal e mantive os valores e a renderização do alias intactos.
