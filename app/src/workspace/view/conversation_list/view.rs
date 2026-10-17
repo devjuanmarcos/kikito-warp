@@ -997,7 +997,8 @@ impl TypedActionView for ConversationListView {
                     ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                         toast_stack.add_ephemeral_toast(
                             DismissibleToast::error(
-                                "Conversations cannot be deleted while in progress.".to_string(),
+                                "Não é possível excluir conversas enquanto estiverem em andamento."
+                                    .to_string(),
                             ),
                             window_id,
                             ctx,
@@ -1012,7 +1013,7 @@ impl TypedActionView for ConversationListView {
                     .as_ref(ctx)
                     .get_item_by_id(&id, ctx)
                     .map(|entry| entry.display.title)
-                    .unwrap_or_else(|| "Conversation".to_string());
+                    .unwrap_or_else(|| "Conversa".to_string());
                 ctx.emit(Event::ShowDeleteConfirmationDialog {
                     conversation_id: *conversation_id,
                     conversation_title,
@@ -1160,7 +1161,7 @@ impl TypedActionView for ConversationListView {
                         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                             toast_stack.add_ephemeral_toast(
                                 DismissibleToast::error(
-                                    "Conversations cannot be deleted while in progress."
+                                    "Não é possível excluir conversas enquanto estiverem em andamento."
                                         .to_string(),
                                 ),
                                 window_id,
@@ -1307,7 +1308,7 @@ impl View for ConversationListView {
         } else if self.item_count() == 0 {
             Container::new(
                 Text::new_inline(
-                    "No matching conversations",
+                    "Nenhuma conversa correspondente",
                     appearance.ui_font_family(),
                     appearance.ui_font_size(),
                 )

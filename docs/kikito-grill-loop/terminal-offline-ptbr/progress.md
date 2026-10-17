@@ -914,3 +914,8 @@
 
 - Traduzi os rótulos alternados do botão da lista de conversas: ver todas e mostrar menos.
 - Mantive a ação que expande e recolhe a lista.
+
+## Tradução — estados da lista de conversas
+
+- Traduzi a mensagem sem resultados, o aviso ao tentar excluir uma conversa em andamento e o título genérico de conversa.
+- Preservei os critérios de exibição e exclusão.
