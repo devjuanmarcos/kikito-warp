@@ -236,8 +236,8 @@ impl ConversationEndedTombstoneView {
             } else {
                 conversation_id.map(|conv_id| {
                     ctx.add_typed_action_view(move |_| {
-                        ActionButton::new("Open in Warp", PrimaryTheme)
-                            .with_tooltip("Open this conversation in the Warp desktop app")
+                        ActionButton::new("Abrir no Kikito Terminal", PrimaryTheme)
+                            .with_tooltip("Abra esta conversa no Kikito Terminal para desktop")
                             .on_click(move |ctx| {
                                 ctx.dispatch_typed_action(
                                     ConversationEndedTombstoneAction::OpenInWarp(conv_id),

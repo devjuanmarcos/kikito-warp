@@ -1073,3 +1073,7 @@
 
 - Traduzi os itens de divisão nas quatro direções e os itens de maximizar/minimizar/fechar painel nos menus locais de configurações e variáveis de ambiente.
 - Preservei as ações, os atalhos e as condições de exibição.
+## Tradução — ações para abrir no desktop
+
+- Substituí os rótulos visíveis “Open in Warp” por “Abrir no Kikito Terminal” e traduzi a explicação para abrir uma conversa no aplicativo para desktop.
+- Traduzi também o botão para ver execuções na nuvem; ações, identificadores e destinos foram preservados.
