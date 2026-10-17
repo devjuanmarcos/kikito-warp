@@ -1116,3 +1116,8 @@
 
 - Traduzi controles adicionais de Vim, preenchimento automático, sugestões do shell, correções de comandos, expansão de aliases e captura de atalhos.
 - O rótulo do seletor de tela ativa e a dica da área de transferência primária do Linux também foram localizados.
+
+### Revisão adicional de Aparência
+
+- Auditei categorias, opções de tema e janela, tooltips e controles de fonte, cursor, abas e entrada; não encontrei outros rótulos ou descrições locais em inglês para traduzir.
+- Mantive nomes de temas e materiais visuais, termos técnicos e identificadores internos.
