@@ -1299,3 +1299,6 @@
 ## Estados e controles locais da sessão TUI
 
 - Traduzi dicas de shell/saída, erros locais de configuração, estado sem título, rótulos de modo shell/cópia, feedback da linha de status e confirmações do comando `/theme`. Atualizei a referência visível ao logotipo do app para Kikito Terminal. Mantive fora mensagens de autenticação, conta, agente e conversa remota.
+## Paleta local de comandos do TUI
+
+- Traduzi descrições de `/theme`, `/vim-mode`, `/statusline`, `/reset-statusline` e `/exit`, além dos estados de carregamento/lista vazia da paleta e da dica de completar comandos do shell. Mantive comandos e argumentos intactos; deixei de fora `/status` por incluir informações de conta.

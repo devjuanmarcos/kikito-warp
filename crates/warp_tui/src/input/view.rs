@@ -136,7 +136,7 @@ pub fn init(app: &mut AppContext) {
         .with_key_binding("ctrl-r"),
         EditableBinding::new(
             "tui:input:complete_shell_command",
-            "Complete the shell command",
+            "Completar o comando do shell",
             TuiInputAction::Complete,
         )
         .with_context_predicate(id!("TuiInputView") & id!(SHELL_COMPLETION_AVAILABLE_FLAG))

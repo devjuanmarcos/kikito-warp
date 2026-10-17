@@ -47,7 +47,7 @@ pub const ADD_MCP: StaticCommand = StaticCommand {
 };
 pub const RESET_STATUSLINE: StaticCommand = StaticCommand {
     name: "/reset-statusline",
-    description: "Reset the statusline to its default items and ordering",
+    description: "Redefinir a linha de status com os itens e a ordem padrão",
     kind: SlashCommandKind::ResetStatusline,
     supported_surfaces: SlashCommandSurfaces::TuiOnly,
     availability: Availability::ALWAYS,
@@ -56,7 +56,7 @@ pub const RESET_STATUSLINE: StaticCommand = StaticCommand {
 };
 pub const STATUSLINE: StaticCommand = StaticCommand {
     name: "/statusline",
-    description: "Configure the statusline",
+    description: "Configurar a linha de status",
     kind: SlashCommandKind::Statusline,
     supported_surfaces: SlashCommandSurfaces::TuiOnly,
     availability: Availability::ALWAYS,
@@ -158,7 +158,7 @@ pub const UPGRADE: StaticCommand = StaticCommand {
 };
 pub const THEME: StaticCommand = StaticCommand {
     name: "/theme",
-    description: "Set color theme",
+    description: "Definir o tema de cores",
     kind: SlashCommandKind::Theme,
     supported_surfaces: SlashCommandSurfaces::TuiOnly,
     availability: Availability::ALWAYS,
@@ -172,7 +172,7 @@ pub const THEME: StaticCommand = StaticCommand {
 
 pub const EXIT: StaticCommand = StaticCommand {
     name: "/exit",
-    description: "Exit Warp",
+    description: "Sair do Kikito Terminal",
     kind: SlashCommandKind::Exit,
     supported_surfaces: SlashCommandSurfaces::TuiOnly,
     availability: Availability::ALWAYS,
@@ -873,7 +873,7 @@ pub static EXPORT_TO_FILE: LazyLock<StaticCommand> = LazyLock::new(|| StaticComm
 
 pub const VIM_MODE: StaticCommand = StaticCommand {
     name: "/vim-mode",
-    description: "Toggle Vim mode",
+    description: "Ativar ou desativar o modo Vim",
     kind: SlashCommandKind::VimMode,
     supported_surfaces: SlashCommandSurfaces::TuiOnly,
     availability: Availability::ALWAYS,
