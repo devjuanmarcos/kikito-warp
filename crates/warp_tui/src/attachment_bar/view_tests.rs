@@ -61,7 +61,7 @@ fn renders_single_attachment_without_carousel_arrows() {
         app.update(|ctx| {
             ctx.add_singleton_model(|_| Appearance::mock());
             let line = render_lines(ctx, snapshot("screenshot.png", 1, 1), 60).remove(0);
-            assert!(line.contains("[image]"));
+            assert!(line.contains("[imagem]"));
             assert!(line.contains("screenshot.png"));
             assert!(line.contains("1/1"));
             assert!(line.contains('×'));
@@ -78,7 +78,7 @@ fn renders_carousel_position_and_truncates_at_narrow_width() {
             ctx.add_singleton_model(|_| Appearance::mock());
             let line =
                 render_lines(ctx, snapshot("a-very-long-screenshot-name.png", 2, 3), 28).remove(0);
-            assert!(line.contains("[image]"));
+            assert!(line.contains("[imagem]"));
             assert!(line.contains("2/3"));
             assert!(line.contains('‹'));
             assert!(line.contains('›'));
@@ -109,9 +109,9 @@ fn renders_provisional_filename_while_image_is_loading() {
                 40,
             );
             let line = &lines[0];
-            assert!(line.contains("[image]"));
+            assert!(line.contains("[imagem]"));
             assert!(line.contains("clipboard-image.png"));
-            assert!(line.contains("loading…"));
+            assert!(line.contains("carregando…"));
             assert!(!line.contains('×'));
         });
     });

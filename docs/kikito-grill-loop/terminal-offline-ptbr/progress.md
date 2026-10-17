@@ -1552,3 +1552,9 @@
 - Traduzi o título `Skills` para `Habilidades` e o estado vazio `No skills found` para `Nenhuma habilidade encontrada`. Esse menu consulta habilidades locais do projeto; nomes de habilidades e a sintaxe `/` permanecem intactos.
 - Mantive menus de equipes, conversas, modelos e outros fluxos cloud fora deste lote.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Rótulos locais de anexos no TUI
+
+- Traduzi as descrições de atalhos para navegar/remover anexos e devolver o foco ao campo de entrada. Também localizei os marcadores `[image]`/`[file]` e o status `loading…` no painel de anexos.
+- Mantive nomes dinâmicos de arquivos, conteúdo da área de transferência e comandos sem alteração. Atualizei as expectativas de renderização associadas, sem executar testes.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
