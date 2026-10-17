@@ -1752,8 +1752,15 @@
 - `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
 
 
+
 ## Auditoria — boas-vindas e configuração inicial
 
 - O caminho `app/src/onboarding` não existe nesta checkout. Revisei as telas equivalentes em `workspace/view/onboarding.rs`, `workspace/hoa_onboarding` e a lógica de preferências em `settings/onboarding.rs`. O copy visível de boas-vindas/configuração local já está em português; não foi necessária alteração de código.
 - Mantive fora do escopo o onboarding de login/conta e as partes sobre caixa de entrada de agentes, execução hospedada e links para documentação externa. Os textos restantes em inglês nesta superfície são comentários, logs ou nomes internos, não copy exibido ao usuário.
+- `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
+
+## Auditoria — componentes compartilhados
+
+- Traduzi os estados visíveis do lightbox de imagens: vazio, falha ao carregar e carregamento. O componente é compartilhado e usado por conteúdo local da interface OSS.
+- Revisei os componentes comuns de botão, diálogo, tooltip e atalhos, além das camadas de janela/plataforma do WarpUI. Não encontrei copy fixo adicional em inglês para interfaces locais; textos de diálogo vêm do chamador, nomes de teclas permanecem como abreviações convencionais, e diagnósticos/APIs nativas foram preservados.
 - `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
