@@ -7,7 +7,9 @@ macro_rules! send_telemetry_sync_from_ctx {
         #[allow(unused_imports)]
         use warp_core::telemetry::TelemetryEvent as _;
         let event = $event;
-        if event.enablement_state().is_enabled() {
+        if $crate::channel::ChannelState::channel() != $crate::channel::Channel::Oss
+            && event.enablement_state().is_enabled()
+        {
             let server_api =
                 <$crate::server::server_api::ServerApiProvider as warpui::SingletonEntity>::handle(
                     $ctx,
@@ -41,7 +43,9 @@ macro_rules! send_telemetry_sync_from_app_ctx {
     ($event:expr_2021, $app_ctx:expr_2021) => {
         #[allow(unused_imports)]
         use warp_core::telemetry::TelemetryEvent as _;
-        if $event.enablement_state().is_enabled() {
+        if $crate::channel::ChannelState::channel() != $crate::channel::Channel::Oss
+            && $event.enablement_state().is_enabled()
+        {
             let server_api =
                 <$crate::server::server_api::ServerApiProvider as warpui::SingletonEntity>::handle(
                     $app_ctx,
@@ -77,7 +81,9 @@ macro_rules! send_telemetry_on_executor {
         #[allow(unused_imports)]
         use warp_core::telemetry::TelemetryEvent as _;
         let event = $event;
-        if event.enablement_state().is_enabled() {
+        if $crate::channel::ChannelState::channel() != $crate::channel::Channel::Oss
+            && event.enablement_state().is_enabled()
+        {
             let user_id = $auth_state.user_id().map(|uid| uid.as_string());
             let anonymous_id = $auth_state.anonymous_id();
             warpui::record_telemetry_on_executor!(

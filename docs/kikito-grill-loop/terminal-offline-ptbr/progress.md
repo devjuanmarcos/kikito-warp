@@ -1664,3 +1664,7 @@
 
 - `AuthState::initialize_local` não autentica usuário; por isso, a GUI caía no ramo de startup deslogado e emitia `LoggedOutStartup`, além de iniciar `download_method::determine_and_report` para telemetria. Condicionei esse ramo a canais diferentes de OSS. O Kikito OSS agora não emite esse evento nem executa a checagem local de origem do download.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
+## Bloqueio central de macros de telemetria no OSS
+
+- Os macros de telemetria assíncronos já filtravam `Channel::Oss`, mas os macros síncronos e o caminho por executor não. Adicionei a mesma condição de canal aos três macros em `app/src/server/telemetry/macros.rs`, impedindo que handlers/eventos no OSS criem tarefas de envio síncrono ou registrem eventos pelo executor.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
