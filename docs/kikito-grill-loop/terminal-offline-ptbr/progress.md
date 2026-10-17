@@ -1390,3 +1390,8 @@
 - Ocultei da Paleta de Comandos no canal OSS as entradas de conta, equipes, blocos compartilhados, cobrança, indicações, ambientes na nuvem, servidores MCP, convite, Slack, documentação, feedback e política de privacidade.
 - Mantive disponível a ação local de visualizar logs e traduzi seu rótulo para Kikito Terminal.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Bloqueio de retornos de autenticação
+
+- O `AuthManager` agora descarta redirecionamentos de autenticação no canal OSS antes de iniciar qualquer consulta ao usuário. Isso cobre links de login antigos que ainda possam chegar ao aplicativo.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. O `cargo check` descartou alguns artefatos incrementais corrompidos pelo cache e concluiu com sucesso. Não executei testes.

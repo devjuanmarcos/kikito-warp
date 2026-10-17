@@ -186,6 +186,11 @@ impl AuthManager {
         enforce_state_validation: bool,
         ctx: &mut ModelContext<Self>,
     ) {
+        if ChannelState::channel() == Channel::Oss {
+            log::debug!("Ignoring an authentication redirect in the OSS channel");
+            return;
+        }
+
         let AuthRedirectPayload {
             refresh_token,
             user_uid,
