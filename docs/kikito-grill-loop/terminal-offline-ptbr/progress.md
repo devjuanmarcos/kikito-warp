@@ -1780,6 +1780,7 @@
 
 
 
+
 ## Auditoria — confirmação local de saída
 
 - Revisei `app/src/quit_warning/mod.rs`, que apresenta confirmações ao fechar abas, painéis, janelas ou o aplicativo e avisa sobre processos em execução e alterações de arquivos não salvas. Os textos exibidos já estão em português; não foi necessária alteração de código.
@@ -1797,4 +1798,11 @@
 - Em `app/src/view_components/markdown_toggle_view.rs`, traduzi as opções locais do alternador de Markdown para `Formatado` e `Fonte`, ampliando o espaço das opções para acomodar o rótulo sem corte. O controle é usado no editor local de arquivos e na visualização local de Markdown.
 - Revisei os demais componentes compartilhados desta pasta: estados de busca, ações de toast, selo de novidade e entradas genéricas já usam português ou recebem copy do chamador. Não alterei mensagens dinâmicas, conteúdo do usuário nem alertas fornecidos por outras áreas.
 - Mantive o rótulo `Beta` da variante genérica sem alteração: ela não tem uso ativo no aplicativo OSS. Toasts de agente e conteúdo ligado a IA hospedada também ficaram fora do escopo.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — gerenciamento local de workspace e sessões
+
+- Revisei criação de abas e grupos, renomeação inline de abas/grupos/painéis, busca de abas, reabertura de sessão fechada e estado vazio do painel vertical. Os rótulos locais deste recorte já estão em português (`Renomear`, ações de criação/fechamento e `Nenhuma aba aberta`); os campos de renomeação inline não acrescentam placeholder ou erro fixo em inglês. Não precisei alterar código.
+- O fluxo de restauração de workspace não adiciona copy fixo em inglês; nomes de shell, títulos de abas/painéis e caminhos são valores dinâmicos do usuário/sistema. A confirmação de fechamento de sessão em `close_session_confirmation_dialog.rs` explica o encerramento de uma sessão compartilhada, portanto permanece fora deste escopo local.
+- Mantive fora desta auditoria onboarding, conversas de agente, compartilhamento/equipes, code review/PR, ações de atualização e outros fluxos hospedados. Seus textos e mensagens técnicas não são copy de gerenciamento local elegível.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
