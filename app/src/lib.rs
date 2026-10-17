@@ -1863,7 +1863,9 @@ pub(crate) fn initialize_app(
     }
     timer.mark_interval_end("INIT_CRASH_REPORTING");
 
-    if let LaunchMode::App { .. } = launch_mode {
+    if let LaunchMode::App { .. } = launch_mode
+        && ChannelState::channel() != Channel::Oss
+    {
         autoupdate::check_and_report_update_errors(ctx);
     }
 

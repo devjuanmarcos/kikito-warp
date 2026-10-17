@@ -1656,3 +1656,7 @@
 
 - Iniciei `target/debug/warp-oss.exe` com `WARP_DATA_PROFILE=offline-audit-20261017`, perfil separado do uso normal. O processo PID 3360 permaneceu ativo por cerca de 22 segundos; duas consultas de conexões TCP para esse PID não retornaram conexões. Depois encerrei o processo.
 - O resultado cobre somente a inicialização ociosa do executável e não avalia subprocessos ou tráfego provocado por comandos/aliases que o usuário execute no terminal. Não é uma afirmação sobre conexões iniciadas por Codex, Claude ou outros programas externos.
+## Logs do atualizador no bootstrap OSS
+
+- O bootstrap ainda chamava `autoupdate::check_and_report_update_errors` para toda execução da GUI. No Windows, essa função lê logs do instalador antigo e pode encaminhar diagnósticos. Condicionei a chamada ao canal diferente de OSS, para que o Kikito Terminal local não processe logs nem execute o fluxo de relatório de falhas do atualizador.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
