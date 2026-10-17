@@ -4645,7 +4645,7 @@ impl TerminalView {
                             me.show_ssh_remote_server_failed_banner(
                                 *session_id,
                                 remote_server::transport::UserFacingError {
-                                    body: "Failed to start SSH extension".into(),
+                                    body: "Falha ao iniciar a extensão SSH".into(),
                                     detail: if error.is_empty() {
                                         None
                                     } else {

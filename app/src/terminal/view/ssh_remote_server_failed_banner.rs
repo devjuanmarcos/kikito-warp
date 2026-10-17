@@ -15,10 +15,10 @@ use crate::Appearance;
 use crate::terminal::model::session::SessionId;
 use crate::ui_components::icons::Icon;
 
-const BANNER_TITLE: &str = "Couldn't connect to the Warp SSH extension";
+const BANNER_TITLE: &str = "Não foi possível conectar à extensão SSH do Kikito Terminal";
 
-const BANNER_BODY: &str = "While advanced features like file browsing and code review are currently \
-    disabled, the rest of your Warpified experience is fully available.";
+const BANNER_BODY: &str = "Embora recursos avançados, como navegação de arquivos e revisão de código, \
+    estejam desativados no momento, os demais recursos do Kikito Terminal continuam disponíveis.";
 
 #[derive(Clone, Debug)]
 pub enum SshRemoteServerFailedBannerAction {

@@ -20,12 +20,12 @@ use crate::terminal::model::session::SessionId;
 use crate::terminal::warpify::render::SSH_DOCS_URL;
 use crate::ui_components::icons::Icon;
 
-const BANNER_TITLE: &str = "Tmux SSH warpification has been deprecated";
+const BANNER_TITLE: &str = "O fluxo SSH com tmux foi descontinuado";
 
-const BANNER_BODY: &str = "Warp now connects to remote sessions using the SSH extension, which is \
-    more robust than the tmux-based flow. The tmux option has been removed.";
+const BANNER_BODY: &str = "O Kikito Terminal agora se conecta a sessões remotas pela extensão SSH, mais \
+    robusta que o fluxo baseado em tmux. A opção tmux foi removida.";
 
-const LEARN_MORE_LABEL: &str = "Learn more";
+const LEARN_MORE_LABEL: &str = "Saiba mais";
 
 #[derive(Clone, Debug)]
 pub enum SshTmuxDeprecationBannerAction {

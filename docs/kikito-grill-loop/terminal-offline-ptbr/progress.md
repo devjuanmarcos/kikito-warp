@@ -1137,3 +1137,8 @@
 
 - Traduzi a descrição do atalho para alternar o filtro e o rótulo de acessibilidade ao abrir o editor do filtro.
 - O placeholder, as dicas de regex, distinção entre maiúsculas/minúsculas, inversão e linhas de contexto já estavam em português; consulta e comandos não foram alterados.
+
+## Banners locais de SSH
+
+- Os dois banners ainda podem aparecer em sessões SSH no OSS: o aviso de tmux depende de uma migração pendente; o de falha depende do fluxo da extensão SSH, habilitado no OSS em plataformas suportadas.
+- Traduzi títulos, descrições, link e a mensagem fixa de falha; preservei a exibição de detalhes dinâmicos do erro e toda a lógica.
