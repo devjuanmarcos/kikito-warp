@@ -1100,3 +1100,8 @@
 
 - Traduzi rótulos e descrições para abrir arquivos, escolher o layout, usar o visualizador Markdown e agrupar arquivos do editor.
 - Mantive a opção de editor externo “Warp” e os valores/IDs internos; as referências ao aplicativo foram atualizadas para Kikito Terminal.
+
+## Aparência: painel de ferramentas
+
+- Traduzi a descrição visível do controle do painel de ferramentas e atualizei o nome apresentado de Warp Drive para Kikito Drive.
+- Mantive nomes de features e identificadores internos sem alteração.
