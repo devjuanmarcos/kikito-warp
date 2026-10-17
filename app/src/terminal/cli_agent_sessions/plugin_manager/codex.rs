@@ -185,7 +185,7 @@ impl CliAgentPluginManager for CodexPluginManager {
         if still_outdated {
             log.push_str("Post-update version check: plugin is still outdated\n");
             return Err(PluginInstallError {
-                message: "Plugin update did not take effect".to_owned(),
+                message: "A atualização do plugin não foi aplicada".to_owned(),
                 log,
             });
         }
@@ -193,11 +193,11 @@ impl CliAgentPluginManager for CodexPluginManager {
     }
 
     fn install_success_message(&self) -> &'static str {
-        "Warp plugin installed. Please restart Codex to activate."
+        "Plugin do Kikito Terminal instalado. Reinicie o Codex para ativá-lo."
     }
 
     fn update_success_message(&self) -> &'static str {
-        "Warp plugin updated. Please restart Codex to activate."
+        "Plugin do Kikito Terminal atualizado. Reinicie o Codex para ativá-lo."
     }
 
     fn install_instructions(&self) -> &'static PluginInstructions {
@@ -236,7 +236,7 @@ impl CliAgentPluginManager for CodexPluginManager {
         if !updated {
             log.push_str("Post-install version check: platform plugin is still outdated\n");
             return Err(PluginInstallError {
-                message: "Platform plugin installation did not take effect".to_owned(),
+                message: "A instalação do plugin da plataforma não foi aplicada".to_owned(),
                 log,
             });
         }
@@ -263,7 +263,7 @@ impl CliAgentPluginManager for CodexPluginManager {
         if !updated {
             log.push_str("Post-update version check: platform plugin is still outdated\n");
             return Err(PluginInstallError {
-                message: "Platform plugin update did not take effect".to_owned(),
+                message: "A atualização do plugin da plataforma não foi aplicada".to_owned(),
                 log,
             });
         }
@@ -273,44 +273,44 @@ impl CliAgentPluginManager for CodexPluginManager {
 
 static PLUGIN_INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> =
     LazyLock::new(|| PluginInstructions {
-        title: "Install Warp Plugin for Codex",
-        subtitle: "Run the following commands, then restart Codex.",
+        title: "Instalar plugin do Kikito Terminal para Codex",
+        subtitle: "Execute os comandos a seguir e reinicie o Codex.",
         steps: &[
             PluginInstructionStep {
-                description: "Add the Warp plugin marketplace repository",
+                description: "Adicionar o repositório do marketplace de plugins do Kikito Terminal",
                 command: "codex plugin marketplace add warpdotdev/codex-warp",
                 executable: true,
                 link: None,
             },
             PluginInstructionStep {
-                description: "Install the Warp plugin",
+                description: "Instalar o plugin do Kikito Terminal",
                 command: "codex plugin add warp@codex-warp",
                 executable: true,
                 link: None,
             },
         ],
-        post_install_notes: &["Restart Codex to activate the plugin."],
+        post_install_notes: &["Reinicie o Codex para ativar o plugin."],
     });
 
 static NATIVE_INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| {
     PluginInstructions {
-        title: "Enable Warp Notifications for Codex",
-        subtitle: "Update Codex to the latest version, then enable in-focus notifications so Warp can display them while you work.",
+        title: "Ativar notificações do Kikito Terminal no Codex",
+        subtitle: "Atualize o Codex para a versão mais recente e ative as notificações em foco para que o Kikito Terminal possa exibi-las enquanto você trabalha.",
         steps: &[
             PluginInstructionStep {
-                description: "Update Codex to the latest version.",
+                description: "Atualize o Codex para a versão mais recente.",
                 command: "",
                 executable: false,
                 link: Some("https://developers.openai.com/codex/cli#upgrade"),
             },
             PluginInstructionStep {
-                description: "Set the notification condition to \"always\" in your Codex config. Open or create ~/.codex/config.toml and add:",
+                description: "Defina a condição de notificação como \"always\" na configuração do Codex. Abra ou crie ~/.codex/config.toml e adicione:",
                 command: "[tui]\nnotification_condition = \"always\"",
                 executable: false,
                 link: None,
             },
         ],
-        post_install_notes: &["Restart Codex to apply the changes."],
+        post_install_notes: &["Reinicie o Codex para aplicar as alterações."],
     }
 });
 
@@ -323,25 +323,25 @@ static EMPTY_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| Plugi
 
 static PLUGIN_UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| {
     PluginInstructions {
-        title: "Update Warp Plugin for Codex",
-        subtitle: "Run the following commands, then restart Codex.",
+        title: "Atualizar plugin do Kikito Terminal para Codex",
+        subtitle: "Execute os comandos a seguir e reinicie o Codex.",
         steps: &[
             PluginInstructionStep {
-                description: "Upgrade the marketplace",
+                description: "Atualizar o marketplace",
                 command: "codex plugin marketplace upgrade codex-warp",
                 executable: true,
                 link: None,
             },
             PluginInstructionStep {
-                description: "Reinstall the Warp plugin",
+                description: "Reinstalar o plugin do Kikito Terminal",
                 command: "codex plugin add warp@codex-warp",
                 executable: true,
                 link: None,
             },
         ],
         post_install_notes: &[
-            "Restart Codex to activate the update.",
-            "If this fails because codex-warp is not configured as a Git marketplace, remove and re-add the marketplace.",
+            "Reinicie o Codex para ativar a atualização.",
+            "Se isso falhar porque codex-warp não está configurado como marketplace Git, remova e adicione o marketplace novamente.",
         ],
     }
 });

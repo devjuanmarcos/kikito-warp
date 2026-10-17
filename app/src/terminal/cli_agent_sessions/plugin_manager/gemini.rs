@@ -98,7 +98,7 @@ impl CliAgentPluginManager for GeminiPluginManager {
         if still_outdated {
             log.push_str("Post-update version check: plugin is still outdated\n");
             return Err(PluginInstallError {
-                message: "Plugin update did not take effect".to_owned(),
+                message: "A atualização do plugin não foi aplicada".to_owned(),
                 log,
             });
         }
@@ -106,11 +106,11 @@ impl CliAgentPluginManager for GeminiPluginManager {
     }
 
     fn install_success_message(&self) -> &'static str {
-        "Warp plugin installed. Please restart Gemini CLI to activate."
+        "Plugin do Kikito Terminal instalado. Reinicie o Gemini CLI para ativá-lo."
     }
 
     fn update_success_message(&self) -> &'static str {
-        "Warp plugin updated. Please restart Gemini CLI to activate."
+        "Plugin do Kikito Terminal atualizado. Reinicie o Gemini CLI para ativá-lo."
     }
 
     fn install_instructions(&self) -> &'static PluginInstructions {
@@ -123,27 +123,27 @@ impl CliAgentPluginManager for GeminiPluginManager {
 }
 
 static INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Install Warp Plugin for Gemini CLI",
-    subtitle: "Run the following command, then restart Gemini CLI.",
+    title: "Instalar plugin do Kikito Terminal para Gemini CLI",
+    subtitle: "Execute o comando a seguir e reinicie o Gemini CLI.",
     steps: &[PluginInstructionStep {
-        description: "Install the Warp extension",
+        description: "Instalar a extensão do Kikito Terminal",
         command: "gemini extensions install https://github.com/warpdotdev/gemini-cli-warp --consent",
         executable: true,
         link: None,
     }],
-    post_install_notes: &["Restart Gemini CLI to activate the plugin."],
+    post_install_notes: &["Reinicie o Gemini CLI para ativar o plugin."],
 });
 
 static UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Update Warp Plugin for Gemini CLI",
-    subtitle: "Run the following command, then restart Gemini CLI.",
+    title: "Atualizar plugin do Kikito Terminal para Gemini CLI",
+    subtitle: "Execute o comando a seguir e reinicie o Gemini CLI.",
     steps: &[PluginInstructionStep {
-        description: "Update the Warp extension",
+        description: "Atualizar a extensão do Kikito Terminal",
         command: "gemini extensions update gemini-warp",
         executable: true,
         link: None,
     }],
-    post_install_notes: &["Restart Gemini CLI to activate the update."],
+    post_install_notes: &["Reinicie o Gemini CLI para ativar a atualização."],
 });
 
 fn check_installed(extensions_dir: &Path) -> bool {

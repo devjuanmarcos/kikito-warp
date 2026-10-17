@@ -954,3 +954,9 @@
 
 - Traduzi o rótulo e o texto de entrada da sugestão exibida quando um plano é criado.
 - Preservei o nome estável da sugestão e o fluxo de execução.
+
+## Tradução — ciclo de vida dos plugins de agentes CLI
+
+- Traduzi mensagens de instalação e atualização bem-sucedidas, erros e instruções de ativação/reinício para Claude Code, Codex e Gemini CLI.
+- Traduzi os textos compartilhados dos botões e erros de comando; preservei comandos, nomes dos agentes, caminhos, URLs e configurações literais.
+- Substituí as referências visíveis de marca Warp por Kikito Terminal.

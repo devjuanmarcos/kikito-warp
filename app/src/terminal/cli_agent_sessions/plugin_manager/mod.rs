@@ -30,11 +30,11 @@ pub enum PluginModalKind {
 pub(crate) struct PluginInstructionStep {
     pub description: &'static str,
     pub command: &'static str,
-    /// When true, the code block shows a "Run" button that inserts the command into the terminal.
+    /// When true, the code block shows a "Executar" button that inserts the command into the terminal.
     /// Defaults-by-convention to `true`; set to `false` for steps that are not runnable
     /// (e.g. config file snippets).
     pub executable: bool,
-    /// Optional URL rendered as a clickable "Learn more" link after the description.
+    /// Optional URL rendered as a clickable "Saiba mais" link after the description.
     /// When set with an empty `command`, the code block is omitted entirely.
     pub link: Option<&'static str>,
 }
@@ -123,14 +123,14 @@ pub(crate) async fn run_cli_command_logged(
                 return Ok(());
             }
             Err(PluginInstallError {
-                message: format!("'{display_cmd}' failed"),
+                message: format!("O comando '{display_cmd}' falhou"),
                 log: log.to_owned(),
             })
         }
         Err(err) => {
             log.push_str(&format!("error: {err}\n"));
             Err(PluginInstallError {
-                message: format!("failed to run '{display_cmd}'"),
+                message: format!("Falha ao executar '{display_cmd}'"),
                 log: log.clone(),
             })
         }
@@ -184,7 +184,7 @@ pub(crate) trait CliAgentPluginManager: Send + Sync {
     /// Default returns an error — only agents with `can_auto_install() == true` should override.
     async fn install(&self) -> Result<(), PluginInstallError> {
         Err(PluginInstallError {
-            message: "Auto-install not supported for this agent".to_owned(),
+            message: "A instalação automática não é compatível com este agente".to_owned(),
             log: String::new(),
         })
     }
@@ -193,19 +193,19 @@ pub(crate) trait CliAgentPluginManager: Send + Sync {
     /// Default returns an error — only agents with `can_auto_install() == true` should override.
     async fn update(&self) -> Result<(), PluginInstallError> {
         Err(PluginInstallError {
-            message: "Auto-update not supported for this agent".to_owned(),
+            message: "A atualização automática não é compatível com este agente".to_owned(),
             log: String::new(),
         })
     }
 
     /// Toast message shown after a successful auto-install.
     fn install_success_message(&self) -> &'static str {
-        "Warp plugin installed. Please restart the session to activate."
+        "Plugin do Kikito Terminal instalado. Reinicie a sessão para ativá-lo."
     }
 
     /// Toast message shown after a successful auto-update.
     fn update_success_message(&self) -> &'static str {
-        "Warp plugin updated. Please restart the session to activate."
+        "Plugin do Kikito Terminal atualizado. Reinicie a sessão para ativá-lo."
     }
 
     /// Manual installation instructions for the modal UI.

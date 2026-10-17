@@ -137,7 +137,7 @@ impl CliAgentPluginManager for ClaudeCodePluginManager {
         if still_outdated {
             log.push_str("Post-update version check: plugin is still outdated\n");
             return Err(PluginInstallError {
-                message: "Plugin update did not take effect".to_owned(),
+                message: "A atualização do plugin não foi aplicada".to_owned(),
                 log,
             });
         }
@@ -145,11 +145,11 @@ impl CliAgentPluginManager for ClaudeCodePluginManager {
     }
 
     fn install_success_message(&self) -> &'static str {
-        "Warp plugin installed. Please run /reload-plugins to activate."
+        "Plugin do Kikito Terminal instalado. Execute /reload-plugins para ativá-lo."
     }
 
     fn update_success_message(&self) -> &'static str {
-        "Warp plugin updated. Please run /reload-plugins to activate."
+        "Plugin do Kikito Terminal atualizado. Execute /reload-plugins para ativá-lo."
     }
 
     fn install_instructions(&self) -> &'static PluginInstructions {
@@ -201,7 +201,7 @@ impl CliAgentPluginManager for ClaudeCodePluginManager {
         if still_outdated {
             log.push_str("Post-update version check: platform plugin is still outdated\n");
             return Err(PluginInstallError {
-                message: "Platform plugin update did not take effect".to_owned(),
+                message: "A atualização do plugin da plataforma não foi aplicada".to_owned(),
                 log,
             });
         }
@@ -210,53 +210,53 @@ impl CliAgentPluginManager for ClaudeCodePluginManager {
 }
 
 static INSTALL_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Install Warp Plugin for Claude Code",
-    subtitle: "Ensure that jq is installed on your machine. Then, run these commands.",
+    title: "Instalar plugin do Kikito Terminal para Claude Code",
+    subtitle: "Verifique se jq está instalado. Em seguida, execute estes comandos.",
     steps: &[
         PluginInstructionStep {
-            description: "Add the Warp plugin marketplace repository",
+            description: "Adicionar o repositório do marketplace de plugins do Kikito Terminal",
             command: "claude plugin marketplace add warpdotdev/claude-code-warp",
             executable: true,
             link: None,
         },
         PluginInstructionStep {
-            description: "Install the Warp plugin",
+            description: "Instalar o plugin do Kikito Terminal",
             command: "claude plugin install warp@claude-code-warp",
             executable: true,
             link: None,
         },
     ],
     post_install_notes: &[
-        "Restart Claude Code to activate the plugin.",
-        "There are some known issues with Claude Code's plugin system. \
-             If the plugin is not found after step 1, you can try manually adding an \"extraKnownMarketplaces\" entry to ~/.claude/settings.json.",
+        "Reinicie o Claude Code para ativar o plugin.",
+        "Há problemas conhecidos no sistema de plugins do Claude Code. \
+             Se o plugin não for encontrado após a etapa 1, tente adicionar manualmente uma entrada \"extraKnownMarketplaces\" em ~/.claude/settings.json.",
     ],
 });
 
 static UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| PluginInstructions {
-    title: "Update Warp Plugin for Claude Code",
-    subtitle: "Run the following commands.",
+    title: "Atualizar plugin do Kikito Terminal para Claude Code",
+    subtitle: "Execute os comandos a seguir.",
     steps: &[
         PluginInstructionStep {
-            description: "Remove the existing marketplace (if present)",
+            description: "Remover o marketplace existente (se houver)",
             command: "claude plugin marketplace remove claude-code-warp",
             executable: true,
             link: None,
         },
         PluginInstructionStep {
-            description: "Re-add the marketplace",
+            description: "Adicionar o marketplace novamente",
             command: "claude plugin marketplace add warpdotdev/claude-code-warp",
             executable: true,
             link: None,
         },
         PluginInstructionStep {
-            description: "Install the latest plugin version",
+            description: "Instalar a versão mais recente do plugin",
             command: "claude plugin install warp@claude-code-warp",
             executable: true,
             link: None,
         },
     ],
-    post_install_notes: &["Restart Claude Code to activate the update."],
+    post_install_notes: &["Reinicie o Claude Code para ativar a atualização."],
 });
 
 fn check_installed(claude_dir: &Path) -> bool {
