@@ -1172,6 +1172,6 @@ fn default_agent_conversation_title(is_ambient_agent: bool) -> String {
     if is_ambient_agent {
         "New cloud agent".to_owned()
     } else {
-        "New agent conversation".to_owned()
+        "Nova conversa com agente".to_owned()
     }
 }

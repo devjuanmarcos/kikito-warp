@@ -1484,3 +1484,7 @@
 - Traduzi ações locais de copiar chips, placeholders de busca de diretórios e branches e o estado vazio de menus locais.
 - A busca por ambientes continua em inglês porque pertence ao fluxo cloud; comandos, versões e atalhos do popup do Node foram preservados. As descrições das configurações de blocos já estavam traduzidas.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+## Título de conversa no painel local
+
+- Traduzi o título padrão “New agent conversation” para “Nova conversa com agente”. Os controles do painel já estavam em português; títulos cloud e ações de sessões compartilhadas não foram alterados.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
