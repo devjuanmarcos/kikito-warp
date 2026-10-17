@@ -14681,17 +14681,19 @@ impl Workspace {
                 match &outcome {
                     RequestPermissionsOutcome::Accepted => (),
                     RequestPermissionsOutcome::PermissionsDenied => {
-                        // Show a helpful toast if the user denied permissions.
-                        let url = NOTIFICATIONS_TROUBLESHOOT_URL.to_string();
                         view.toast_stack.update(ctx, |toast_stack, ctx| {
-                            let toast = DismissibleToast::error(
-                                "Warp doesn't have permission to send desktop notifications."
+                            let mut toast = DismissibleToast::error(
+                                "O Kikito Terminal não tem permissão para enviar notificações."
                                     .to_string(),
-                            )
-                            .with_link(
-                                ToastLink::new("Troubleshoot notifications".to_string())
-                                    .with_href(url),
                             );
+                            if ChannelState::channel() != Channel::Oss {
+                                toast = toast.with_link(
+                                    ToastLink::new(
+                                        "Solucionar problemas com notificações".to_string(),
+                                    )
+                                    .with_href(NOTIFICATIONS_TROUBLESHOOT_URL.to_string()),
+                                );
+                            }
                             toast_stack.add_persistent_toast(toast, ctx);
                         });
                     }

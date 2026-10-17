@@ -1395,3 +1395,9 @@
 
 - O `AuthManager` agora descarta redirecionamentos de autenticação no canal OSS antes de iniciar qualquer consulta ao usuário. Isso cobre links de login antigos que ainda possam chegar ao aplicativo.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. O `cargo check` descartou alguns artefatos incrementais corrompidos pelo cache e concluiu com sucesso. Não executei testes.
+
+## Ajuda de notificações e recuperação gráfica no OSS
+
+- Traduzi a notificação local de permissão de notificações. O atalho para instruções hospedadas só aparece fora do OSS.
+- O banner de recuperação gráfica no Linux mantém a explicação local, mas oculta o botão que abriria a documentação externa no OSS.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. O primeiro check apontou imports exclusivos de Linux não usados no Windows; deixei-os condicionais à plataforma e a segunda verificação passou. Não executei testes.

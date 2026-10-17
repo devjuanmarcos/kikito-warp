@@ -1,4 +1,6 @@
 use warp_cli::RecoveryMechanism;
+#[cfg(target_os = "linux")]
+use warp_core::channel::{Channel, ChannelState};
 use warpui::{AppContext, SingletonEntity as _, ViewContext};
 
 use super::{Workspace, WorkspaceBannerFields};
@@ -20,12 +22,14 @@ pub fn banner_metadata(ctx: &AppContext) -> Option<WorkspaceBannerFields> {
                 texto desfocado se você estiver usando escala fracionária."
                 .to_owned(),
             secondary_button: None,
-            button: Some(super::WorkspaceBannerButtonDetails {
-                text: "Saiba mais".to_owned(),
-                action: super::WorkspaceAction::DismissWaylandCrashRecoveryBannerAndOpenLink,
-                variant: super::BannerButtonVariant::Outlined,
-                icon: None,
-                more_info_button_action: None,
+            button: (ChannelState::channel() != Channel::Oss).then(|| {
+                super::WorkspaceBannerButtonDetails {
+                    text: "Saiba mais".to_owned(),
+                    action: super::WorkspaceAction::DismissWaylandCrashRecoveryBannerAndOpenLink,
+                    variant: super::BannerButtonVariant::Outlined,
+                    icon: None,
+                    more_info_button_action: None,
+                }
             }),
         }),
         // We're not showing anything to the user when we recover from a crash
