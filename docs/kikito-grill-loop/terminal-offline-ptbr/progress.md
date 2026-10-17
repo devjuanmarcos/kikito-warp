@@ -970,3 +970,8 @@
 
 - Traduzi os estados, explicações e ações do banner local de notificações.
 - Atualizei a referência ao aplicativo para Kikito Terminal; nomes de ações, eventos e modos de notificação foram preservados.
+
+## Tradução — aviso de encerramento do shell
+
+- Traduzi os títulos de encerramento normal e prematuro do processo do shell, além da orientação de depuração.
+- Atualizei a referência ao script de inicialização para Kikito Terminal; lógica e valores técnicos permanecem iguais.
