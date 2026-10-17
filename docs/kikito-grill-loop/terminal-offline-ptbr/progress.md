@@ -1725,3 +1725,9 @@
 - Traduzi rótulos locais do menu de contexto de arquivos, comandos, blocos, código e diferenças, além de estados vazios/carregamento/indexação e descrições acessíveis de arquivos, comandos, blocos, símbolos e diferenças Git. O seletor de referência local também recebeu placeholder e estado vazio em português. Mantive nomes dinâmicos de comandos, arquivos e branches intactos.
 - Mantive sem alteração categorias e itens hospedados, como workflows, cadernos, planos, conversas, prompts salvos e segredos externos; também deixei em inglês comandos de cobrança/conta, Grok, handoff, execução remota, créditos e feedback externo. Descrições dos comandos slash locais já estavam em português. Identificadores e teclas continuam sendo chaves internas.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu avisos de artefatos incrementais antigos, descartados automaticamente pelo Cargo. Nenhum teste foi executado.
+## Auditoria — comandos no terminal
+
+- O caminho `app/src/commands` não existe nesta checkout. Auditei a superfície equivalente `app/src/terminal/input/slash_commands`: os comandos locais usam os nomes e descrições do registro estático já traduzidos em português no lote anterior; a renderização inline não acrescenta rótulos próprios em inglês.
+- Mantive intactos nomes e descrições dinâmicos de skills/provedores e prompts salvos do Warp Drive. A vista `cloud_mode_v2_view.rs`, incluindo cabeçalhos Commands/Skills/Prompts, estados Loading/No results e “Show more”, é a apresentação cloud hospedada e ficou fora do escopo OSS local.
+- Não foi necessária alteração de código neste lote; IDs, sintaxe `/comando` e descrições dinâmicas permanecem como estavam.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
