@@ -186,7 +186,7 @@ impl TuiSkillMenuModel {
         };
         Some(TuiInlineMenuSnapshot {
             header: Some(TuiInlineMenuHeader {
-                title: Some("Skills".to_owned()),
+                title: Some("Habilidades".to_owned()),
                 tabs: Vec::new(),
             }),
             rows: list
@@ -209,7 +209,7 @@ impl TuiSkillMenuModel {
             status: list
                 .rows()
                 .is_empty()
-                .then(|| TuiInlineMenuStatus::Empty("No skills found".to_owned())),
+                .then(|| TuiInlineMenuStatus::Empty("Nenhuma habilidade encontrada".to_owned())),
         })
     }
 

@@ -1546,3 +1546,9 @@
 - Traduzi `Thinking...`, `Thought for {duration}`, `Conversation summary` e o prefixo `Completed` para os cabeçalhos locais dos blocos do agente. Mantive a duração, os títulos dinâmicos das tarefas e seus índices.
 - Não alterei textos de menus de conversas associados a equipes, mensagens de execução cloud, saída do shell ou comandos.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Seletor local de habilidades no TUI
+
+- Traduzi o título `Skills` para `Habilidades` e o estado vazio `No skills found` para `Nenhuma habilidade encontrada`. Esse menu consulta habilidades locais do projeto; nomes de habilidades e a sintaxe `/` permanecem intactos.
+- Mantive menus de equipes, conversas, modelos e outros fluxos cloud fora deste lote.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
