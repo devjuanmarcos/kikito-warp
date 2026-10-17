@@ -1506,4 +1506,10 @@
 ## Menu local de histórico inline
 
 - Traduzi o cabeçalho do menu de histórico e o título padrão das conversas sem nome.
+- `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. A execução do Clippy foi interrompida antes de terminar, então não foi validada nessa etapa. Não executei testes.
+
+## Status de envio de arquivos por SSH
+
+- Traduzi os status e controles locais do painel de envio de arquivos: aguardando senha, envio/conclusão/falha, destino, ações para ver/fechar a sessão, remoção e cabeçalho.
+- Mantive nomes de comandos, caminhos, host remoto e detalhes dinâmicos sem alteração.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
