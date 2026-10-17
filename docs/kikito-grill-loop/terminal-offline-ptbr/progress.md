@@ -1791,3 +1791,10 @@
 - Revisei os rótulos de ativação/instalação, estados de disponibilidade e mensagens de suporte a linguagens no footer, além das ações do menu LSP para abrir registros, iniciar, parar, reiniciar, remover e gerenciar servidores. O copy fixo local já está em português; não precisei alterar código.
 - Preservei nomes/binários dos servidores, nomes de linguagem e arquivo, além de progresso e detalhes de erro recebidos dos próprios servidores, pois são conteúdo técnico dinâmico. A chamada da skill `/update-tab-config` já usa texto em português e permanece identificada pelo nome de comando.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Tradução — componentes compartilhados da interface
+
+- Em `app/src/view_components/markdown_toggle_view.rs`, traduzi as opções locais do alternador de Markdown para `Formatado` e `Fonte`, ampliando o espaço das opções para acomodar o rótulo sem corte. O controle é usado no editor local de arquivos e na visualização local de Markdown.
+- Revisei os demais componentes compartilhados desta pasta: estados de busca, ações de toast, selo de novidade e entradas genéricas já usam português ou recebem copy do chamador. Não alterei mensagens dinâmicas, conteúdo do usuário nem alertas fornecidos por outras áreas.
+- Mantive o rótulo `Beta` da variante genérica sem alteração: ela não tem uso ativo no aplicativo OSS. Toasts de agente e conteúdo ligado a IA hospedada também ficaram fora do escopo.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
