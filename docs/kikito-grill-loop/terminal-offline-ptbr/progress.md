@@ -834,3 +834,8 @@
 
 - Traduzi os placeholders de caminho do executável do shell e do diretório de trabalho.
 - Preservei os valores personalizados e as configurações de sessão.
+
+## Tradução — criação de perfil de agente
+
+- Traduzi o botão que inicia a criação de um perfil de agente.
+- Preservei o acionamento e a habilitação conforme a disponibilidade de agentes.
