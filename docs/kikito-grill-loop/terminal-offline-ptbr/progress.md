@@ -1069,3 +1069,7 @@
 
 - Traduzi os rótulos compartilhados para maximizar e minimizar painéis.
 - Como são criados por um helper comum, os rótulos atualizados aparecem nos menus locais de painéis; a lógica e atalhos permanecem iguais.
+## Tradução — menus de divisão de painéis
+
+- Traduzi os itens de divisão nas quatro direções e os itens de maximizar/minimizar/fechar painel nos menus locais de configurações e variáveis de ambiente.
+- Preservei as ações, os atalhos e as condições de exibição.

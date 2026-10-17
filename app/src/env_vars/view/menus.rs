@@ -128,28 +128,28 @@ impl EnvVarCollectionView {
         ctx: &mut ViewContext<Self>,
     ) -> ViewHandle<Menu<EnvVarCollectionAction>> {
         let split_pane_right = Self::item(
-            "Split pane right",
+            "Dividir painel à direita",
             EnvVarCollectionAction::EmitPaneEvent(PaneEvent::SplitRight(None)),
             keybinding_name_to_display_string("pane_group:add_right", ctx),
             None,
         );
 
         let split_pane_left = Self::item(
-            "Split pane left",
+            "Dividir painel à esquerda",
             EnvVarCollectionAction::EmitPaneEvent(PaneEvent::SplitLeft(None)),
             keybinding_name_to_display_string("pane_group:add_left", ctx),
             None,
         );
 
         let split_pane_down = Self::item(
-            "Split pane down",
+            "Dividir painel abaixo",
             EnvVarCollectionAction::EmitPaneEvent(PaneEvent::SplitDown(None)),
             keybinding_name_to_display_string("pane_group:add_down", ctx),
             None,
         );
 
         let split_pane_up = Self::item(
-            "Split pane up",
+            "Dividir painel acima",
             EnvVarCollectionAction::EmitPaneEvent(PaneEvent::SplitUp(None)),
             keybinding_name_to_display_string("pane_group:add_up", ctx),
             None,
@@ -161,9 +161,9 @@ impl EnvVarCollectionView {
             .is_some_and(|handle| handle.split_pane_state(ctx).is_maximized());
         let toggle_maximize_pane = Self::item(
             if is_maximized {
-                "Minimize pane"
+                "Minimizar painel"
             } else {
-                "Maximize pane"
+                "Maximizar painel"
             },
             EnvVarCollectionAction::EmitPaneEvent(PaneEvent::ToggleMaximized),
             keybinding_name_to_display_string("pane_group:toggle_maximize_pane", ctx),
@@ -171,7 +171,7 @@ impl EnvVarCollectionView {
         );
 
         let close_pane = Self::item(
-            "Close pane",
+            "Fechar painel",
             EnvVarCollectionAction::EmitPaneEvent(PaneEvent::Close),
             trigger_to_keystroke(&Trigger::Custom(CustomAction::CloseCurrentSession.into()))
                 .map(|keystroke| keystroke.displayed()),
