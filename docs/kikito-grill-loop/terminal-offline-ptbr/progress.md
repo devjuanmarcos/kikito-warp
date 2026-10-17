@@ -1249,3 +1249,7 @@
 ## Remoção de login no painel lateral OSS
 
 - O canal OSS não inclui mais Drive nem histórico de conversas nas ferramentas do painel lateral. Ações antigas ou disparadas por atalhos não abrem o fluxo de autenticação; se não houver ferramenta local disponível, o painel fica vazio.
+
+## Painel lateral do workspace
+
+- Auditei os rótulos e estados do painel lateral. O controle de fechamento e os tooltips dos painéis locais já estão em português; as strings inglesas restantes pertencem a estados que exigem conta/IA ou ao Warp Drive remoto, mantidos fora do escopo. Nenhuma alteração de código neste lote.
