@@ -1778,6 +1778,7 @@
 - O Explorador de Projetos foi auditado separadamente. Comentários importados do GitHub e ações de comentário foram mantidos fora deste lote por pertencerem ao fluxo hospedado de revisão; sugestões de correção da última execução pertencem ao fluxo assistido por IA; o aviso de host desconectado descreve uma sessão remota. Rótulos locais da barra de status do LSP já estavam em português.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
 
+
 ## Auditoria — barra de entrada e colagem de imagem
 
 - Revisei `app/src/terminal/input/message_bar`, `terminal_message_bar.rs` e o fluxo local da ação de colar imagem pela área de transferência. O rótulo `Colar caminho da imagem` e sua dica já estavam traduzidos; corrigi a acentuação de dois avisos de imagem/clipboard em `app/src/terminal/view/use_agent_footer/mod.rs`.
@@ -1831,4 +1832,11 @@
 
 - Traduzi os rótulos fixos `Save`, `Variables` e `Load`, além do título inicial `Untitled`, nos componentes do editor local de variáveis de ambiente. Os títulos, campos, validações, diálogos de comando e confirmação de alterações não salvas já estavam em português.
 - Mantive os nomes de variáveis, comandos e valores do usuário. Os avisos de lixeira/restauração e ações Copy link/Duplicate/Trash pertencem à gestão de coleções sincronizadas; nomes como 1Password e LastPass são marcas externas. Ambos ficaram fora deste recorte OSS local.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — diálogos de comportamento do terminal
+
+- Revisei `app/src/terminal/enable_auto_reload_modal.rs`: seus rótulos em inglês fazem parte do fluxo de compra/faturamento e tanto o corpo quanto as ações retornam vazio/inativas no canal OSS. Mantive esse copy hospedado fora da tradução.
+- Nos diálogos e avisos de comportamento local próximos (encerramento de shell, modo Vim, expansão de alias, filtro de blocos e avisos de sistema), os textos visíveis fixos já estão em português; não precisei alterar código. Saída de processo e nomes de shell foram preservados.
+- Mantive fora desta revisão prompts de agente, workflows, faturamento, AWS Bedrock, sessões compartilhadas e setup cloud, por dependerem de recursos externos ou hospedados.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
