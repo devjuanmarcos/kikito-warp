@@ -165,9 +165,9 @@ maybe_define_setting!(SshExtensionInstallModeSetting, group: WarpifySettings, {
 impl SshExtensionInstallMode {
     pub fn display_name(&self) -> &'static str {
         match self {
-            SshExtensionInstallMode::AlwaysAsk => "Always ask",
-            SshExtensionInstallMode::AlwaysInstall => "Always install",
-            SshExtensionInstallMode::NeverInstall => "Never install",
+            SshExtensionInstallMode::AlwaysAsk => "Perguntar sempre",
+            SshExtensionInstallMode::AlwaysInstall => "Sempre instalar",
+            SshExtensionInstallMode::NeverInstall => "Nunca instalar",
         }
     }
 }

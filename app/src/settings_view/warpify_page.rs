@@ -51,7 +51,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         .is_supported_on_current_platform()
     {
         toggle_binding_pairs.push(ToggleSettingActionPair::new(
-            "SSH Warpification",
+            "Integração de shells em sessões SSH",
             builder(SettingsAction::WarpifyPageToggle(
                 WarpifyPageAction::ToggleSshWarpification,
             )),
@@ -69,9 +69,9 @@ const ITEM_VERTICAL_SPACING: f32 = 24.;
 const BUILT_IN_TEXT_INPUT_MARGIN: f32 = 10.;
 const SPACE_AFTER_TEXT_INPUT: f32 = ITEM_VERTICAL_SPACING - BUILT_IN_TEXT_INPUT_MARGIN;
 
-const SSH_REUSE_CONTROL_MASTER_DESCRIPTION: &str = "Attach to a live SSH ControlMaster you already have configured for the destination host instead of creating a Warp-owned one. Takes effect in new tabs.";
+const SSH_REUSE_CONTROL_MASTER_DESCRIPTION: &str = "Use um ControlMaster SSH ativo já configurado para o host de destino, em vez de criar um gerenciado pelo Kikito Terminal. A opção vale para novas abas.";
 
-const SSH_EXTENSION_INSTALL_MODE_DESCRIPTION: &str = "Controls the installation behavior for Warp's SSH extension when a remote host doesn't have it installed.";
+const SSH_EXTENSION_INSTALL_MODE_DESCRIPTION: &str = "Define como a extensão SSH do Kikito Terminal será instalada quando ela ainda não estiver presente no host remoto.";
 
 /// This page lets users configure when they get asked to warpify a session. Some shell commands
 /// are recognized by default. Users can add new shell commands, or prevent the default ones from
@@ -111,7 +111,7 @@ impl WarpifyPageView {
         let add_added_commands_editor = ctx.add_typed_action_view(|ctx| {
             let mut input =
                 SubmittableTextInput::new(ctx).validate_on_edit(|regex| Regex::new(regex).is_ok());
-            input.set_placeholder_text("command (supports regex)", ctx);
+            input.set_placeholder_text("comando (aceita regex)", ctx);
             input
         });
 
@@ -122,7 +122,7 @@ impl WarpifyPageView {
 
         let add_denylisted_commands_editor = ctx.add_typed_action_view(|ctx| {
             let mut input = SubmittableTextInput::new(ctx);
-            input.set_placeholder_text("command (supports regex)", ctx);
+            input.set_placeholder_text("comando (aceita regex)", ctx);
             input
         });
 
@@ -152,7 +152,7 @@ impl WarpifyPageView {
             Category::new("", vec![Box::new(TitleWidget::default())]),
             Category::with_header(
                 CategoryHeader::new("Subshells")
-                    .with_subtitle("Subshells supported: bash, zsh, and fish."),
+                    .with_subtitle("Compatível com bash, zsh e fish."),
                 vec![Box::new(SubshellsWidget::default())],
             ),
         ];
@@ -163,7 +163,7 @@ impl WarpifyPageView {
             .is_supported_on_current_platform()
         {
             categories.push(Category::with_header(
-                CategoryHeader::new("SSH").with_subtitle("Warpify your interactive SSH sessions."),
+                CategoryHeader::new("SSH").with_subtitle("Integre shells em suas sessões SSH interativas."),
                 vec![Box::new(SSHWidget::default())],
             ));
         }
@@ -490,12 +490,7 @@ impl TitleWidget {
     fn render_top_of_page(&self, appearance: &Appearance, _app: &AppContext) -> Box<dyn Element> {
         let warpify_description = vec![
             FormattedTextFragment::plain_text(
-                "Configure whether Warp attempts to “Warpify” (add support for blocks, \
-                    input modes, etc) certain shells. ",
-            ),
-            FormattedTextFragment::hyperlink(
-                "Learn more",
-                "https://docs.warp.dev/terminal/warpify/subshells",
+                "Configure se o Kikito Terminal deve integrar determinados shells, adicionando suporte a blocos, modos de entrada e outros recursos. "
             ),
         ];
 
@@ -514,7 +509,7 @@ impl TitleWidget {
         .finish();
 
         Flex::column()
-            .with_child(render_page_title("Warpify", HEADER_FONT_SIZE, appearance))
+            .with_child(render_page_title("Integração de shells", HEADER_FONT_SIZE, appearance))
             .with_child(warpify_description)
             .finish()
     }
@@ -555,7 +550,7 @@ impl SubshellsWidget {
 
         column.add_child(
             view.build_input_list(
-                "Added commands",
+                "Comandos adicionados",
                 &warpify_settings.added_subshell_commands,
                 &view.remove_added_command_button_states,
                 WarpifyPageAction::RemoveAddedCommand,
@@ -567,7 +562,7 @@ impl SubshellsWidget {
 
         column.add_child(
             view.build_input_list(
-                "Denylisted commands",
+                "Comandos bloqueados",
                 &warpify_settings.subshell_command_denylist,
                 &view.remove_denylisted_command_button_states,
                 WarpifyPageAction::RemoveDenylistedCommand,
@@ -636,7 +631,7 @@ impl SettingsWidget for SSHWidget {
             &WarpifySettings::as_ref(app).enable_ssh_warpification,
             move || {
                 render_body_item::<WarpifyPageAction>(
-                    "Warpify SSH Sessions".into(),
+                    "Integrar shell em sessões SSH".into(),
                     None,
                     LocalOnlyIconState::for_setting(
                         EnableSshWarpification::storage_key(),
@@ -671,7 +666,7 @@ impl SettingsWidget for SSHWidget {
                 move || {
                     Container::new(render_dropdown_item(
                         appearance,
-                        "Install SSH extension",
+                        "Instalar extensão SSH",
                         Some(SSH_EXTENSION_INSTALL_MODE_DESCRIPTION),
                         None,
                         LocalOnlyIconState::for_setting(
@@ -698,7 +693,7 @@ impl SettingsWidget for SSHWidget {
             move || {
                 let mut column = Flex::column();
                 column.add_child(render_body_item::<WarpifyPageAction>(
-                    "Reuse existing SSH ControlMaster".into(),
+                    "Reutilizar ControlMaster SSH existente".into(),
                     None,
                     LocalOnlyIconState::for_setting(
                         ReuseExistingSshControlMaster::storage_key(),
