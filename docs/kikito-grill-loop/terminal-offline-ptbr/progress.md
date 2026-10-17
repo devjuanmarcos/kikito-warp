@@ -999,3 +999,8 @@
 
 - Traduzi as ações e os títulos locais do banner de erro de notificações, incluindo os títulos de erro e os textos alternativos.
 - Atualizei a marca do aplicativo para Kikito Terminal; preservei a lógica e as ações. O banner do modo Vim foi auditado e já estava em pt-BR.
+
+## Tradução — instruções do plugin Warp para OpenCode
+
+- Traduzi títulos, descrições, passos e notas de instalação/atualização do plugin externo.
+- Mantive as identidades Warp e OpenCode, o pacote `@warp-dot-dev/opencode-warp`, as chaves JSON, caminhos, versão e comandos intactos.
