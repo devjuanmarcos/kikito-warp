@@ -1652,3 +1652,7 @@
 - Confirmei em `crates/warp_core/src/channel/state.rs` que a configuração do canal OSS usa `WarpServerConfig::local()` (`127.0.0.1:0`), `OzConfig::local()`, sem endpoint de compartilhamento, `telemetry_config: None`, `autoupdate_config: None` e `crash_reporting_config: None`.
 - Em `app/src/lib.rs`, o OSS inicializa `AuthState` local, não inicia refresh de autenticação/segredos e não inicializa nem envia erros para crash reporting. O handler central bloqueia abertura de HTTP(S) fora de loopback, e `crates/http_client` aplica a restrição de host nas requisições.
 - Validação desta etapa foi por inspeção estática; o build `cargo check -p warp --bin warp-oss` passou nas mudanças de feature flags anteriores. Captura de tráfego do executável em execução ainda não foi realizada.
+## Captura runtime ociosa do binário OSS
+
+- Iniciei `target/debug/warp-oss.exe` com `WARP_DATA_PROFILE=offline-audit-20261017`, perfil separado do uso normal. O processo PID 3360 permaneceu ativo por cerca de 22 segundos; duas consultas de conexões TCP para esse PID não retornaram conexões. Depois encerrei o processo.
+- O resultado cobre somente a inicialização ociosa do executável e não avalia subprocessos ou tráfego provocado por comandos/aliases que o usuário execute no terminal. Não é uma afirmação sobre conexões iniciadas por Codex, Claude ou outros programas externos.
