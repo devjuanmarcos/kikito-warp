@@ -3,6 +3,7 @@ use std::sync::Arc;
 use enclose::enclose;
 use itertools::Itertools as _;
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
+use warp_core::channel::{Channel, ChannelState};
 use warp_core::ui::appearance::Appearance;
 use warp_graphql::billing::AddonCreditsOption;
 use warpui::elements::{
@@ -354,6 +355,10 @@ impl View for EnableAutoReloadModalBody {
     }
 
     fn render(&self, app: &AppContext) -> Box<dyn Element> {
+        if ChannelState::channel() == Channel::Oss {
+            return Empty::new().finish();
+        }
+
         let appearance = Appearance::as_ref(app);
 
         let content = Container::new(self.render_content(appearance))
@@ -390,6 +395,10 @@ impl warpui::TypedActionView for EnableAutoReloadModalBody {
     type Action = Action;
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
+        if ChannelState::channel() == Channel::Oss {
+            return;
+        }
+
         match action {
             Action::SelectDenomination(index) => {
                 self.selected_denomination_index = *index;
@@ -516,6 +525,10 @@ impl View for EnableAutoReloadModal {
     }
 
     fn render(&self, _app: &AppContext) -> Box<dyn Element> {
+        if ChannelState::channel() == Channel::Oss {
+            return Empty::new().finish();
+        }
+
         ChildView::new(&self.modal).finish()
     }
 }

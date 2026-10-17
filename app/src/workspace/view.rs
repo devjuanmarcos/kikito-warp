@@ -16438,6 +16438,10 @@ impl Workspace {
                 self.show_settings_with_section(Some(*section), ctx);
             }
             pane_group::Event::OpenAutoReloadModal { purchased_credits } => {
+                if ChannelState::channel() == Channel::Oss {
+                    return;
+                }
+
                 self.current_workspace_state
                     .is_enable_auto_reload_modal_open = true;
                 self.enable_auto_reload_modal.update(ctx, |modal, ctx| {

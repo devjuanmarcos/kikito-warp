@@ -19,6 +19,7 @@ use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::llms::{LLMPreferences, should_show_key_icon_for_model};
 use crate::ai::{AIRequestUsageModel, BuyCreditsBannerDisplayState};
 use crate::appearance::Appearance;
+use crate::channel::{Channel, ChannelState};
 use crate::settings::{AISettings, InputSettings};
 use crate::terminal::buy_credits_banner::BuyCreditsBanner;
 use crate::terminal::input::{Input, InputAction, InputSuggestionsMode, MenuPositioning};
@@ -489,6 +490,10 @@ pub(super) fn maybe_add_buy_credits_banner(
     model: &TerminalModel,
     app: &AppContext,
 ) {
+    if ChannelState::channel() == Channel::Oss {
+        return;
+    }
+
     if cfg!(target_family = "wasm")
         && (model.is_conversation_transcript_viewer() || model.shared_session_status().is_viewer())
     {

@@ -1498,3 +1498,7 @@
 - Traduzi os estados do prompt que informam quando comandos ou texto selecionado foram anexados como contexto, incluindo as quantidades e a indicação de remoção pelo atalho Escape.
 - A view compartilhada da barra de entrada não tinha rótulos estáticos locais pendentes. Os seletores de prompts da Warp Drive são cloud-only; as views locais de prompts e skills não definem rótulos próprios.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+## Bloqueio dos fluxos de créditos hospedados
+
+- O banner de compra de créditos e o modal de recarga automática agora ficam indisponíveis no canal OSS: guarda na inserção, renderização, ações e encaminhamento/abertura dos eventos. Canais não OSS mantêm o comportamento existente.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

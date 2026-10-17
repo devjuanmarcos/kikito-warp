@@ -4059,15 +4059,19 @@ impl Input {
         let buy_credits_banner = ctx.add_typed_action_view(BuyCreditsBanner::new);
         ctx.subscribe_to_view(&buy_credits_banner, |me, _, event, ctx| match event {
             BuyCreditsBannerEvent::OpenBillingAndUsage => {
-                ctx.emit(Event::OpenSettings(SettingsSection::BillingAndUsage));
+                if ChannelState::channel() != Channel::Oss {
+                    ctx.emit(Event::OpenSettings(SettingsSection::BillingAndUsage));
+                }
             }
             BuyCreditsBannerEvent::RefocusInput => {
                 ctx.focus(&me.editor);
             }
             BuyCreditsBannerEvent::OpenAutoReloadModal { purchased_credits } => {
-                ctx.emit(Event::OpenAutoReloadModal {
-                    purchased_credits: *purchased_credits,
-                });
+                if ChannelState::channel() != Channel::Oss {
+                    ctx.emit(Event::OpenAutoReloadModal {
+                        purchased_credits: *purchased_credits,
+                    });
+                }
             }
             BuyCreditsBannerEvent::ShowAutoReloadError { error_message } => {
                 ctx.emit(Event::ShowToast {

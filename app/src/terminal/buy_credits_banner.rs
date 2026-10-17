@@ -29,6 +29,7 @@ use crate::ai::request_usage_model::{
     AIRequestUsageModel, AIRequestUsageModelEvent, BuyCreditsBannerDisplayState,
 };
 use crate::auth::AuthStateProvider;
+use crate::channel::{Channel, ChannelState};
 use crate::features::FeatureFlag;
 use crate::menu::MenuItemFields;
 use crate::pricing::addon_pack::{PackAmount, pack_menu_label};
@@ -1003,6 +1004,10 @@ impl View for BuyCreditsBanner {
     }
 
     fn render(&self, app: &AppContext) -> Box<dyn Element> {
+        if ChannelState::channel() == Channel::Oss {
+            return Container::new(warpui::elements::Empty::new().finish()).finish();
+        }
+
         let appearance = Appearance::as_ref(app);
         let ai_request_usage = AIRequestUsageModel::as_ref(app);
 
@@ -1046,6 +1051,10 @@ impl warpui::TypedActionView for BuyCreditsBanner {
     type Action = Action;
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
+        if ChannelState::channel() == Channel::Oss {
+            return;
+        }
+
         match action {
             Action::SelectDenomination(index) => {
                 self.selected_denomination_index = *index;
