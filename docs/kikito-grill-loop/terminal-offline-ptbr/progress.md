@@ -1257,3 +1257,7 @@
 ## Estados do Explorador de projetos
 
 - Traduzi as mensagens locais para sessão sem workspace habilitado e para sessões WSL incompatíveis. Mantive a mensagem específica de sessão remota fora deste lote.
+
+## Busca global local
+
+- Auditei rótulos, placeholders, controles de busca, estados vazios e sessões incompatíveis em `global_search/view.rs`; os textos locais já estão em português. Mantive em inglês apenas estados exclusivos de conexão/sessão remota, fora do escopo. Nenhuma alteração de código neste lote.
