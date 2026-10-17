@@ -1764,3 +1764,9 @@
 - Traduzi os estados visíveis do lightbox de imagens: vazio, falha ao carregar e carregamento. O componente é compartilhado e usado por conteúdo local da interface OSS.
 - Revisei os componentes comuns de botão, diálogo, tooltip e atalhos, além das camadas de janela/plataforma do WarpUI. Não encontrei copy fixo adicional em inglês para interfaces locais; textos de diálogo vêm do chamador, nomes de teclas permanecem como abreviações convencionais, e diagnósticos/APIs nativas foram preservados.
 - `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
+
+### Verificação adicional — metadados de settings exibidos no OSS
+
+- Reconfirmei as referências no código de UI: `Setting::description()` aparece apenas em `settings_view/agent_profiles_page.rs`, página que não é registrada na navegação OSS. As descrições de `app/src/settings/*.rs` alimentam o schema/configuração e não são apresentadas como ajuda nas páginas locais Appearance, Keybindings e About.
+- A tela Appearance usa rótulos próprios para o seletor de ícones em `appearance_page.rs`; eles já estão localizados. Descrições de ícone como “The app icon displayed in the dock” não são renderizadas nessa tela. Preservei IDs, slugs, caminhos e valores técnicos.
+- Não encontrei copy local em inglês para alterar neste follow-up. Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
