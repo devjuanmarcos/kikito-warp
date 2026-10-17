@@ -1473,3 +1473,9 @@
 - Traduzi os rótulos, placeholders, ações e avisos locais para criar e executar variáveis de ambiente; a dica sobre segredos agora usa a marca Kikito Terminal. Ações de cópia de link, duplicação, exclusão e exportação continuam sem alteração porque aparecem apenas em coleções sincronizadas no servidor.
 - Traduzi os controles locais de revisão de código: navegação por arquivos, commit e descarte local, estados vazios/erros, diferenças, comentários e ações de contexto. Push, publicação, PR e integrações GitHub permanecem fora da interface OSS/local.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+## Banners locais do terminal
+
+- Os banners de shell encerrado, Vim, aliases, notificações e agente já tinham cópia local em pt-BR.
+- O banner local de arquivos mantém a ação de abrir/editar e oculta no OSS o botão que levava à documentação Warp hospedada. O link para a documentação oficial da AWS foi mantido.
+- Prompts enviados aos agentes e banners de sessão compartilhada ou login de equipe ficaram fora da localização da interface local.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

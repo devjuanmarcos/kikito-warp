@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use warp_core::channel::{Channel, ChannelState};
 use warpui::elements::MouseStateHandle;
 use warpui::fonts::Weight;
 use warpui::{Element, EntityId};
@@ -117,12 +118,17 @@ pub fn render_open_in_warp_banner(
 
     let title = file_title_text(&state.target);
 
+    let mut buttons = vec![open_button];
+    if ChannelState::channel() != Channel::Oss {
+        buttons.push(learn_more_button);
+    }
+
     render_inline_block_list_banner(
         InlineBannerStyle::Recommendation,
         appearance,
         InlineBannerContent {
             title,
-            buttons: vec![open_button, learn_more_button],
+            buttons,
             close_button: Some(close_button),
             ..Default::default()
         },
