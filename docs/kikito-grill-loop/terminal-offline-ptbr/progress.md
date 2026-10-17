@@ -743,3 +743,8 @@
 
 - Traduzi o aviso e as opções para cancelar ou continuar a geração do resumo.
 - Preservei as ações e a tecla Escape para continuar.
+
+## Tradução — dica das configurações de abas
+
+- Traduzi a dica que orienta onde acessar as configurações das abas.
+- Preservei o identificador do chip e o comportamento de exibição.
