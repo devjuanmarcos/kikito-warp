@@ -1064,3 +1064,8 @@
 
 - Traduzi as dicas de ferramenta para mostrar/ocultar detalhes nos controles do painel da conversa, tanto no app para desktop quanto no WASM.
 - Preservei a ação, a condição de estado e os identificadores internos.
+
+## Tradução — ações de maximizar painéis
+
+- Traduzi os rótulos compartilhados para maximizar e minimizar painéis.
+- Como são criados por um helper comum, os rótulos atualizados aparecem nos menus locais de painéis; a lógica e atalhos permanecem iguais.
