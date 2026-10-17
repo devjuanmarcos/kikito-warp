@@ -819,3 +819,8 @@
 
 - Traduzi o placeholder de busca e o estado sem resultados dos menus filtráveis.
 - Preservei a lógica de filtragem e seleção.
+
+## Tradução — estados da busca de comandos
+
+- Traduzi os estados de carregamento e de busca sem resultados da paleta de comandos.
+- Preservei a coleta, ordenação e seleção dos resultados.
