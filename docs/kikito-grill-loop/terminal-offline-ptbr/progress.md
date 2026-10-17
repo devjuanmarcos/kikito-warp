@@ -1609,3 +1609,15 @@
 - Traduzi o título e a descrição da notificação local de nova aba em `app/src/uri/mod.rs` (“Nova aba criada” / “Abra o Kikito Terminal para ver sua nova aba”). Esse aviso é usado no caminho de `NewTab` em plataformas que exibem a notificação do sistema; não depende de autenticação ou serviço remoto.
 - Mantive as ocorrências restantes ligadas a créditos/planos, autenticação, Warp Drive, colaboração, cloud agents, atualização, integração com host/protocolo OSC e identificadores/configuração internos. Não são copy local elegível nesta auditoria OSS.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`. Não executei testes nem Clippy.
+
+## Segunda varredura de menções da marca em UI OSS
+
+- Traduzi a copy da saudação local da IA para “Peça à IA do Kikito Terminal para explicar erros, sugerir comandos ou escrever scripts.” A view só aparece quando há provedor de IA habilitado localmente, o Agent Mode está desativado e a aba está em modo compatível; não exige conta/Drive.
+- Troquei “Warp Essentials” pelo título local “Recursos do Kikito Terminal” no cabeçalho do Resource Center e no tooltip da ação correspondente.
+- Classificação de ocorrências mantidas: `Log in with Warp`/`Copy login URL` pertencem ao fluxo de autenticação hospedado e não aparecem no OSS. Verifiquei que `app/src/tui/mod.rs::init` inicia o modelo em `LoggedIn` no canal `Oss`, sem depender de `AuthState`; `session::init` então cria a sessão local e troca a raiz para `Terminal`. A ação de login também retorna sem iniciar rede no OSS, e o handler de eventos de auth ignora esse canal. Os textos de créditos/planos, Drive, equipe/colaboração, CLI/update, avisos de login e status de serviço continuam em fluxos cloud ou remotos. Nomes como `WarpTheme`, `WarpDrive`, `WarpClient`, `warp-oss`, eventos de telemetry e mensagens de log/path são identificadores, protocolo ou diagnóstico interno.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`. Não executei testes nem Clippy.
+
+## Confirmação do estado de autenticação no TUI OSS
+
+- Confirmei o bootstrap antes de classificar os rótulos `Log in with Warp` e `Copy login URL`: no canal `Oss`, `TuiLoginModel` é criado em `LoggedIn` mesmo sem identidade autenticada; a sessão inicial é local e a raiz muda para `Terminal`. Os handlers de auth não iniciam o login via browser no OSS. Portanto, esses rótulos hospedados não aparecem no binário OSS e nenhum ajuste de auth foi necessário.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.

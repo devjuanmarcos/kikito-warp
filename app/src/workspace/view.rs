@@ -20173,7 +20173,8 @@ impl Workspace {
         let body = appearance
             .ui_builder()
             .wrappable_text(
-                "Ask Warp AI to explain errors, suggest commands or write scripts.".to_owned(),
+                "Peça à IA do Kikito Terminal para explicar erros, sugerir comandos ou escrever scripts."
+                    .to_owned(),
                 true,
             )
             .with_style(UiComponentStyles {
@@ -22089,7 +22090,7 @@ impl Workspace {
                 icons::Icon::Lightbulb,
                 &self.mouse_states.resource_center_icon,
                 WorkspaceAction::ToggleResourceCenter,
-                "Warp Essentials".to_string(),
+                "Recursos do Kikito Terminal".to_string(),
                 self.cached_keybindings[TOGGLE_RESOURCE_CENTER_KEYBINDING_NAME].clone(),
                 false,
                 false,
