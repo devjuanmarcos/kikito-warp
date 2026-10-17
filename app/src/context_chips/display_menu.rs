@@ -316,8 +316,8 @@ impl DisplayChipMenu {
                     };
                     let mut editor = EditorView::new(options, ctx);
                     let placeholder_text = match chip_menu_type {
-                        ChipMenuType::Directories => "Search directories...",
-                        ChipMenuType::Branches => "Search branches...",
+                        ChipMenuType::Directories => "Buscar diretórios...",
+                        ChipMenuType::Branches => "Buscar branches...",
                         ChipMenuType::Environments => "Search environments...",
                         ChipMenuType::CodeReview => {
                             unreachable!("search input should not be constructed")
@@ -1082,7 +1082,7 @@ impl DisplayChipMenu {
                         ChipMenuType::Directories
                         | ChipMenuType::Branches
                         | ChipMenuType::CodeReview => (
-                            "No results found",
+                            "Nenhum resultado encontrado",
                             appearance.ui_font_size(),
                             LABEL_HORIZONTAL_PADDING,
                             LABEL_VERTICAL_PADDING * 2.0,

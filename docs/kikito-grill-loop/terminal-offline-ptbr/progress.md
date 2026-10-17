@@ -1479,3 +1479,8 @@
 - O banner local de arquivos mantém a ação de abrir/editar e oculta no OSS o botão que levava à documentação Warp hospedada. O link para a documentação oficial da AWS foi mantido.
 - Prompts enviados aos agentes e banners de sessão compartilhada ou login de equipe ficaram fora da localização da interface local.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+## Chips de contexto e menus de busca
+
+- Traduzi ações locais de copiar chips, placeholders de busca de diretórios e branches e o estado vazio de menus locais.
+- A busca por ambientes continua em inglês porque pertence ao fluxo cloud; comandos, versões e atalhos do popup do Node foram preservados. As descrições das configurações de blocos já estavam traduzidas.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
