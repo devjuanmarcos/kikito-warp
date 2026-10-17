@@ -525,7 +525,7 @@ impl LaunchConfigSaveModal {
                 appearance
                     .ui_builder()
                     .link(
-                        "Link to Documentation".to_string(),
+                        "Acessar a documentação".to_string(),
                         Some(
                             "https://docs.warp.dev/terminal/sessions/launch-configurations"
                                 .to_string(),

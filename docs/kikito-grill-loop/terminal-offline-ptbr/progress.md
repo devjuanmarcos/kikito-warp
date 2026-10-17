@@ -1787,6 +1787,7 @@
 
 
 
+
 ## Auditoria — confirmação local de saída
 
 - Revisei `app/src/quit_warning/mod.rs`, que apresenta confirmações ao fechar abas, painéis, janelas ou o aplicativo e avisa sobre processos em execução e alterações de arquivos não salvas. Os textos exibidos já estão em português; não foi necessária alteração de código.
@@ -1818,4 +1819,10 @@
 - Traduzi em `app/src/editor/view/element.rs` a dica para percorrer sugestões locais de comando; em `app/src/editor/view/model/mod.rs` e `view/mod.rs`, traduzi os anúncios de acessibilidade para seleção, exclusão e colagem.
 - Em `accept_autosuggestion_keybinding_view.rs`, alinhei a busca do item selecionado ao nome já traduzido `Personalizado...`, preservando o comportamento de seleção do menu para atalhos customizados.
 - Mantive fora deste recorte os toasts e tooltips de entrada por voz, erros de anexos e menus de busca de arquivos ligados ao contexto de modelos/IA hospedados. Conteúdo digitado/colado e nomes de teclas permanecem intactos.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — configurações locais de inicialização e abas
+
+- Traduzi o rótulo do link de documentação no modal de salvamento de configuração, os nomes gerados para novas abas e descrições padrão do parâmetro de branch da worktree. O placeholder visual de branch agora usa `minha-feature-branch`; preservei o valor default `my-feature-branch`, pois pode ser usado como nome real da branch.
+- Os demais botões, placeholders, estados de carregamento e mensagens de validação nos modais locais já estavam em português. Mantive sem tradução o conteúdo dinâmico de erros TOML/sistema, identificadores, valores de configuração e nomes técnicos dos agentes. O destino do link de documentação permanece uma URL externa.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.

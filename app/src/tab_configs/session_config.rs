@@ -79,17 +79,17 @@ fn handlebars_placeholder(name: &str) -> String {
 }
 
 /// Derives a human-readable config name from the directory and worktree setting.
-/// e.g. "Worktree: my-repo" or "New tab: my-repo".
+/// e.g. "Worktree: my-repo" or "Nova aba: my-repo".
 fn config_name(directory: &Path, enable_worktree: bool) -> String {
     let repo = directory
         .file_name()
         .and_then(|n| n.to_str())
         .or_else(|| directory.to_str())
-        .unwrap_or("untitled");
+        .unwrap_or("sem título");
     let prefix = if enable_worktree {
         "Worktree"
     } else {
-        "New tab"
+        "Nova aba"
     };
     format!("{prefix}: {repo}")
 }
@@ -129,7 +129,7 @@ pub fn build_tab_config(
             params.insert(
                 WORKTREE_BRANCH_PARAM.to_string(),
                 TabConfigParam {
-                    description: Some("New worktree branch name".to_string()),
+                    description: Some("Nome da branch da worktree".to_string()),
                     default: Some(WORKTREE_BRANCH_DEFAULT.to_string()),
                     param_type: TabConfigParamType::Text,
                 },

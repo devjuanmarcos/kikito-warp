@@ -180,7 +180,7 @@ impl NewWorktreeModal {
         let editor = ctx.add_typed_action_view(|ctx| {
             let options = SingleLineEditorOptions::default();
             let mut editor = EditorView::single_line(options, ctx);
-            editor.set_placeholder_text("my-feature-branch", ctx);
+            editor.set_placeholder_text("minha-feature-branch", ctx);
             editor
         });
         ctx.subscribe_to_view(&editor, |me, _, event, ctx| match event {
