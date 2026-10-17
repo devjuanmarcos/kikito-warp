@@ -1207,6 +1207,7 @@ pub fn init(app: &mut AppContext) {
                 query: None,
             },
         )
+        .with_enabled(|| ChannelState::channel() != Channel::Oss)
         .with_context_predicate(id!("Workspace"))
         .with_custom_action(CustomAction::SearchDrive),
     ]);
@@ -1238,6 +1239,7 @@ pub fn init(app: &mut AppContext) {
         "Log out",
         WorkspaceAction::LogOut,
     )
+    .with_enabled(|| ChannelState::channel() != Channel::Oss)
     .with_group(bindings::BindingGroup::Settings.as_str())
     .with_context_predicate(id!("Workspace") & !id!("IsAnonymousUser"))]);
 
@@ -1258,6 +1260,7 @@ pub fn init(app: &mut AppContext) {
             "Export all Warp Drive objects",
             WorkspaceAction::ExportAllWarpDriveObjects,
         )
+        .with_enabled(|| ChannelState::channel() != Channel::Oss)
         .with_group(bindings::BindingGroup::Settings.as_str())
         .with_context_predicate(id!("Workspace") & id!(flags::ENABLE_WARP_DRIVE))]);
     }
@@ -1271,6 +1274,7 @@ pub fn init(app: &mut AppContext) {
                 "Install Oz CLI globally for use outside of Warp",
                 WorkspaceAction::InstallOz,
             )
+            .with_enabled(|| ChannelState::channel() != Channel::Oss)
             .with_group(bindings::BindingGroup::Settings.as_str())
             .with_context_predicate(id!("Workspace")),
             EditableBinding::new(
@@ -1278,6 +1282,7 @@ pub fn init(app: &mut AppContext) {
                 "Undo global Oz CLI installation (oz will still work within Warp)",
                 WorkspaceAction::UninstallOz,
             )
+            .with_enabled(|| ChannelState::channel() != Channel::Oss)
             .with_group(bindings::BindingGroup::Settings.as_str())
             .with_context_predicate(id!("Workspace")),
         ]);
@@ -1288,6 +1293,7 @@ pub fn init(app: &mut AppContext) {
                     "Install Warp Control CLI globally for use outside of Warp",
                     WorkspaceAction::InstallWarpctrl,
                 )
+                .with_enabled(|| ChannelState::channel() != Channel::Oss)
                 .with_group(bindings::BindingGroup::Settings.as_str())
                 .with_context_predicate(id!("Workspace")),
                 EditableBinding::new(
@@ -1295,6 +1301,7 @@ pub fn init(app: &mut AppContext) {
                     "Undo global Warp Control CLI installation (warpctrl will still work within Warp)",
                     WorkspaceAction::UninstallWarpctrl,
                 )
+                .with_enabled(|| ChannelState::channel() != Channel::Oss)
                 .with_group(bindings::BindingGroup::Settings.as_str())
                 .with_context_predicate(id!("Workspace")),
             ]);
@@ -1346,7 +1353,7 @@ pub fn init(app: &mut AppContext) {
         .with_custom_action(CustomAction::NewAgentModePane),
         EditableBinding::new(
             "workspace:toggle_ai_assistant",
-            "Toggle Warp AI",
+            "Alternar assistente de IA",
             WorkspaceAction::ToggleAIAssistant,
         )
         .with_enabled(|| !FeatureFlag::AgentMode.is_enabled())

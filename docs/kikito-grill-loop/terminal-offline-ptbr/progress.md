@@ -1408,3 +1408,9 @@
 - Traduzi os botões do editor local de roteadores de modelos e o tooltip para abrir arquivos na revisão de código.
 - A revisão da tela de Aparência não encontrou mais textos visíveis em inglês no canal OSS; não foram necessárias alterações.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Ações hospedadas restantes na Paleta de Comandos
+
+- Ocultei no canal OSS as ações de busca/exportação do Warp Drive, logout e instalação global das CLIs Oz e Warp Control.
+- Traduzi o comando local “Toggle Warp AI” para “Alternar assistente de IA”.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
