@@ -1029,3 +1029,8 @@
 
 - Traduzi o separador de atalho nos resultados de comandos slash e as instruções para executar/enviar comandos e abrir conversas selecionadas no histórico.
 - Mantive comandos, atalhos, títulos dinâmicos e ações sem alterações.
+
+## Tradução — abas do histórico inline
+
+- Traduzi os rótulos das abas para Tudo e Comandos; mantive Prompts como termo técnico.
+- Preservei os enums de filtro e o comportamento de seleção do histórico.
