@@ -1054,3 +1054,8 @@
 
 - Traduzi os prefixos de acessibilidade dos resultados de planos e prompts salvos.
 - Mantive títulos, nomes dos itens, comandos slash, IDs e ações sem alterações.
+
+## Tradução — estado vazio da sessão de terminal
+
+- Traduzi o título de nova sessão, as instruções de conversa/histórico, a dica de detecção automática e a ação para dispensar o aviso.
+- Mantive atalhos e ações intactos e deixei o item de conversa na nuvem fora deste lote.
