@@ -1142,3 +1142,8 @@
 
 - Auditei os avisos de descontinuação do tmux e de falha da extensão SSH. Ambos pertencem a fluxos de sessão SSH avançada/remota e ficam fora da localização das superfícies locais do OSS.
 - Não mantive alterações nos banners nem na lógica de exibição.
+
+## Tooltips do terminal
+
+- Traduzi as ações de revelar, ocultar e copiar segredos, além das opções para mostrar um arquivo no Finder ou a pasta correspondente.
+- Confirmei que são tooltips locais do terminal: as ações de segredo são renderizadas para conteúdo local; as opções de arquivo usam `local_fs`, habilitado para builds desktop compatíveis.
