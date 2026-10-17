@@ -125,33 +125,33 @@ impl TipsView {
 
         let tip_items = vec![
             TipItem::new(
-                "Command Palette".to_string(),
-                "Easily discover everything you can do in Warp without your hands leaving the keyboard.".to_string(),
+                "Paleta de comandos".to_string(),
+                "Descubra com facilidade tudo o que você pode fazer no Kikito Terminal sem tirar as mãos do teclado.".to_string(),
                 TipAction::CommandPalette,
                 ctx,
             ),
             TipItem::new(
-                "Split Pane".to_string(),
-                "Split tabs into multiple panes to make your ideal layout."
+                "Dividir painel".to_string(),
+                "Divida as abas em vários painéis para montar o layout ideal."
                     .to_string(),
                 TipAction::SplitPane,
                 ctx,
             ),
             TipItem::new(
-                "History Search".to_string(),
-                "Find, edit and re-run previously executed commands.".to_string(),
+                "Busca no histórico".to_string(),
+                "Encontre, edite e execute novamente comandos anteriores.".to_string(),
                 TipAction::HistorySearch,
                 ctx,
             ),
             TipItem::new(
-                "AI Command Search".to_string(),
-                "Generate shell commands with natural language.".to_string(),
+                "Busca de comandos com IA".to_string(),
+                "Gere comandos de shell usando linguagem natural.".to_string(),
                 TipAction::AiCommandSearch,
                 ctx,
             ),
             TipItem::new(
-                "Theme Picker".to_string(),
-                "Make Warp your own by choosing a built-in theme. Or create your own.".to_string(),
+                "Seletor de temas".to_string(),
+                "Personalize o Kikito Terminal escolhendo um tema integrado ou criando o seu.".to_string(),
                 TipAction::ThemePicker,
                 ctx,
             ),

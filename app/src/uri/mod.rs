@@ -1238,8 +1238,8 @@ impl Action {
             | Self::FocusCloudMode
             | Self::AutoHandoffToCloud { .. } => W::default(),
             Self::NewTab => W::ShowPrimaryWindow(WindowActivationFallbackBehavior::Notify {
-                title: "New tab created".to_owned(),
-                description: "Go to Warp to see your new tab.".to_owned(),
+                title: "Nova aba criada".to_owned(),
+                description: "Abra o Kikito Terminal para ver sua nova aba.".to_owned(),
             }),
             Self::NewWindow => W::Nothing,
         }

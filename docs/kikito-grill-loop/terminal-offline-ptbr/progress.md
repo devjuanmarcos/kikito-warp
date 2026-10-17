@@ -1602,3 +1602,10 @@
 - O updater não é registrado no canal OSS e o changelog é desativado. A linha de conta e a seção MCP ainda eram permitidas pela visibilidade padrão apesar de não se aplicarem ao OSS; agora ficam ocultas nesse canal. A linha de versão OSS também não consulta o modelo de updater, que não é registrado nesse canal. Os textos dinâmicos de changelog, conta, atualizador e MCP foram mantidos sem tradução.
 - As descrições em `app/src/settings/tui_zero_state.rs` são metadados do schema, não copy exibida pelo zero-state.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Auditoria de menções locais à marca Warp
+
+- Traduzi os títulos e textos das cinco dicas locais em `app/src/tips/tip_view.rs`, incluindo “Paleta de comandos” e “Seletor de temas”; as referências à marca agora dizem Kikito Terminal. Essas dicas são montadas diretamente pela janela local, sem gate cloud.
+- Traduzi o título e a descrição da notificação local de nova aba em `app/src/uri/mod.rs` (“Nova aba criada” / “Abra o Kikito Terminal para ver sua nova aba”). Esse aviso é usado no caminho de `NewTab` em plataformas que exibem a notificação do sistema; não depende de autenticação ou serviço remoto.
+- Mantive as ocorrências restantes ligadas a créditos/planos, autenticação, Warp Drive, colaboração, cloud agents, atualização, integração com host/protocolo OSC e identificadores/configuração internos. Não são copy local elegível nesta auditoria OSS.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`. Não executei testes nem Clippy.
