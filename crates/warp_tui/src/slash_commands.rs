@@ -324,11 +324,11 @@ impl TuiSlashCommandModel {
             let selected_theme = TuiThemeSettings::as_ref(ctx).selected_theme();
             return Some(match selected_theme {
                 TuiTheme::Auto => format!(
-                    "(currently auto: {})",
+                    "(tema atual: automático — {})",
                     TuiTheme::from(Appearance::as_ref(ctx).theme()).display_name()
                 ),
                 TuiTheme::Light | TuiTheme::Dark => {
-                    format!("(currently {})", selected_theme.display_name())
+                    format!("(tema atual: {})", selected_theme.display_name())
                 }
             });
         }
@@ -345,8 +345,8 @@ impl TuiSlashCommandModel {
             return None;
         };
         Some(format!(
-            "(currently {})",
-            if enabled { "on" } else { "off" }
+            "(atualmente {})",
+            if enabled { "ativado" } else { "desativado" }
         ))
     }
 

@@ -1622,6 +1622,13 @@
 - Confirmei o bootstrap antes de classificar os rótulos `Log in with Warp` e `Copy login URL`: no canal `Oss`, `TuiLoginModel` é criado em `LoggedIn` mesmo sem identidade autenticada; a sessão inicial é local e a raiz muda para `Terminal`. Os handlers de auth não iniciam o login via browser no OSS. Portanto, esses rótulos hospedados não aparecem no binário OSS e nenhum ajuste de auth foi necessário.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
 
+## Revisão residual do terminal local no TUI OSS
+
+- Em `crates/warp_tui/src/slash_commands.rs`, traduzi os sufixos de estado dos comandos locais `/theme`, `/vim-mode`, `/auto-approve` e detecção de linguagem natural. Mantive os valores configuráveis `auto`, `light` e `dark`, nomes de comando e lógica intactos.
+- Em `crates/warp_tui/src/input_hints.rs`, traduzi a dica local de foco para o agente durante a execução de um comando longo. A tecla de atalho e o comportamento permanecem intactos.
+- Excluí estados de restauração de conversas, menus de equipe/modelo/MCP, uso/créditos, autenticação, atualizador e voz: dependem de serviços externos/provedores ou seus componentes são ocultados no canal OSS. Saída de shell, nomes dinâmicos de abas e comandos, identificadores e logs também foram preservados.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Nenhum teste foi executado.
+
 ## Menções de marca no Resource Center e menus nativos
 
 - Traduzi a copy local “Access all of Warp” e “Make Warp your own” na seção Getting Started, o título Maximize Warp e os rótulos de atalhos nativos “Hide Warp”/“Quit Warp” para Kikito Terminal em pt-BR. Os IDs dos atalhos permaneceram intactos.
