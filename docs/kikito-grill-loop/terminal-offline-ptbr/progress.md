@@ -748,3 +748,8 @@
 
 - Traduzi a dica que orienta onde acessar as configurações das abas.
 - Preservei o identificador do chip e o comportamento de exibição.
+
+## Tradução — carregamento de sessão
+
+- Traduzi a mensagem exibida enquanto uma sessão está sendo carregada.
+- Mantive o estado e a renderização de carregamento.

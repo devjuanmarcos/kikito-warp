@@ -25314,7 +25314,11 @@ impl TerminalView {
                             .finish(),
                     )
                     .with_child(
-                        Text::new_inline("Loading session...", appearance.ui_font_family(), 14.)
+                        Text::new_inline(
+                            "Carregando sessão...",
+                            appearance.ui_font_family(),
+                            14.,
+                        )
                             .with_color(color.into())
                             .finish(),
                     )
