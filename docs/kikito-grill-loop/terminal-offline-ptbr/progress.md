@@ -1190,3 +1190,8 @@
 
 - Traduzi as opções fixas `Default` e `Custom` do seletor de shell nas configurações para Padrão e Personalizado. O placeholder do caminho, os nomes dos shells, os detalhes e as opções da paleta já estavam localizados.
 - Preservei nomes próprios (PowerShell, Git Bash e WSL), comandos, caminhos e valores persistidos.
+
+## Banner local de subshell
+
+- Traduzi o título do banner de inicialização de subshell e a opção para não exibi-lo novamente.
+- Os demais banners locais desta pasta já estavam em português; excluí login AWS/Bedrock, sessões compartilhadas e sugestões de prompt associadas ao agente/cloud.
