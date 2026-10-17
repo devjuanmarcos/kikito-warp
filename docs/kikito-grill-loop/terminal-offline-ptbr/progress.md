@@ -723,3 +723,8 @@
 
 - Traduzi o título exibido quando o explorador de projetos não pode ser mostrado.
 - Preservei o conteúdo dinâmico e o estado do explorador.
+
+## Tradução — confirmação de reversão do agente
+
+- Traduzi o título, a explicação, a observação e os botões do diálogo de reversão.
+- Preservei os atalhos e as ações de confirmação e cancelamento.

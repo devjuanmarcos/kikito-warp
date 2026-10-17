@@ -106,7 +106,7 @@ impl View for RewindConfirmationDialog {
         let rewind_button_label = Flex::row()
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_child(
-                Text::new_inline("Rewind", appearance.ui_font_family(), 14.)
+                Text::new_inline("Reverter", appearance.ui_font_family(), 14.)
                     .with_color(text_color)
                     .finish(),
             )
@@ -160,7 +160,7 @@ impl View for RewindConfirmationDialog {
                 } else {
                     cancel_text_color
                 };
-                Text::new_inline("Cancel", appearance.ui_font_family(), 14.)
+                Text::new_inline("Cancelar", appearance.ui_font_family(), 14.)
                     .with_color(color.into_solid())
                     .finish()
             })
@@ -187,7 +187,7 @@ impl View for RewindConfirmationDialog {
             )
             .with_child(
                 Text::new_inline(
-                    "Rewinding does not affect files edited manually or via shell commands.",
+                    "A reversão não afeta arquivos editados manualmente ou por comandos do shell.",
                     appearance.ui_font_family(),
                     12.,
                 )
@@ -198,10 +198,15 @@ impl View for RewindConfirmationDialog {
 
         let dialog = Container::new(
             Dialog::new(
-                "Rewind".into(),
+                "Reverter".into(),
                 Some(
-                    "Are you sure you want to rewind? This will restore your code and conversation to before this point, and cancel any commands the agent is currently running. A copy of the original conversation will be saved in your conversation history."
-                        .into(),
+                    concat!(
+                        "Tem certeza de que deseja reverter? ",
+                        "Isso restaurará seu código e a conversa para antes deste ponto e ",
+                        "cancelará os comandos que o agente estiver executando. ",
+                        "Uma cópia da conversa original será salva no histórico de conversas."
+                    )
+                    .into(),
                 ),
                 UiComponentStyles {
                     width: Some(DIALOG_WIDTH),
