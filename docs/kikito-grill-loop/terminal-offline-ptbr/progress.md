@@ -1269,3 +1269,7 @@
 ## Opções de worktree em configurações de aba
 
 - Traduzi a dica que explica a dependência da opção de nome automático de branch em relação à criação automática de worktree. Os demais textos visíveis do modal de configuração de sessão já estavam em português.
+
+## Ciclo de vida do shell local
+
+- Revisei erros de inicialização/fallback em `terminal_manager.rs` e avisos de encerramento do shell. As mensagens visíveis de OSS já estão em português; erros internos e avisos de sessão compartilhada/SSH não foram tratados como copy local. Nenhuma alteração de código neste lote.
