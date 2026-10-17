@@ -994,3 +994,8 @@
 
 - Revisei o banner de abertura de arquivos: títulos e botões já estavam em pt-BR e identificavam o aplicativo como Kikito Terminal.
 - Mantive extensões, nomes de linguagens dinâmicos, URLs, ações e identificadores internos sem alterações.
+
+## Tradução — erros ao enviar notificações
+
+- Traduzi as ações e os títulos locais do banner de erro de notificações, incluindo os títulos de erro e os textos alternativos.
+- Atualizei a marca do aplicativo para Kikito Terminal; preservei a lógica e as ações. O banner do modo Vim foi auditado e já estava em pt-BR.

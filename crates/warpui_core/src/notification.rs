@@ -114,10 +114,10 @@ impl NotificationSendError {
         match self {
             NotificationSendError::PermissionsDenied
             | NotificationSendError::PermissionsNotYetGranted => {
-                "Warp tried to send you a notification for the last block but does not have permission."
+                "O Kikito Terminal tentou enviar uma notificação para o último bloco, mas não tem permissão."
             }
             NotificationSendError::Other { .. } => {
-                "Warp tried to send you a notification for the last block, but something went wrong."
+                "O Kikito Terminal tentou enviar uma notificação para o último bloco, mas ocorreu um erro."
             }
         }
     }

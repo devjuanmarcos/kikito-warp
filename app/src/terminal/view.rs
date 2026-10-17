@@ -10711,7 +10711,7 @@ impl TerminalView {
             .error
             .as_ref()
             .map(|e| e.notifications_error_banner_title())
-            .unwrap_or("Error sending notification");
+            .unwrap_or("Erro ao enviar notificação");
 
         let a11y_content = AccessibilityContent::new(
             banner_title,
@@ -25046,7 +25046,7 @@ impl TerminalView {
                 .error
                 .as_ref()
                 .map(|e| e.notifications_error_banner_title())
-                .unwrap_or("Error sending notification");
+                .unwrap_or("Erro ao enviar notificação");
 
             inline_banners.insert(
                 state.banner_id,
