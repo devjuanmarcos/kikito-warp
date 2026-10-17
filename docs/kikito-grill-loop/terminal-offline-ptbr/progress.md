@@ -1696,3 +1696,8 @@
 
 - Tentei abrir o binário com um `WARP_DATA_PROFILE` isolado, enviar atalhos para a paleta e Settings e amostrar conexões TCP do processo. A automação não devolveu saída de captura verificável, então descartei a tentativa como evidência. Encerrei os processos `warp-oss.exe` criados para essa tentativa; não havia instância deles ao conferir depois.
 - A captura interativa permanece pendente. A observação ociosa anterior e a revisão estática são as únicas evidências runtime/estáticas válidas até aqui.
+## Tradução — atalhos locais do terminal
+
+- Traduzi descrições dos atalhos locais de `EditableBinding` em `app/src/terminal/view/init.rs`: colar/copiar, foco e localização, seleção e navegação de blocos, marcadores, rolagem, edição durante comandos em execução, ajustes do campo de entrada da CLI e ações locais de contexto/projeto. Preservei IDs, teclas, ações e condições.
+- Mantive em inglês descrições de compartilhamento de sessão/bloco, fluxos de equipe e comandos de depuração ou onboarding, por serem funções hospedadas ou destinadas apenas a depuração. A ação `Warpify subshell` aparece no footer de subshells detectados e ativa uma integração local de shell; ela não depende de serviço hospedado, então também traduzi seu rótulo para `Ativar integração de shell no subshell`. Excluí nomes/descrições construídos dinamicamente para comandos de provedores.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu avisos de artefatos incrementais antigos, ignorados pelo Cargo. Nenhum teste foi executado.
