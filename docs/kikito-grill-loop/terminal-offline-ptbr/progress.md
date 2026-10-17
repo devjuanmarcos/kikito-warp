@@ -869,3 +869,8 @@
 
 - Traduzi o título, o aviso de compatibilidade e o rótulo do link de documentação.
 - Mantive a URL, o estado desativado e a ação do atalho.
+
+## Tradução — agrupamento de arquivos no editor
+
+- Traduzi o rótulo e a descrição da preferência para agrupar arquivos abertos na mesma aba em um único painel do editor.
+- Preservei a opção e seu comportamento.
