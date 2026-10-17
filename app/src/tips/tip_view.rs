@@ -395,7 +395,7 @@ impl TipsView {
                         Align::new(
                             appearance
                                 .ui_builder()
-                                .paragraph("Skip Welcome Tips".to_string())
+                                .paragraph("Pular dicas de boas-vindas".to_string())
                                 .build()
                                 .finish(),
                         )

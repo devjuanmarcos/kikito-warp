@@ -758,3 +758,8 @@
 
 - Traduzi o título, a mensagem e o botão do estado final das dicas.
 - Mantive a ação de fechar e um rótulo curto para caber no botão.
+
+## Tradução — opção de pular dicas
+
+- Traduzi o controle que permite pular as dicas de boas-vindas.
+- Preservei a ação de dispensar as dicas.
