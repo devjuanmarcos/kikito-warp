@@ -1049,3 +1049,8 @@
 
 - Traduzi as abas de escopo, o indicador de conversa aberta em outro painel e o prefixo do rótulo de acessibilidade.
 - Mantive IDs, filtros, títulos de conversa e a lógica de seleção sem alterações.
+
+## Tradução — rótulos acessíveis de planos e prompts
+
+- Traduzi os prefixos de acessibilidade dos resultados de planos e prompts salvos.
+- Mantive títulos, nomes dos itens, comandos slash, IDs e ações sem alterações.

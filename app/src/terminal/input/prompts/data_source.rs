@@ -243,7 +243,7 @@ impl SearchItem for PromptSearchItem {
     }
 
     fn accessibility_label(&self) -> String {
-        format!("Prompt: {}", self.name)
+        format!("Prompt salvo: {}", self.name)
     }
 }
 
