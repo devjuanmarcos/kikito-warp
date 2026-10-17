@@ -67,8 +67,8 @@ mod render;
 use crate::settings::{CodeSettings, CodeSettingsChangedEvent};
 
 const REMOTE_TEXT: &str = "The Project Explorer requires access to your local workspace, which isn’t supported in remote sessions.";
-const DISABLED_TEXT: &str = "The Project Explorer requires access to your local workspace. Open a new session or navigate to an active session to view.";
-const WSL_TEXT: &str = "The Project Explorer doesn't currently work in WSL.";
+const DISABLED_TEXT: &str = "O Explorador de projetos precisa acessar seu workspace local. Abra uma nova sessão ou acesse uma sessão ativa para visualizá-lo.";
+const WSL_TEXT: &str = "O Explorador de projetos ainda não funciona no WSL.";
 
 /// Stable identifier for an item in the file tree.
 /// Includes both the root directory and the index within that root's flattened list.

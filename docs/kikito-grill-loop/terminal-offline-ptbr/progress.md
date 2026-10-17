@@ -1253,3 +1253,7 @@
 ## Painel lateral do workspace
 
 - Auditei os rótulos e estados do painel lateral. O controle de fechamento e os tooltips dos painéis locais já estão em português; as strings inglesas restantes pertencem a estados que exigem conta/IA ou ao Warp Drive remoto, mantidos fora do escopo. Nenhuma alteração de código neste lote.
+
+## Estados do Explorador de projetos
+
+- Traduzi as mensagens locais para sessão sem workspace habilitado e para sessões WSL incompatíveis. Mantive a mensagem específica de sessão remota fora deste lote.
