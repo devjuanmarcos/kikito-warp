@@ -763,3 +763,8 @@
 
 - Traduzi o controle que permite pular as dicas de boas-vindas.
 - Preservei a ação de dispensar as dicas.
+
+## Tradução — argumentos de fluxos de trabalho
+
+- Traduzi rótulos, placeholders e a orientação para preencher argumentos e variáveis de ambiente.
+- Preservei a chave interna do prefixo, as ações e a estrutura do editor.

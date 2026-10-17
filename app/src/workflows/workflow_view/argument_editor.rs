@@ -35,12 +35,12 @@ use crate::workflows::workflow::Workflow;
 use crate::workspace::WorkspaceAction;
 
 const ARGUMENT_INPUT_HEIGHT: f32 = 30.;
-const ARGUMENT_LABEL_TEXT: &str = "Arguments";
+const ARGUMENT_LABEL_TEXT: &str = "Argumentos";
 const ARGUMENT_LABEL_HEIGHT: f32 = 20.;
 const ARGUMENT_LABEL_MARGIN_BOTTOM: f32 = 5.;
-const ARGUMENT_DESCRIPTION_PLACEHOLDER_TEXT: &str = "Description";
-const ARGUMENT_ALIAS_DESCRIPTION_PLACEHOLDER_TEXT: &str = "Value (optional)";
-const ARGUMENT_DEFAULT_VALUE_PLACEHOLDER_TEXT: &str = "Default value (optional)";
+const ARGUMENT_DESCRIPTION_PLACEHOLDER_TEXT: &str = "Descrição";
+const ARGUMENT_ALIAS_DESCRIPTION_PLACEHOLDER_TEXT: &str = "Valor (opcional)";
+const ARGUMENT_DEFAULT_VALUE_PLACEHOLDER_TEXT: &str = "Valor padrão (opcional)";
 pub const DEFAULT_ARGUMENT_PREFIX: &str = "argument";
 
 /// Width of the argument editor in alias mode.
@@ -582,7 +582,7 @@ impl WorkflowView {
                 )
                 .with_tooltip(move || {
                     ui_builder
-                        .tool_tip("Add a workflow argument".to_string())
+                        .tool_tip("Adicionar um argumento ao fluxo de trabalho".to_string())
                         .build()
                         .finish()
                 })
@@ -595,14 +595,17 @@ impl WorkflowView {
                     1.,
                     Container::new(
                         appearance
-                        .ui_builder()
-                        .span("Fill out the arguments in this workflow and copy it to run in your terminal session")
-                        .with_soft_wrap()
-                        .with_style(UiComponentStyles {
-                            font_size: Some(EDITOR_FONT_SIZE),
-                            font_color: Some(sub_text_color),
-                            ..Default::default()
-                        })
+                            .ui_builder()
+                            .span(concat!(
+                                "Preencha os argumentos deste fluxo de trabalho e copie o comando ",
+                                "para executá-lo na sessão do terminal."
+                            ))
+                            .with_soft_wrap()
+                            .with_style(UiComponentStyles {
+                                font_size: Some(EDITOR_FONT_SIZE),
+                                font_color: Some(sub_text_color),
+                                ..Default::default()
+                            })
                         .build()
                         .finish(),
                     )
@@ -820,7 +823,7 @@ impl WorkflowView {
                         .add_environment_variables_mouse_state
                         .clone(),
                 )
-                .with_centered_text_label("Add environment variables".to_string())
+                .with_centered_text_label("Adicionar variáveis de ambiente".to_string())
                 .build()
                 .on_click(|ctx, _, _| {
                     ctx.dispatch_typed_action(WorkspaceAction::CreatePersonalEnvVarCollection);
@@ -832,7 +835,7 @@ impl WorkflowView {
             .with_children([
                 appearance
                     .ui_builder()
-                    .span("Environment variables")
+                    .span("Variáveis de ambiente")
                     .with_style(UiComponentStyles {
                         font_size: Some(13.),
                         ..Default::default()
