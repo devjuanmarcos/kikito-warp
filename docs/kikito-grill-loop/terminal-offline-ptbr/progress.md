@@ -1277,3 +1277,8 @@
 ## Atalhos da sessão de terminal
 
 - Traduzi a dica de atalho local para abrir o painel de revisão de código no bloco inicial do terminal. A dica de nova conversa com agente na nuvem ficou fora do escopo.
+
+
+## Menu de estado do TUI
+
+- Traduzi a seção e os campos de versão, sessão, ID da conversa, diretório de trabalho, organização e e-mail.
