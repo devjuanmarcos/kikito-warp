@@ -894,3 +894,8 @@
 
 - Traduzi os títulos e as opções da seção de visualização no menu das abas verticais.
 - Preservei os modos, as ações e os valores internos.
+
+## Tradução — títulos e metadados das abas verticais
+
+- Traduzi os rótulos para escolher informação do painel e configurar metadados, link da PR, estatísticas do diff e detalhes ao passar o cursor.
+- Mantive o termo técnico Branch, os nomes de ferramentas e as ações.
