@@ -1589,3 +1589,9 @@
 - Mantive `auto`, `light` e `dark` como valores aceitos pelo comando `/theme` e pelos arquivos de configuração. A tela de atalhos não tem um menu de edição dedicado; ela lista os atalhos ativos, com descrições localizadas. Não encontrei uma tela geral de preferências no TUI OSS neste escopo.
 - Uma superfície próxima que ainda pode merecer auditoria separada é a documentação em inglês embutida nos metadados de configurações em `app/src/settings`, que não é texto destas telas TUI.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Auditoria de metadados de configurações no OSS
+
+- Confirmei que a janela de Settings no canal OSS mantém apenas as páginas Appearance, Keybindings e About (`settings_view/mod.rs`). As chamadas que renderizam diretamente `Setting::description()` ficam na página de perfis de agentes, excluída dessa navegação local; não encontrei esses metadados nas telas locais da GUI nem do TUI.
+- O TUI pode exportar um JSON Schema por um comando de linha de comando de execução única. As descrições `schemars`/`SettingSchemaEntry` vão para esse artefato técnico; não são copy de menu, help ou status renderizada durante a sessão. Mantive essas descrições, os nomes e valores serializados sem alteração neste lote.
+- Não encontrei descrições locais elegíveis para traduzir neste escopo. Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`. Não executei testes nem Clippy.
