@@ -1019,3 +1019,8 @@
 
 - Traduzi rótulos de atalhos e ações locais para histórico, tela, rolagem, buscas, sugestões, fluxos de trabalho e modo de agente.
 - Atualizei a referência de marca no rótulo do registro de rede; mantive IDs de ações e atalhos sem alterações.
+
+## Tradução — estados e histórico do menu inline
+
+- Traduzi os estados de carregamento/sem resultados dos menus inline e o cabeçalho, o botão de configuração e os rótulos de acessibilidade do histórico.
+- Mantive a consulta interna de busca, os dados apresentados, as ações e a compatibilidade sem alterações.
