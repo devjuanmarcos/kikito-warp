@@ -773,3 +773,8 @@
 
 - Traduzi os botões de importação e restauração das configurações.
 - Preservei as ações e os limites de largura dos botões.
+
+## Tradução — editor de links dos cadernos
+
+- Traduzi os placeholders e o botão para inserir links em cadernos.
+- Preservei o modelo do editor e a ação que aplica o link selecionado.
