@@ -1083,3 +1083,8 @@
 
 - Revisei os menus de abas individuais e seleção múltipla: ações de fixar/desafixar, renomear, fechar e agrupar já estavam em português; os rótulos de mover para grupo e remover do grupo também foram mantidos.
 - Traduzi os resumos de abas ocultas para “+ N mais” e “e mais N”, preservando contagens e comportamento.
+
+## Controles de workspace e sessão
+
+- Traduzi o título do diálogo de abertura de configuração de aba de “Open: {nome}” para “Abrir: {nome}”, sem alterar o fluxo.
+- Revisei menus locais de abas, grupos e sessões; as ações restantes já estavam em português.
