@@ -1457,3 +1457,8 @@
 - A página de ambientes e seu botão de criação são exclusivos do gerenciamento de ambientes cloud e não aparecem na navegação OSS; mantive esse conteúdo sem mudanças.
 - `cli_agents_page.rs` já estava traduzido nos textos locais; não precisou de alterações.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `PROTOC=(WinGet protoc) cargo check -p warp_tui --bin warp-tui-oss` passaram. Não executei testes.
+## Entrada do terminal e seletores de modelo
+
+- Traduzi tooltips do campo de entrada para anexar contexto/arquivos, entrada por voz, comandos de barra e seleção do modo agente/terminal, além dos avisos locais de indisponibilidade.
+- Traduzi a seleção local de perfis e modelos, a ação de gerenciar perfis e o cabeçalho de modelos personalizados. Mantive textos relacionados a ChatGPT, sessões compartilhadas, pedidos de acesso e dados hospedados sem alterações.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

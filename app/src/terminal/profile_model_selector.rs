@@ -93,11 +93,12 @@ const MAX_PROFILE_NAME_WIDTH_SCALE_FACTOR: f32 = 10.0;
 
 const PROFILE_SELECTOR_POSITION_ID: &str = "profile_selector";
 
-const PROFILE_PICKER_TOOLTIP: &str = "Choose an AI execution profile";
-const MODEL_PICKER_TOOLTIP: &str = "Choose an agent model";
+const PROFILE_PICKER_TOOLTIP: &str = "Escolher um perfil de execução de IA";
+const MODEL_PICKER_TOOLTIP: &str = "Escolher um modelo de agente";
 const MODEL_USES_CHATGPT_SUBSCRIPTION_TOOLTIP: &str =
     "Requests for this model use your ChatGPT plan";
-const MODEL_LOCKED_FOR_FOLLOWUP_TOOLTIP: &str = "Follow-ups use the original run's model";
+const MODEL_LOCKED_FOR_FOLLOWUP_TOOLTIP: &str =
+    "As continuações usam o modelo da execução original";
 const MODEL_REQUIRES_EDIT_ACCESS_TOOLTIP: &str = "Request edit access to change model";
 const HARNESS_DEFAULT_MODEL_LABEL: &str = "default";
 
@@ -561,8 +562,8 @@ impl ProfileModelSelector {
         );
 
         let manage_api_key_button = ctx.add_typed_action_view(|_ctx| {
-            ActionButton::new("Manage", SecondaryTheme)
-                .with_tooltip("Manage API keys")
+            ActionButton::new("Gerenciar", SecondaryTheme)
+                .with_tooltip("Gerenciar chaves de API")
                 .with_size(ButtonSize::XSmall)
                 .on_click(|ctx| {
                     ctx.dispatch_typed_action(WorkspaceAction::ShowSettingsPageWithSearch {
@@ -928,7 +929,7 @@ impl ProfileModelSelector {
 
         menu_items.push(MenuItem::Separator);
         menu_items.push(MenuItem::Item(
-            MenuItemFields::new("Manage profiles")
+            MenuItemFields::new("Gerenciar perfis")
                 .with_icon(Icon::Gear)
                 .with_on_select_action(ProfileModelSelectorAction::ManageProfiles),
         ));
@@ -1152,7 +1153,7 @@ impl ProfileModelSelector {
                 items.push(MenuItem::Separator);
             }
             items.push(MenuItem::Header {
-                fields: MenuItemFields::new("Custom models").with_override_text_color(
+                fields: MenuItemFields::new("Modelos personalizados").with_override_text_color(
                     appearance
                         .theme()
                         .sub_text_color(appearance.theme().background())

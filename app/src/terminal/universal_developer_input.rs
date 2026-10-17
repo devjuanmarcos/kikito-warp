@@ -85,19 +85,19 @@ impl AtContextMenuDisabledReason {
         match self {
             #[cfg(not(target_family = "wasm"))]
             AtContextMenuDisabledReason::NoObjectsAvailable => {
-                "No available objects in the current context.".to_string()
+                "Não há itens disponíveis no contexto atual.".to_string()
             }
             #[cfg(not(target_family = "wasm"))]
             AtContextMenuDisabledReason::SshWithoutRemoteServer => {
-                "Not supported in SSH sessions without remote server".to_string()
+                "Não há suporte em sessões SSH sem um servidor remoto.".to_string()
             }
             #[cfg(not(target_family = "wasm"))]
-            AtContextMenuDisabledReason::Subshell => "Not supported in subshells".to_string(),
+            AtContextMenuDisabledReason::Subshell => "Não há suporte em subshells.".to_string(),
             #[cfg(target_family = "wasm")]
             AtContextMenuDisabledReason::Wasm => "Requires a filesystem".to_string(),
             #[cfg(not(target_family = "wasm"))]
             AtContextMenuDisabledReason::DisabledInTerminalMode => {
-                "Disabled in terminal mode, re-enable in settings".to_string()
+                "Desativado no modo terminal. Reative nas configurações.".to_string()
             }
         }
     }
@@ -187,7 +187,7 @@ impl AtContextMenuDisabledReason {
     }
 }
 
-const AT_CONTEXT_TOOLTIP: &str = "Attach context";
+const AT_CONTEXT_TOOLTIP: &str = "Anexar contexto";
 
 const BLURRED_OPACITY: Opacity = 50;
 
@@ -346,7 +346,7 @@ impl UniversalDeveloperInputButtonBar {
             #[cfg_attr(not(feature = "voice_input"), allow(unused_mut))]
             let mut button = ActionButton::new("", PromptIconButtonTheme::new(false))
                 .with_icon(Icon::Microphone)
-                .with_tooltip("Voice input")
+                .with_tooltip("Entrada por voz")
                 .with_size(button_size)
                 .with_tooltip_alignment(TooltipAlignment::Left);
             #[cfg(feature = "voice_input")]
@@ -377,7 +377,7 @@ impl UniversalDeveloperInputButtonBar {
         let file_button_view = ctx.add_typed_action_view(|_ctx| {
             ActionButton::new("", PromptIconButtonTheme::new(false))
                 .with_icon(Icon::Plus)
-                .with_tooltip("Attach file")
+                .with_tooltip("Anexar arquivo")
                 .with_size(button_size)
                 .with_disabled_theme(UDIDisabledButtonTheme)
                 .with_tooltip_alignment(TooltipAlignment::Left)
@@ -389,7 +389,7 @@ impl UniversalDeveloperInputButtonBar {
         let slash_command_menu_view = ctx.add_typed_action_view(|_ctx| {
             ActionButton::new("", PromptIconButtonTheme::new(false))
                 .with_icon(Icon::SlashCommands)
-                .with_tooltip("Slash commands")
+                .with_tooltip("Comandos de barra")
                 .with_size(button_size)
                 .with_disabled_theme(UDIDisabledButtonTheme)
                 .with_tooltip_alignment(TooltipAlignment::Left)
@@ -683,7 +683,10 @@ impl UniversalDeveloperInputButtonBar {
         let tooltip = if is_reader {
             Some("Request edit access to change input mode".to_string())
         } else if is_agent_in_control {
-            Some("Input mode locked while agent is monitoring a command".to_string())
+            Some(
+                "O modo de entrada fica bloqueado enquanto o agente monitora um comando."
+                    .to_string(),
+            )
         } else {
             None
         };
@@ -1017,7 +1020,7 @@ fn build_renderable_option_config(
                 icon_color: fg_color,
                 label: None,
                 tooltip: Some(tooltip_config(
-                    "Agent Mode",
+                    "Modo agente",
                     Some(agent_mode_tooltip_subtext(terminal_keybindings)),
                     app,
                 )),
@@ -1064,7 +1067,7 @@ fn agent_mode_tooltip_subtext(terminal_keybindings: &TerminalKeybindings) -> Str
         return AGENT_MODE_TOOLTIP_PREFIX.into();
     };
 
-    format!("{keybinding} or {AGENT_MODE_TOOLTIP_PREFIX}")
+    format!("{keybinding} ou {AGENT_MODE_TOOLTIP_PREFIX}")
 }
 
 fn terminal_mode_tooltip_subtext(terminal_keybindings: &TerminalKeybindings) -> String {
@@ -1073,7 +1076,7 @@ fn terminal_mode_tooltip_subtext(terminal_keybindings: &TerminalKeybindings) -> 
         return TERMINAL_MODE_TOOLTIP_PREFIX.into();
     };
 
-    format!("{keybinding} or {TERMINAL_MODE_TOOLTIP_PREFIX}")
+    format!("{keybinding} ou {TERMINAL_MODE_TOOLTIP_PREFIX}")
 }
 
 fn tooltip_config(
