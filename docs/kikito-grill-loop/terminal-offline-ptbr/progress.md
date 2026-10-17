@@ -884,3 +884,8 @@
 
 - Padronizei em português os estados exibidos para escrita, uso do computador, perguntas, execução de agentes e permissões booleanas.
 - Preservei as variantes e a lógica internas do perfil.
+
+## Tradução — nomes dos modelos no perfil de execução
+
+- Traduzi o cabeçalho da seção de modelos e os rótulos de modelo base, uso completo do terminal e uso do computador.
+- Mantive nomes de modelos, permissões e comportamento.

@@ -166,7 +166,7 @@ impl View for ExecutionProfileView {
                     let mut model_flex = Flex::column();
                     model_flex.add_child(
                         Container::new(
-                            Text::new("MODELS", appearance.ui_font_family(), 10.)
+                            Text::new("MODELOS", appearance.ui_font_family(), 10.)
                                 .with_color(appearance.theme().disabled_ui_text_color().into())
                                 .finish(),
                         )
@@ -176,7 +176,7 @@ impl View for ExecutionProfileView {
                     model_flex.add_child(with_standard_vertical_margin(
                         render_model_line_with_icon(
                             Icon::Lightning,
-                            "Base model:",
+                            "Modelo base:",
                             base_model,
                             appearance,
                             is_any_ai_enabled,
@@ -185,7 +185,7 @@ impl View for ExecutionProfileView {
                     model_flex.add_child(with_standard_vertical_margin(
                         render_model_line_with_icon(
                             Icon::Terminal,
-                            "Full terminal use:",
+                            "Uso completo do terminal:",
                             cli_agent_model,
                             appearance,
                             is_any_ai_enabled,
@@ -195,7 +195,7 @@ impl View for ExecutionProfileView {
                         model_flex.add_child(with_standard_vertical_margin(
                             render_model_line_with_icon(
                                 Icon::Laptop,
-                                "Computer use:",
+                                "Uso do computador:",
                                 computer_use_model,
                                 appearance,
                                 is_any_ai_enabled,
@@ -303,7 +303,7 @@ impl View for ExecutionProfileView {
                             permissions_column.add_child(with_standard_vertical_margin(
                                 render_computer_use_permission_line_with_icon(
                                     Icon::Laptop,
-                                    "Computer use:",
+                                    "Uso do computador:",
                                     &profile.computer_use,
                                     appearance,
                                     is_any_ai_enabled,
