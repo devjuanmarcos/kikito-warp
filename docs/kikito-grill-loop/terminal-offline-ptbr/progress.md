@@ -1059,3 +1059,8 @@
 
 - Traduzi o título de nova sessão, as instruções de conversa/histórico, a dica de detecção automática e a ação para dispensar o aviso.
 - Mantive atalhos e ações intactos e deixei o item de conversa na nuvem fora deste lote.
+
+## Tradução — controle de detalhes dos painéis
+
+- Traduzi as dicas de ferramenta para mostrar/ocultar detalhes nos controles do painel da conversa, tanto no app para desktop quanto no WASM.
+- Preservei a ação, a condição de estado e os identificadores internos.

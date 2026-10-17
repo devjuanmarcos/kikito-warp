@@ -825,9 +825,9 @@ impl TerminalView {
         button
             .with_tooltip(move || {
                 let tooltip_text = if is_open {
-                    "Hide details"
+                    "Ocultar detalhes"
                 } else {
-                    "Show details"
+                    "Mostrar detalhes"
                 };
                 ui_builder
                     .tool_tip(tooltip_text.to_string())
@@ -881,9 +881,9 @@ impl TerminalView {
         )
         .with_tooltip(move || {
             let tooltip_text = if is_open {
-                "Hide details"
+                "Ocultar detalhes"
             } else {
-                "Show details"
+                "Mostrar detalhes"
             };
             ui_builder
                 .tool_tip(tooltip_text.to_string())
