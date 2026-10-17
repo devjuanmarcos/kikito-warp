@@ -273,9 +273,9 @@ impl VoiceInputToggleKey {
                     Some(side) => format!("{side} {symbol}"),
                     None => symbol,
                 };
-                format!("Voice input (hold {key_name} key)")
+                format!("Entrada de voz (segure a tecla {key_name})")
             }
-            None => "Voice input".to_string(),
+            None => "Entrada de voz".to_string(),
         }
     }
 
@@ -779,22 +779,22 @@ impl TuiStatuslineItem {
 
     pub fn label(self) -> &'static str {
         match self {
-            Self::AutoApprove => "Auto-approve indicator",
+            Self::AutoApprove => "Indicador de aprovação automática",
             Self::VimModeIndicator => "Indicador do modo Vim",
-            Self::Model => "Model",
-            Self::Team => "Team",
+            Self::Model => "Modelo",
+            Self::Team => "Equipe",
             Self::WorkingDirectory => "Diretório de trabalho",
             Self::GitBranch => "Branch do Git",
             Self::GitBranchStatus => "Status do branch do Git",
             Self::GitDiffStatus => "Status do diff do Git",
-            Self::GitHubPullRequest => "GitHub pull request",
-            Self::CreditUsage => "Credit usage",
-            Self::ContextWindowUsage => "Context window usage",
+            Self::GitHubPullRequest => "Pull request do GitHub",
+            Self::CreditUsage => "Uso de créditos",
+            Self::ContextWindowUsage => "Uso da janela de contexto",
             Self::Date => "Data",
             Self::Time12Hour => "Hora (formato de 12 horas)",
             Self::Time24Hour => "Hora (formato de 24 horas)",
-            Self::AgentTodoList => "Agent to-do list",
-            Self::VoiceInput => "Voice input",
+            Self::AgentTodoList => "Lista de tarefas do agente",
+            Self::VoiceInput => "Entrada de voz",
         }
     }
 }

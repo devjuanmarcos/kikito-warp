@@ -1166,10 +1166,10 @@ impl TuiOptionSelector {
         }
         spans.push((row.label.clone(), label_style));
         let badge = match row.badge {
-            Some(OptionBadge::Default) => Some("default"),
-            Some(OptionBadge::Recent) => Some("recent"),
-            Some(OptionBadge::Connected) => Some("connected"),
-            Some(OptionBadge::Recommended) => Some("recommended"),
+            Some(OptionBadge::Default) => Some("padrão"),
+            Some(OptionBadge::Recent) => Some("recente"),
+            Some(OptionBadge::Connected) => Some("conectado"),
+            Some(OptionBadge::Recommended) => Some("recomendado"),
             None => None,
         };
         if let Some(badge) = badge {
@@ -1320,7 +1320,7 @@ impl TuiOptionSelector {
                     self.render_row(row, shortcut, is_selected, builder)
                 }
                 SelectorItem::Retry => self.render_virtual_row(
-                    "↻ Retry".to_string(),
+                    "↻ Tentar novamente".to_string(),
                     digit,
                     is_selected,
                     None,
@@ -1387,7 +1387,7 @@ impl TuiOptionSelector {
             OptionSourceStatus::Ready => {}
             OptionSourceStatus::Loading => {
                 column.add_child(
-                    TuiText::new("Loading…")
+                    TuiText::new("Carregando…")
                         .with_style(builder.dim_text_style())
                         .truncate()
                         .finish(),
