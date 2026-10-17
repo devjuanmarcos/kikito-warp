@@ -899,3 +899,8 @@
 
 - Traduzi os rótulos para escolher informação do painel e configurar metadados, link da PR, estatísticas do diff e detalhes ao passar o cursor.
 - Mantive o termo técnico Branch, os nomes de ferramentas e as ações.
+
+## Tradução — confirmação ao fechar sessão
+
+- Traduzi a confirmação de fechamento, a explicação sobre o compartilhamento e os rótulos dos botões e da opção para não exibir novamente.
+- Mantive as ações de fechar, cancelar e lembrar a preferência.
