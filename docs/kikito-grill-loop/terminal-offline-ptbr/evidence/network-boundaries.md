@@ -16,3 +16,9 @@ Esta evidência reúne a revisão estática dos caminhos de rede do próprio pro
 - Codex, Claude, `curl`, gerenciadores de pacotes e outros comandos executados no terminal podem abrir suas próprias conexões. Essas conexões pertencem aos processos filhos e não são tráfego iniciado pelo Kikito Terminal.
 - Em 2026-10-17, iniciei `target/debug/warp-oss.exe` com `WARP_DATA_PROFILE=offline-interaction-audit-20261017c` e amostrei a árvore com dois processos `warp-oss.exe` na inicialização, depois de enviar `Ctrl+Shift+P` e `Ctrl+,`, e depois do pedido de fechamento. As quatro amostras não mostraram sockets externos; o único socket foi `LISTEN 127.0.0.1:9282` no processo principal.
 - A porta 9282 corresponde ao servidor HTTP local OSS: `crates/http_server/src/lib.rs` liga o listener a `127.0.0.1` e monta os roteadores locais de detecção da instalação e profiling em `app/src/lib.rs`. Os atalhos foram enviados à janela, mas não houve confirmação visual do conteúdo aberto; a amostra cobre apenas esses processos e esse intervalo. Não executamos comandos de usuário.
+
+## Captura durante interação com a janela
+
+- Em 2026-10-17, iniciei novamente o binário com o perfil temporário `offline-ui-audit-20261017f` e validei que o handle pertencia à janela `Kikito Terminal`. Antes e depois da interação, a consulta ao PID principal encontrou somente `LISTEN 127.0.0.1:9282`, sem conexões externas naquele processo.
+- O clique de teste atingiu o controle X e abriu a confirmação local de saída, com o título `Sair do Kikito Terminal?`. A captura confirmou que esse diálogo aparece em português. A paleta e as configurações não foram abertas; a janela foi fechada sem executar comandos do usuário.
+- Esta amostra observou somente o processo GUI principal, não os processos filhos. Encerrei a árvore criada para a auditoria, confirmei que não restou `warp-oss.exe` ativo e removi a captura temporária.

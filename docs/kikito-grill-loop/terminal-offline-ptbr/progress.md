@@ -26,11 +26,11 @@
 
 ## Pendências
 
-- **Isolamento de rede:** verificar conexões enquanto ações da interface são usadas; a inspeção em repouso e os bloqueios de código não cobrem cada fluxo em runtime.
+- **Isolamento de rede:** a amostra da confirmação de saída encontrou somente loopback no processo GUI principal; ainda não cobre paleta/configurações, todos os fluxos acionados nem processos filhos.
 - **Tradução:** revisar visualmente a GUI OSS após a ampla auditoria de código de rótulos, diálogos, tooltips, acessibilidade e estados vazios. Saída do shell, conteúdo dinâmico de provedores e termos técnicos não são strings fixas de interface e permanecem como estão.
 - **TUI:** manter `PROTOC` disponível no `PATH` ou configurado em `PROTOC` para builds locais.
 
-**Status: EM ANDAMENTO.** A colagem de imagens está resolvida e confirmada pelo usuário. A localização fixa da GUI OSS passou por uma varredura ampla; falta a revisão visual. A captura de rede durante ações reais da GUI também continua pendente.
+**Status: EM ANDAMENTO.** A colagem de imagens está resolvida e confirmada pelo usuário. A localização fixa da GUI OSS passou por uma varredura ampla; falta a revisão visual completa. A captura de rede durante ações da GUI ainda é parcial.
 
 ## Tradução — paleta, busca, abas e worktrees
 
