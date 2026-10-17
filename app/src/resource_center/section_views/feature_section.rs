@@ -37,8 +37,8 @@ impl FeatureSection {
     pub fn section_name_string(&self) -> &'static str {
         match self {
             FeatureSection::WhatsNew => "What's New?",
-            FeatureSection::GettingStarted => "Getting Started",
-            FeatureSection::MaximizeWarp => "Maximize Warp",
+            FeatureSection::GettingStarted => "Primeiros passos",
+            FeatureSection::MaximizeWarp => "Aproveite o Kikito Terminal ao máximo",
             FeatureSection::AdvancedSetup => "Advanced Setup",
         }
     }

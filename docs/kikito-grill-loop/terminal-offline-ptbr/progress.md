@@ -1621,3 +1621,11 @@
 
 - Confirmei o bootstrap antes de classificar os rótulos `Log in with Warp` e `Copy login URL`: no canal `Oss`, `TuiLoginModel` é criado em `LoggedIn` mesmo sem identidade autenticada; a sessão inicial é local e a raiz muda para `Terminal`. Os handlers de auth não iniciam o login via browser no OSS. Portanto, esses rótulos hospedados não aparecem no binário OSS e nenhum ajuste de auth foi necessário.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Menções de marca no Resource Center e menus nativos
+
+- Traduzi a copy local “Access all of Warp” e “Make Warp your own” na seção Getting Started, o título Maximize Warp e os rótulos de atalhos nativos “Hide Warp”/“Quit Warp” para Kikito Terminal em pt-BR. Os IDs dos atalhos permaneceram intactos.
+- A ação do Resource Center é exposta quando `ContextFlag::WarpEssentials` está habilitada (padrão global habilitado); o cabeçalho da ação e a seção de recursos são superfícies locais. `About Warp` já usa a descrição nativa localizada “Sobre o Kikito Terminal”.
+- Classifiquei como não elegíveis neste escopo os artigos do bloco Advanced Setup que abrem documentação/blog hospedados em `warp.dev`, o convite “Invite a friend to Warp” (só renderiza com identidade autenticada, ausente no OSS), e a seção de changelog (FeatureFlag::Changelog desabilitada no OSS). Mantive protocolos, IDs de configuração e telemetry sem alteração.
+- Após revisão, traduzi todos os títulos e descrições locais de Getting Started/Maximize Warp e a seção foi nomeada “Primeiros passos”. Ajustei a dica de ações em blocos para não prometer compartilhamento e limitei a descrição da busca a comandos anteriores, sem workflows cloud. O Resource Center agora omite a seção de changelog no canal OSS, onde a feature está desabilitada, e omite Advanced Setup nesse canal porque seus três itens levam a docs/blog hospedados em Warp; ambos permanecem com o comportamento anterior nos demais canais. O convite continua oculto no OSS pela condição de identidade autenticada.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`. Não executei testes nem Clippy.
