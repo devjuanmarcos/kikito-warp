@@ -814,3 +814,8 @@
 
 - Traduzi o placeholder do título vazio do caderno para Sem título.
 - Mantive o valor do título e a persistência sem alteração.
+
+## Tradução — filtro de menus
+
+- Traduzi o placeholder de busca e o estado sem resultados dos menus filtráveis.
+- Preservei a lógica de filtragem e seleção.
