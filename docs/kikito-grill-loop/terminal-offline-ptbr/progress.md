@@ -1731,3 +1731,9 @@
 - Mantive intactos nomes e descrições dinâmicos de skills/provedores e prompts salvos do Warp Drive. A vista `cloud_mode_v2_view.rs`, incluindo cabeçalhos Commands/Skills/Prompts, estados Loading/No results e “Show more”, é a apresentação cloud hospedada e ficou fora do escopo OSS local.
 - Não foi necessária alteração de código neste lote; IDs, sintaxe `/comando` e descrições dinâmicas permanecem como estavam.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
+
+## Auditoria — mensagens locais da vista do terminal
+
+- Revisei rótulos, tooltips, menus de contexto, avisos de encerramento do shell e estados da sessão local. As ações locais visíveis já estão em português; não encontrei strings locais em inglês para alterar neste lote. Mensagens do shell e saídas de comandos continuam dinâmicas e preservam o texto produzido pelo sistema.
+- Mantive sem alteração os fluxos de Agent/IA e infraestrutura hospedada da inicialização de projeto (indexação associada ao agente, geração assistida de AGENTS.md, criação de ambiente para cloud agents), instalação remota de servidores de linguagem, compartilhamento de sessão, SSH remoto e cópia de links/IDs de depuração. Esses caminhos dependem de serviços ou conteúdo externo e estão fora deste recorte OSS local.
+- Não houve mudança de código neste lote. `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram; nenhum teste foi executado.
