@@ -14,7 +14,7 @@ use crate::search::{ItemHighlightState, SearchItem};
 use crate::terminal::input::inline_menu::styles as inline_styles;
 use crate::terminal::input::profiles::data_source::SelectProfileMenuItem;
 
-const MANAGE_PROFILES_LABEL: &str = "Manage profiles";
+const MANAGE_PROFILES_LABEL: &str = "Gerenciar perfis";
 
 #[derive(Debug, Clone)]
 enum ProfileSearchItemKind {
@@ -132,7 +132,7 @@ impl SearchItem for ProfileSearchItem {
             .with_child(label.finish());
 
         if is_selected {
-            let selected_label = "(selected)";
+            let selected_label = "(selecionado)";
             let selected_text = Text::new_inline(
                 selected_label.to_string(),
                 appearance.ui_font_family(),
@@ -181,7 +181,7 @@ impl SearchItem for ProfileSearchItem {
     fn accessibility_label(&self) -> String {
         match &self.kind {
             ProfileSearchItemKind::Profile { profile_name, .. } => {
-                format!("Profile: {profile_name}")
+                format!("Perfil: {profile_name}")
             }
             ProfileSearchItemKind::ManageProfiles => MANAGE_PROFILES_LABEL.to_string(),
         }

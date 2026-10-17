@@ -1039,3 +1039,8 @@
 
 - Traduzi o rótulo de categoria, o botão de configuração e os avisos de compatibilidade entre o agente básico e o agente de uso completo do terminal.
 - Mantive o comando `/model`, as variantes, filtros e lógica de seleção intactos.
+
+## Tradução — seletor de perfis de execução
+
+- Traduzi a ação para gerenciar perfis, o indicador de perfil selecionado e o prefixo do rótulo de acessibilidade.
+- Mantive IDs de perfil, resultados de busca e ações intactos.
