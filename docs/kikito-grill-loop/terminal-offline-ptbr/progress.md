@@ -1094,3 +1094,9 @@
 
 - Traduzi descrições de limites, perfis, listas de comandos, modelo principal, contexto da base de código e permissões MCP em `agent_profiles_page.rs`; atualizei as menções visíveis do agente próprio para Agente Kikito.
 - Preservei ações, modelos, siglas, links e configurações.
+
+
+## Preferências de editor externo
+
+- Traduzi rótulos e descrições para abrir arquivos, escolher o layout, usar o visualizador Markdown e agrupar arquivos do editor.
+- Mantive a opção de editor externo “Warp” e os valores/IDs internos; as referências ao aplicativo foram atualizadas para Kikito Terminal.
