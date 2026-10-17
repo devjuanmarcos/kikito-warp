@@ -1215,3 +1215,7 @@
 ## Configuração de endpoint de inferência
 
 - Traduzi os campos, instruções, exemplos e botões do modal local para endpoints configurados pelo usuário; mantive URLs, prefixos de chave e identificadores de modelo como valores técnicos.
+
+## Reabertura de sessões fechadas
+
+- Traduzi o controle para permitir reabrir sessões fechadas e o rótulo do período de tolerância, incluindo a unidade em segundos.
