@@ -1540,3 +1540,9 @@
 - A busca com IA só aparece quando existe um provedor habilitado em `AISettings`; os textos mudaram sem alterar o fluxo, IDs ou atalhos.
 - Também traduzi os três nomes de atalhos registrados em `terminal/view/init.rs` para a IA sobre seleção, último bloco e texto selecionado; IDs e eventos de telemetry não mudaram. `ASK_AI_ASSISTANT_TEXT` já estava em pt-BR como “Perguntar à IA do Kikito Terminal”.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Cabeçalhos dos blocos do agente no TUI
+
+- Traduzi `Thinking...`, `Thought for {duration}`, `Conversation summary` e o prefixo `Completed` para os cabeçalhos locais dos blocos do agente. Mantive a duração, os títulos dinâmicos das tarefas e seus índices.
+- Não alterei textos de menus de conversas associados a equipes, mensagens de execução cloud, saída do shell ou comandos.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.

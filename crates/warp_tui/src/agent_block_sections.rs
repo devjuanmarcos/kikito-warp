@@ -122,8 +122,8 @@ pub(crate) fn render_thinking_section(
     app: &AppContext,
 ) -> Box<dyn TuiElement> {
     let header = match finished_duration {
-        Some(duration) => format!("Thought for {}", format_elapsed_seconds(duration)),
-        None => "Thinking...".to_owned(),
+        Some(duration) => format!("Pensou por {}", format_elapsed_seconds(duration)),
+        None => "Pensando...".to_owned(),
     };
     render_collapsible_message_section(
         states,
@@ -151,7 +151,7 @@ pub(crate) fn render_summarization_section(
     render_collapsible_message_section(
         states,
         message_id,
-        "Conversation summary".to_owned(),
+        "Resumo da conversa".to_owned(),
         // Always collapsed by default; a manual override in
         // `CollapsibleSectionStates` still wins so users can expand it.
         true,
@@ -302,7 +302,7 @@ pub(crate) fn completed_todos_label(
             })
             .unwrap_or_default();
         if index == 0 {
-            label += &format!("Completed {}{position}", item.title);
+            label += &format!("Concluído: {}{position}", item.title);
         } else {
             label += &format!(", {}{position}", item.title);
         }
