@@ -1660,3 +1660,7 @@
 
 - O bootstrap ainda chamava `autoupdate::check_and_report_update_errors` para toda execução da GUI. No Windows, essa função lê logs do instalador antigo e pode encaminhar diagnósticos. Condicionei a chamada ao canal diferente de OSS, para que o Kikito Terminal local não processe logs nem execute o fluxo de relatório de falhas do atualizador.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
+## Telemetria de inicialização e origem do download no OSS
+
+- `AuthState::initialize_local` não autentica usuário; por isso, a GUI caía no ramo de startup deslogado e emitia `LoggedOutStartup`, além de iniciar `download_method::determine_and_report` para telemetria. Condicionei esse ramo a canais diferentes de OSS. O Kikito OSS agora não emite esse evento nem executa a checagem local de origem do download.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
