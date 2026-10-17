@@ -580,7 +580,7 @@ pub(crate) fn terminal_starting() -> Box<dyn TuiElement> {
     let dim = TuiStyle::default().add_modifier(Modifier::DIM);
     vertically_centered(
         TuiFlex::column().child(
-            TuiText::new("Starting terminal…")
+            TuiText::new("Iniciando o terminal…")
                 .with_style(dim)
                 .truncate()
                 .finish(),

@@ -1286,3 +1286,7 @@
 ## Contexto local do projeto no TUI
 
 - Traduzi o estado de descoberta do contexto, o carregamento dos arquivos de regras locais e a contagem de habilidades do projeto na tela inicial do TUI.
+
+## Indicador de inicialização do shell no TUI
+
+- Traduzi o estado local exibido enquanto o terminal inicia: `Starting terminal...` para `Iniciando o terminal...`. Mantive fora desta revisão as telas de autenticação e recuperação de conversas.
