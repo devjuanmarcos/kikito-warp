@@ -1577,3 +1577,8 @@
 - Traduzi o aviso estático `This response won't count towards your usage.` para `Esta resposta não será contabilizada no seu uso.`. Atualizei as expectativas correspondentes sem executar testes.
 - Mantive mensagens encaminhadas por provedores/servidores e textos de autenticação, créditos e assinaturas. O pedido de desculpas compartilhado chega combinado com mensagem dinâmica, então também ficou intacto.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Observação de rede do processo ativo no Windows
+
+- A inspeção de processo/socket identificou o processo ativo como `C:\Program Files\Warp\warp.exe`, a instalação oficial já existente, não o binário Kikito Terminal OSS. As duas conexões HTTPS a `34.117.41.85:443` pertenciam somente a esse processo e não foram usadas como evidência sobre o Kikito.
+- Não havia processo OSS ativo para observar; portanto, a captura runtime do OSS enquanto ações da interface são usadas continua pendente.
