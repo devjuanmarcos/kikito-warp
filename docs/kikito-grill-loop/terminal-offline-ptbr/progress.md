@@ -1778,6 +1778,7 @@
 - O Explorador de Projetos foi auditado separadamente. Comentários importados do GitHub e ações de comentário foram mantidos fora deste lote por pertencerem ao fluxo hospedado de revisão; sugestões de correção da última execução pertencem ao fluxo assistido por IA; o aviso de host desconectado descreve uma sessão remota. Rótulos locais da barra de status do LSP já estavam em português.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
 
+
 ## Auditoria — barra de entrada e colagem de imagem
 
 - Revisei `app/src/terminal/input/message_bar`, `terminal_message_bar.rs` e o fluxo local da ação de colar imagem pela área de transferência. O rótulo `Colar caminho da imagem` e sua dica já estavam traduzidos; corrigi a acentuação de dois avisos de imagem/clipboard em `app/src/terminal/view/use_agent_footer/mod.rs`.
@@ -1857,4 +1858,10 @@
 
 - Confirmei que o modal de edição do prompt é alcançável pelas configurações locais de aparência no OSS. Traduzi o título, as seções do prompt do terminal e do shell (PS1), a restauração do padrão, os botões, os controles de prompt na mesma linha e o valor `Nenhum` do seletor de separador.
 - Traduzi em `app/src/context_chips/mod.rs` os nomes fixos dos chips locais de diretório, usuário, ambiente, data/hora, Git, Kubernetes, SVN e login remoto exibidos no configurador e em tooltips. Mantive intactos conteúdos dinâmicos do prompt, nomes técnicos (`Host`, `subshell`), rótulo de Pull Request que depende de integração externa e o chip de plano/lista do Agent.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — configurações locais de shell, diretório e editor
+
+- Revisei os widgets de inicialização do shell, diretório de trabalho, reabertura de sessões fechadas e editor externo nos arquivos `app/src/settings_view/features_page.rs` e `app/src/settings_view/features/`. Os títulos, descrições, opções, placeholders e rótulos fixos visíveis já estão em português; não precisei alterar código. Os nomes reconhecidos de shells, aplicativos externos, `$EDITOR` e caminhos do usuário foram preservados.
+- O editor externo aparece na página local de editor/revisão de código; mantive os nomes de editores e atalhos técnicos. Strings de busca interna, IDs de view, telemetria, comentários e mensagens de diagnóstico em inglês não são copy visível. Não incluí outros widgets da página de recursos ligados a IA, workflow ou serviços hospedados.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
