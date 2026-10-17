@@ -824,3 +824,8 @@
 
 - Traduzi os estados de carregamento e de busca sem resultados da paleta de comandos.
 - Preservei a coleta, ordenação e seleção dos resultados.
+
+## Tradução — indicador da sessão atual
+
+- Traduzi o selo que identifica a sessão atual nos resultados da paleta de navegação.
+- Preservei o contexto da sessão e a navegação existentes.
