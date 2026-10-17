@@ -1132,3 +1132,8 @@
 
 - Traduzi o menu de ajuda, o controle manual de status de rede em depuração e os itens locais de reabertura de sessão e configurações de inicialização.
 - Mantive sem alteração os itens de conta, feedback/documentação externos e menus ligados a serviços remotos.
+
+## Filtro de blocos
+
+- Traduzi a descrição do atalho para alternar o filtro e o rótulo de acessibilidade ao abrir o editor do filtro.
+- O placeholder, as dicas de regex, distinção entre maiúsculas/minúsculas, inversão e linhas de contexto já estavam em português; consulta e comandos não foram alterados.
