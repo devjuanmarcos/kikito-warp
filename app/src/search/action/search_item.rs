@@ -148,7 +148,7 @@ impl SearchItem for MatchedBinding {
         let trigger = self.binding.trigger.as_ref();
 
         format!(
-            "Selected {}, {}.",
+            "Selecionado {}, {}.",
             &self
                 .binding
                 .description
@@ -161,9 +161,9 @@ impl SearchItem for MatchedBinding {
         self.binding
             .trigger
             .as_ref()
-            .map_or("Press enter to confirm.".into(), |trigger| {
+            .map_or("Pressione Enter para confirmar.".into(), |trigger| {
                 format!(
-                    "Press enter to confirm. Use {} binding to run this action in the future.",
+                    "Pressione Enter para confirmar. Use o atalho {} para executar esta ação no futuro.",
                     trigger.normalized()
                 )
             })

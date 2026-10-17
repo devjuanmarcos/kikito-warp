@@ -21,17 +21,21 @@ pub struct DiffSetSearchItem {
 impl DiffSetSearchItem {
     pub fn name(&self) -> String {
         match &self.diff_mode {
-            DiffMode::Head => "Uncommitted changes".to_string(),
-            DiffMode::MainBranch => "Changes vs. main branch".to_string(),
-            DiffMode::OtherBranch(branch) => format!("Changes vs. {branch}"),
+            DiffMode::Head => "Alterações não commitadas".to_string(),
+            DiffMode::MainBranch => "Alterações em relação à branch principal".to_string(),
+            DiffMode::OtherBranch(branch) => format!("Alterações em relação à branch {branch}"),
         }
     }
 
     pub fn description(&self) -> String {
         match &self.diff_mode {
-            DiffMode::Head => "All uncommitted changes in the working directory".to_string(),
-            DiffMode::MainBranch => "All changes compared to the main branch".to_string(),
-            DiffMode::OtherBranch(branch) => format!("All changes compared to {branch}"),
+            DiffMode::Head => {
+                "Todas as alterações não commitadas no diretório de trabalho".to_string()
+            }
+            DiffMode::MainBranch => "Todas as alterações em relação à branch principal".to_string(),
+            DiffMode::OtherBranch(branch) => {
+                format!("Todas as alterações em relação à branch {branch}")
+            }
         }
     }
 }

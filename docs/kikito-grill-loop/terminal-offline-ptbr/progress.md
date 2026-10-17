@@ -1718,3 +1718,10 @@
 - Revisei os `EditableBinding` de `app/src/pane_group`: os rótulos de fechar sessão, dividir painéis, mover foco, redimensionar painéis, maximizar o painel e iniciar uma sessão de terminal já estavam em português. Nenhuma alteração de código foi necessária.
 - Mantive `Share pane` em inglês porque o atalho chama o diálogo de compartilhamento do conteúdo do painel e só é registrado no contexto de objeto compartilhado, uma função hospedada fora do escopo OSS local. Os demais atalhos de navegação de painel são `FixedBinding`, sem descrição editável no Settings.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu avisos de artefatos incrementais antigos, ignorados pelo Cargo. Nenhum teste foi executado.
+
+## Tradução — paleta e busca locais
+
+- Traduzi mensagens acessíveis da busca (carregamento, seleção, erro e confirmação de atalhos), o título e estado vazio da busca de comandos e a orientação de navegação das abas.
+- Traduzi rótulos locais do menu de contexto de arquivos, comandos, blocos, código e diferenças, além de estados vazios/carregamento/indexação e descrições acessíveis de arquivos, comandos, blocos, símbolos e diferenças Git. O seletor de referência local também recebeu placeholder e estado vazio em português. Mantive nomes dinâmicos de comandos, arquivos e branches intactos.
+- Mantive sem alteração categorias e itens hospedados, como workflows, cadernos, planos, conversas, prompts salvos e segredos externos; também deixei em inglês comandos de cobrança/conta, Grok, handoff, execução remota, créditos e feedback externo. Descrições dos comandos slash locais já estavam em português. Identificadores e teclas continuam sendo chaves internas.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu avisos de artefatos incrementais antigos, descartados automaticamente pelo Cargo. Nenhum teste foi executado.

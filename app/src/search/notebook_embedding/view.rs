@@ -23,7 +23,7 @@ use crate::search::notebook_embedding::workflows::CloudWorkflowsDataSource;
 use crate::search::result_renderer::{QueryResultRenderer, QueryResultRendererStyles};
 use crate::search::search_bar::{SearchBar, SearchBarEvent, SearchBarState, SearchResultOrdering};
 
-const DEFAULT_PLACEHOLDER_TEXT: &str = "Search for a reference";
+const DEFAULT_PLACEHOLDER_TEXT: &str = "Buscar uma referência";
 
 lazy_static! {
     static ref QUERY_RESULT_RENDERER_STYLES: QueryResultRendererStyles =
@@ -200,7 +200,7 @@ impl EmbeddingSearchMenu {
                 // There are no results to display, so notify the user of that fact.
                 let text = appearance
                     .ui_builder()
-                    .span("No results found.")
+                    .span("Nenhum resultado encontrado.")
                     .with_style(UiComponentStyles {
                         font_size: Some(appearance.monospace_font_size()),
                         font_family_id: Some(appearance.ui_font_family()),
