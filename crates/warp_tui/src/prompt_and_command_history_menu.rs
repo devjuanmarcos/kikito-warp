@@ -272,14 +272,14 @@ impl TuiPromptAndCommandHistoryMenuModel {
         };
         let status = list.rows().is_empty().then(|| {
             if query.trim().is_empty() {
-                TuiInlineMenuStatus::Empty("No history".to_owned())
+                TuiInlineMenuStatus::Empty("Nenhum histórico".to_owned())
             } else {
-                TuiInlineMenuStatus::Empty("No matching history".to_owned())
+                TuiInlineMenuStatus::Empty("Nenhum item correspondente no histórico".to_owned())
             }
         });
         Some(TuiInlineMenuSnapshot {
             header: Some(TuiInlineMenuHeader {
-                title: Some("History".to_owned()),
+                title: Some("Histórico".to_owned()),
                 tabs: Vec::new(),
             }),
             rows: list

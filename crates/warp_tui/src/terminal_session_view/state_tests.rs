@@ -59,12 +59,12 @@ fn tagged_in_composer_exposes_detach_shortcut() {
                     .iter()
                     .map(|section| section.title)
                     .collect::<Vec<_>>(),
-                vec!["Shortcuts", "Terminal use"]
+                vec!["Atalhos", "Uso do terminal"]
             );
             assert_eq!(sections[1].shortcuts[0].key, "Escape");
             assert_eq!(
                 sections[1].shortcuts[0].description,
-                "return control to command"
+                "devolver o controle ao comando"
             );
         });
     });
@@ -268,21 +268,21 @@ fn shell_and_orchestration_contribute_active_shortcut_sections() {
                     .iter()
                     .map(|section| section.title)
                     .collect::<Vec<_>>(),
-                vec!["Shortcuts", "Orchestration"]
+                vec!["Atalhos", "Orchestration"]
             );
             let descriptions = sections[0]
                 .shortcuts
                 .iter()
                 .map(|shortcut| shortcut.description)
                 .collect::<Vec<_>>();
-            assert!(descriptions.contains(&"shortcuts"));
-            assert!(descriptions.contains(&"agent mode"));
-            assert!(descriptions.contains(&"toggle auto-approve"));
-            assert!(descriptions.contains(&"expand/collapse plans"));
-            assert!(!descriptions.contains(&"commands"));
-            assert!(!descriptions.contains(&"shell mode"));
-            assert!(!descriptions.contains(&"conversations"));
-            assert!(!descriptions.contains(&"input history"));
+            assert!(descriptions.contains(&"atalhos"));
+            assert!(descriptions.contains(&"modo de agente"));
+            assert!(descriptions.contains(&"alternar aprovação automática"));
+            assert!(descriptions.contains(&"expandir/recolher planos"));
+            assert!(!descriptions.contains(&"comandos"));
+            assert!(!descriptions.contains(&"modo de shell"));
+            assert!(!descriptions.contains(&"conversas"));
+            assert!(!descriptions.contains(&"histórico de entrada"));
             assert!(
                 sections[1]
                     .shortcuts
@@ -313,13 +313,13 @@ fn agent_terminal_use_and_orchestration_are_additive() {
                     .iter()
                     .map(|section| section.title)
                     .collect::<Vec<_>>(),
-                vec!["Shortcuts", "Terminal use", "Orchestration"]
+                vec!["Atalhos", "Uso do terminal", "Orchestration"]
             );
             assert!(
                 sections[1]
                     .shortcuts
                     .iter()
-                    .any(|shortcut| shortcut.description == "take control")
+                    .any(|shortcut| shortcut.description == "assumir o controle")
             );
             assert!(
                 sections[2]
@@ -343,7 +343,7 @@ fn user_controlled_terminal_use_has_terminal_only_shortcuts() {
             assert_eq!(sections.len(), 1);
             assert_eq!(sections[0].title, "Terminal");
             assert_eq!(sections[0].shortcuts.len(), 1);
-            assert_eq!(sections[0].shortcuts[0].description, "hand back control");
+            assert_eq!(sections[0].shortcuts[0].description, "devolver o controle");
             assert!(state.user_owns_running_command());
             assert!(state.can_hand_back_terminal_use());
             assert!(!state.composer_shortcuts_active());

@@ -23,14 +23,15 @@ use crate::terminal_use::{TuiInputTarget, inline_process_owns_input, tui_input_t
 use crate::transcript_view::TuiTranscriptView;
 use crate::tui_cli_subagent_view::{HAND_BACK_KEY_BINDING, TAKE_CONTROL_KEY_BINDING};
 
-const ASK_AGENT_HINT: &str = "Ask the agent anything";
+const ASK_AGENT_HINT: &str = "Pergunte qualquer coisa ao agente";
 const ORCHESTRATION_HINT: &str = "Shift + ↑ for other agents";
-const SHORTCUTS_HINT: &str = "? for shortcuts";
-const SHELL_MODE_HINT: &str = "! for shell mode";
-const COMMANDS_HINT: &str = "/ for commands";
-const CONVERSATIONS_HINT: &str = "← for conversations";
+const SHORTCUTS_HINT: &str = "? para atalhos";
+const SHELL_MODE_HINT: &str = "! para modo de shell";
+const COMMANDS_HINT: &str = "/ para comandos";
+const CONVERSATIONS_HINT: &str = "← para conversas";
 const HINT_SEPARATOR: &str = " • ";
-pub(crate) const SHELL_HINT: &str = "Run a shell command • ? for shortcuts • esc for agent mode";
+pub(crate) const SHELL_HINT: &str =
+    "Execute um comando do shell • ? para atalhos • Esc para modo de agente";
 enum TuiTerminalSessionStateSource {
     Session {
         terminal_model: Weak<FairMutex<TerminalModel>>,
@@ -530,7 +531,7 @@ impl TuiTerminalSessionState {
                     title: "Terminal",
                     shortcuts: vec![TuiShortcut {
                         key: "ctrl-c".to_owned(),
-                        description: "interrupt command",
+                        description: "interromper comando",
                     }],
                 }];
             }
@@ -547,7 +548,7 @@ impl TuiTerminalSessionState {
                     title: "Terminal",
                     shortcuts: vec![TuiShortcut {
                         key: HAND_BACK_KEY_BINDING.to_owned(),
-                        description: "hand back control",
+                        description: "devolver o controle",
                     }],
                 }];
             }
@@ -556,38 +557,38 @@ impl TuiTerminalSessionState {
 
         let mut shortcuts = vec![TuiShortcut {
             key: "?".to_owned(),
-            description: "shortcuts",
+            description: "atalhos",
         }];
         match agent_editor.mode {
             TuiComposerMode::Agent { .. } => shortcuts.extend([
                 TuiShortcut {
                     key: "/".to_owned(),
-                    description: "commands",
+                    description: "comandos",
                 },
                 TuiShortcut {
                     key: "!".to_owned(),
-                    description: "shell mode",
+                    description: "modo de shell",
                 },
                 TuiShortcut {
                     key: "←".to_owned(),
-                    description: "conversations",
+                    description: "conversas",
                 },
             ]),
             TuiComposerMode::Shell => shortcuts.push(TuiShortcut {
                 key: "Esc".to_owned(),
-                description: "agent mode",
+                description: "modo de agente",
             }),
         }
         if matches!(agent_editor.mode, TuiComposerMode::Agent { .. }) {
             shortcuts.push(TuiShortcut {
                 key: "↑".to_owned(),
-                description: "input history",
+                description: "histórico de entrada",
             });
         }
         if let Some(key) = binding_hint(AUTO_APPROVE_TOGGLE_BINDING_NAME, context, ctx) {
             shortcuts.push(TuiShortcut {
                 key,
-                description: "toggle auto-approve",
+                description: "alternar aprovação automática",
             });
         }
         if state.plan_available
@@ -595,12 +596,12 @@ impl TuiTerminalSessionState {
         {
             shortcuts.push(TuiShortcut {
                 key,
-                description: "expand/collapse plans",
+                description: "expandir/recolher planos",
             });
         }
 
         let mut sections = vec![TuiShortcutSection {
-            title: "Shortcuts",
+            title: "Atalhos",
             shortcuts,
         }];
         if matches!(
@@ -610,10 +611,10 @@ impl TuiTerminalSessionState {
             }
         ) {
             sections.push(TuiShortcutSection {
-                title: "Terminal use",
+                title: "Uso do terminal",
                 shortcuts: vec![TuiShortcut {
                     key: TAKE_CONTROL_KEY_BINDING.to_owned(),
-                    description: "take control",
+                    description: "assumir o controle",
                 }],
             });
         } else if state.agent_is_tagged_in
@@ -621,10 +622,10 @@ impl TuiTerminalSessionState {
                 binding_hint(DETACH_AGENT_FROM_RUNNING_COMMAND_BINDING_NAME, context, ctx)
         {
             sections.push(TuiShortcutSection {
-                title: "Terminal use",
+                title: "Uso do terminal",
                 shortcuts: vec![TuiShortcut {
                     key,
-                    description: "return control to command",
+                    description: "devolver o controle ao comando",
                 }],
             });
         }

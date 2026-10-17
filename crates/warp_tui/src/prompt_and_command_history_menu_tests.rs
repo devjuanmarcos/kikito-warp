@@ -427,11 +427,11 @@ fn empty_and_filtered_empty_states_use_history_copy() {
             let snapshot = empty.menu.as_ref(ctx).snapshot(ctx).expect("menu is open");
             assert_eq!(
                 snapshot.header.and_then(|header| header.title),
-                Some("History".to_owned())
+                Some("Histórico".to_owned())
             );
             assert_eq!(
                 snapshot.status,
-                Some(TuiInlineMenuStatus::Empty("No history".to_owned()))
+                Some(TuiInlineMenuStatus::Empty("Nenhum histórico".to_owned()))
             );
         });
     });
@@ -448,7 +448,9 @@ fn empty_and_filtered_empty_states_use_history_copy() {
                 .expect("menu is open");
             assert_eq!(
                 snapshot.status,
-                Some(TuiInlineMenuStatus::Empty("No matching history".to_owned()))
+                Some(TuiInlineMenuStatus::Empty(
+                    "Nenhum item correspondente no histórico".to_owned()
+                ))
             );
         });
     });
@@ -471,7 +473,7 @@ fn command_prefix_matches_the_row_text_style() {
             let rendered = frame.buffer.to_lines().join("\n");
             let expected = builder.shell_command_prefix_style();
 
-            assert!(rendered.contains("History"));
+            assert!(rendered.contains("Histórico"));
             assert!(rendered.contains("! older"));
             assert!(rendered.contains("! newer"));
             // Unselected commands retain the transcript's bright-green prefix.

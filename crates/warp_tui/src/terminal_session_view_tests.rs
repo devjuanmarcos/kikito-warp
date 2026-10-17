@@ -2989,7 +2989,7 @@ fn input_adjacent_surfaces_follow_figma_outer_edge_alignment() {
         let (shortcuts_row, shortcuts_column) = lines
             .iter()
             .enumerate()
-            .find(|(_, line)| line.contains("Shortcuts"))
+            .find(|(_, line)| line.contains("Atalhos"))
             .map(|(row, line)| (row, first_visible_column(line)))
             .unwrap_or_else(|| panic!("shortcuts surface must render:\n{}", lines.join("\n")));
         assert_eq!(
@@ -3022,14 +3022,17 @@ fn shortcuts_surface_renders_above_the_input() {
         });
 
         let rendered = render_session(&mut app, &view, 80, 24).join("\n");
-        assert!(rendered.contains("Shortcuts"), "{rendered}");
-        assert!(rendered.contains("? shortcuts"), "{rendered}");
-        assert!(rendered.contains("/ commands"), "{rendered}");
-        assert!(rendered.contains("! shell mode"), "{rendered}");
-        assert!(rendered.contains("← conversations"), "{rendered}");
-        assert!(rendered.contains("↑ input history"), "{rendered}");
+        assert!(rendered.contains("Atalhos"), "{rendered}");
+        assert!(rendered.contains("? atalhos"), "{rendered}");
+        assert!(rendered.contains("/ comandos"), "{rendered}");
+        assert!(rendered.contains("! modo de shell"), "{rendered}");
+        assert!(rendered.contains("← conversas"), "{rendered}");
+        assert!(rendered.contains("↑ histórico de entrada"), "{rendered}");
         assert!(!rendered.contains("toggle auto-queue"), "{rendered}");
-        assert!(rendered.contains("toggle auto-approve"), "{rendered}");
+        assert!(
+            rendered.contains("alternar aprovação automática"),
+            "{rendered}"
+        );
         // The shortcuts panel must NOT include the status section (that
         // lives in the dedicated status menu opened by /status).
         assert!(
@@ -3050,12 +3053,15 @@ fn shortcuts_surface_renders_above_the_input() {
             );
         });
         let rendered = render_session(&mut app, &view, 80, 24).join("\n");
-        assert!(rendered.contains("toggle auto-approve"), "{rendered}");
+        assert!(
+            rendered.contains("alternar aprovação automática"),
+            "{rendered}"
+        );
         assert!(rendered.contains(AUTO_APPROVE_ENABLED_HINT), "{rendered}");
 
         let narrow = render_session(&mut app, &view, 40, 24).join("\n");
-        assert!(narrow.contains("Shortcuts"), "{narrow}");
-        assert!(narrow.contains("? shortcuts"), "{narrow}");
+        assert!(narrow.contains("Atalhos"), "{narrow}");
+        assert!(narrow.contains("? atalhos"), "{narrow}");
     });
 }
 fn input_text(view: &ViewHandle<super::TuiTerminalSessionView>, ctx: &AppContext) -> String {
@@ -3290,7 +3296,7 @@ fn status_slash_command_opens_dedicated_status_menu_via_shared_structure() {
 
         // The dedicated status menu does NOT include keyboard shortcut rows.
         assert!(
-            !rendered.contains("? shortcuts"),
+            !rendered.contains("? atalhos"),
             "Status menu must not include shortcuts rows:\n{rendered}"
         );
 
@@ -3433,9 +3439,7 @@ fn agent_hint_tracks_transcript_emptiness_without_input_invalidation() {
                 .to_lines()
         });
         assert!(
-            lines
-                .iter()
-                .any(|line| line.contains("← for conversations")),
+            lines.iter().any(|line| line.contains("← para conversas")),
             "zero state should show the zero-state hint:\n{}",
             lines.join("\n")
         );
@@ -3459,16 +3463,14 @@ fn agent_hint_tracks_transcript_emptiness_without_input_invalidation() {
                 .to_lines()
         });
         assert!(
-            !lines
-                .iter()
-                .any(|line| line.contains("← for conversations")),
+            !lines.iter().any(|line| line.contains("← para conversas")),
             "the cached input element must drop the zero-state hint:\n{}",
             lines.join("\n")
         );
         assert!(
             lines
                 .iter()
-                .any(|line| line.contains("Ask the agent anything")),
+                .any(|line| line.contains("Pergunte qualquer coisa ao agente")),
             "the started-conversation hint should render:\n{}",
             lines.join("\n")
         );
@@ -5196,13 +5198,13 @@ fn footer_conversations_callout_no_longer_renders() {
         let (view, _) = add_focus_test_session(&mut app, &fixture, true);
 
         // With an empty input and no replacing hint, the footer renders the
-        // left-aligned sectioned row — never the obsolete `← for conversations`
+        // left-aligned sectioned row — never the obsolete `← para conversas`
         // callout (render_left_footer_hint and the show_conversations_hint
         // branch are removed, not merely unreachable).
         let lines = render_footer_lines(&mut app, &view, 80);
         let row = lines.join("\n");
         assert!(
-            !row.contains("← for conversations"),
+            !row.contains("← para conversas"),
             "the conversations callout must not render: {row}"
         );
         assert!(

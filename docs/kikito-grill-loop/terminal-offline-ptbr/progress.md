@@ -1564,3 +1564,10 @@
 - Auditei o seletor aberto por `/statusline`, as descrições dos atalhos, o rodapé, as confirmações de salvar/restaurar e os nomes dos itens da linha de status. A copy estática local já está em português; nenhum texto foi alterado neste lote.
 - Itens `Git`, `Vim` e `Pull request` foram mantidos como termos técnicos. A lista inclui também metadados de modelo/equipe/créditos, que não fazem parte da copy local tratada nesta auditoria.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Histórico da sessão e atalhos do TUI
+
+- Traduzi o título e os estados vazios do histórico aberto com seta para cima. A consulta reúne o histórico local da sessão; mantive os comandos e prompts armazenados como conteúdo dinâmico.
+- Traduzi as dicas locais do campo de entrada e os rótulos de atalhos para comandos, modo shell, conversas, histórico de entrada, aprovação automática, planos e controle do terminal. Atualizei as expectativas relacionadas sem executar testes.
+- Mantive o atalho e a dica de orquestração de agentes fora do lote por pertencerem ao fluxo de agentes; identificadores, comandos e o termo técnico `Terminal` não mudaram.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
