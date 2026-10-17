@@ -1180,3 +1180,8 @@
 ## Falha ao localizar shell alternativo
 
 - Traduzi a mensagem exibida quando nenhum shell alternativo pode ser encontrado; mantive PowerShell e WSL como referências e indiquei selecioná-los nas configurações de shell. Removi a instrução para abrir uma issue externa.
+
+## Banner de encerramento do shell
+
+- Confirmei que "Comunicar problema" abria o formulário de issues do GitHub e "Mais informações" abria a documentação externa do Warp. Removi esses dois controles e as ações que abriam URLs.
+- Mantive a cópia do erro de inicialização do PTY e o texto explicativo do encerramento prematuro; não havia controle de fechar neste banner.
