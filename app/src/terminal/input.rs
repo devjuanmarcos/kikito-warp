@@ -444,11 +444,11 @@ fn effective_default_host(
 pub const COMPLETIONS_MENU_WIDTH: f32 = 330.;
 pub const OPEN_COMPLETIONS_KEYBINDING_NAME: &str = "input:open_completion_suggestions";
 pub(crate) const EXTERNAL_ALT_C_BINDING_CONTEXT: &str = "ExternalAltCDirectorySearch";
-pub const INPUT_A11Y_LABEL: &str = "Command Input.";
-pub const INPUT_A11Y_HELPER: &str = "Input your shell command, press enter to execute. Press cmd-up to navigate to output of previously executed commands. Press cmd-l to re-focus command input.";
-pub const AI_COMMAND_SEARCH_HINT_TEXT: &str = "Type '#' for AI command suggestions";
+pub const INPUT_A11Y_LABEL: &str = "Entrada de comandos.";
+pub const INPUT_A11Y_HELPER: &str = "Digite um comando do shell e pressione Enter para executá-lo. Pressione Cmd+seta para cima para consultar a saída dos comandos anteriores. Pressione Cmd+L para voltar ao campo de comando.";
+pub const AI_COMMAND_SEARCH_HINT_TEXT: &str = "Digite '#' para ver sugestões de comandos de IA";
 
-const AGENT_MODE_AI_DISABLED_AUTODETECTION_DISABLED_HINT_TEXT: &str = "Run commands";
+const AGENT_MODE_AI_DISABLED_AUTODETECTION_DISABLED_HINT_TEXT: &str = "Executar comandos";
 
 // Rotating hint text options for new Agent Mode conversations
 const AGENT_MODE_HINT_OPTIONS: &[&str] = &[

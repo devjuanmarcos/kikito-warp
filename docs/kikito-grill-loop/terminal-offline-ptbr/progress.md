@@ -1004,3 +1004,8 @@
 
 - Traduzi títulos, descrições, passos e notas de instalação/atualização do plugin externo.
 - Mantive as identidades Warp e OpenCode, o pacote `@warp-dot-dev/opencode-warp`, as chaves JSON, caminhos, versão e comandos intactos.
+
+## Tradução — acessibilidade e dicas do campo de comando
+
+- Traduzi o rótulo de acessibilidade, a instrução para leitores de tela e as dicas do campo de comando.
+- Mantive os atalhos Cmd+seta para cima/Cmd+L e o gatilho `#`; não alterei a lógica de entrada nem os fluxos de clipboard.
