@@ -1462,3 +1462,9 @@
 - Traduzi tooltips do campo de entrada para anexar contexto/arquivos, entrada por voz, comandos de barra e seleção do modo agente/terminal, além dos avisos locais de indisponibilidade.
 - Traduzi a seleção local de perfis e modelos, a ação de gerenciar perfis e o cabeçalho de modelos personalizados. Mantive textos relacionados a ChatGPT, sessões compartilhadas, pedidos de acesso e dados hospedados sem alterações.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+## Onboarding de novidades e configuração de abas
+
+- Traduzi CTAs, etapas de configuração de abas, banner e cartões de novidades do onboarding para pt-BR, preservando os nomes Claude Code, Codex e OpenCode.
+- O fluxo depende de flags que não são habilitadas no OSS por padrão, embora exista uma ação de demonstração em builds de depuração. O link para documentação hospedada agora é omitido no OSS.
+- A auditoria da janela principal não encontrou novos rótulos locais de abas, painéis ou navegação que precisassem de tradução.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

@@ -27,23 +27,23 @@ struct FeatureItem {
 const FEATURE_ITEMS: &[FeatureItem] = &[
     FeatureItem {
         icon: Icon::LayoutAlt01,
-        title: "Vertical tabs",
-        description: "Rich tab titles and metadata like git branch, worktree, and PR. Fully customizable.",
+        title: "Abas verticais",
+        description: "Títulos detalhados e metadados nas abas, como branch do Git, worktree e PR. Tudo personalizável.",
     },
     FeatureItem {
         icon: Icon::Sliders,
-        title: "Tab configs",
-        description: "Tab-level schema to set your directory, startup commands, theme, and worktree with one click",
+        title: "Configurações de abas",
+        description: "Defina diretório, comandos de inicialização, tema e worktree para uma aba com um clique.",
     },
     FeatureItem {
         icon: Icon::Inbox,
-        title: "Agent inbox",
-        description: "Notifications when any agent needs your attention, also accessible in a central inbox",
+        title: "Caixa de entrada de agentes",
+        description: "Receba notificações quando um agente precisar de você e consulte tudo em uma caixa de entrada central.",
     },
     FeatureItem {
         icon: Icon::MessageCheckSquare,
-        title: "Native code review",
-        description: "Send inline comments from Warp's code review directly to Claude Code, Codex, or OpenCode",
+        title: "Revisão de código integrada",
+        description: "Envie comentários da revisão de código do Kikito Terminal diretamente para Claude Code, Codex ou OpenCode.",
     },
 ];
 
@@ -84,7 +84,7 @@ pub fn render_welcome_banner(
     );
 
     // "New" badge
-    let text = Text::new_inline("New".to_string(), appearance.ui_font_family(), 14.)
+    let text = Text::new_inline("Novo".to_string(), appearance.ui_font_family(), 14.)
         .with_color(PhenomenonStyle::modal_badge_text())
         .finish();
     let badge = ConstrainedBox::new(
@@ -105,7 +105,7 @@ pub fn render_welcome_banner(
 
     // Title
     let title = Text::new(
-        "Introducing universal agent support: level up any coding agent with Warp",
+        "Suporte universal a agentes: aproveite melhor qualquer agente de programação com o Kikito Terminal",
         appearance.ui_font_family(),
         20.,
     )

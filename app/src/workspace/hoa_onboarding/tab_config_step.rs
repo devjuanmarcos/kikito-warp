@@ -55,7 +55,7 @@ where
 {
     let callout_bg = callout_background_fill(appearance).into_solid();
     let title = Text::new(
-        "Create your first tab config",
+        "Crie sua primeira configuração de aba",
         appearance.ui_font_family(),
         16.,
     )
@@ -64,7 +64,7 @@ where
     .finish();
 
     let description = Text::new(
-        "Set up a reusable starting point for your tabs. Pick a repo, choose a session type, and optionally attach a worktree. Use it whenever you want to open a tab with this setup.",
+        "Crie um ponto de partida reutilizável para suas abas. Escolha um repositório, defina o tipo de sessão e, se quiser, inclua um worktree. Use essa configuração sempre que abrir uma aba com esse conjunto de opções.",
         appearance.ui_font_family(),
         14.,
     )
