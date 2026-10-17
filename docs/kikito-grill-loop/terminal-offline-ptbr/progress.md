@@ -1237,3 +1237,7 @@
 ## Painel local de revisão de código
 
 - Traduzi o fallback `Unknown` para `Desconhecido` no seletor local de repositórios do painel lateral. Os demais controles visíveis revisados já estavam em português; mensagens de diagnóstico e fluxos remotos foram excluídos.
+
+## Agrupamento de abas no workspace
+
+- Revisei os menus locais de agrupamento e seleção de abas em `tab_grouping.rs`; os rótulos e o fallback de grupo sem título já estão em português. Nenhum texto de interface precisou de alteração.
