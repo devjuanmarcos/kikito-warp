@@ -1152,3 +1152,8 @@
 
 - Traduzi as mensagens acessíveis de inserção de um fluxo de trabalho, seleção do próximo argumento por Shift+Tab e identificação do argumento selecionado.
 - Essas mensagens são emitidas pelo fluxo local do seletor de argumentos; mantive o atalho e o conteúdo dinâmico do comando/nome do argumento.
+
+## Estado do editor de linha
+
+- Auditei `line_editor_status.rs`: o módulo apenas acompanha eventos internos de atividade do editor do shell e não contém textos de interface ou acessibilidade.
+- Conferi os rótulos e a ajuda acessível do campo de entrada associados em `input.rs`; já estão em português, sem outras strings locais em inglês nesse fluxo.
