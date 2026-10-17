@@ -1998,7 +1998,7 @@ impl LocalCodeEditorView {
                         Shrinkable::new(
                             1.,
                             Text::new_inline(
-                                "Add as context",
+                                "Adicionar como contexto",
                                 appearance.ui_font_family(),
                                 appearance.ui_font_size(),
                             )
@@ -2500,7 +2500,7 @@ pub fn render_unsaved_changes_banner(
             Shrinkable::new(
                 1.,
                 Text::new(
-                    "This file has saved changes that are not reflected here.",
+                    "Este arquivo tem alterações salvas que não estão refletidas aqui.",
                     appearance.ui_font_family(),
                     appearance.ui_font_size(),
                 )

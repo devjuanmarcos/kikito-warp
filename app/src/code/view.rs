@@ -858,7 +858,7 @@ impl CodeView {
 
         let title = match &file_location {
             Some(location) => display_path_with_host(location, false, ctx),
-            None => "Untitled".to_string(),
+            None => "Sem título".to_string(),
         };
 
         self.pane_configuration.update(ctx, |pane_config, ctx| {
@@ -1627,7 +1627,7 @@ impl CodeView {
             .as_ref()
             .map(|loc| display_name_with_host(loc, app))
             .filter(|n| !n.is_empty())
-            .unwrap_or_else(|| "Untitled".to_string());
+            .unwrap_or_else(|| "Sem título".to_string());
         let language_icon =
             icon_from_file_path(&file_name, appearance, ItemHighlightState::Default);
         row.add_child(
@@ -2006,7 +2006,7 @@ impl CodeView {
                     .map(|loc| display_name_with_host(loc, app))
                     .filter(|n| !n.is_empty())
             })
-            .unwrap_or_else(|| "Untitled".to_string());
+            .unwrap_or_else(|| "Sem título".to_string());
 
         let appearance = Appearance::as_ref(app);
         let is_pane_dragging = header_ctx.draggable_state.is_dragging();
@@ -2144,7 +2144,7 @@ impl CodeView {
         };
 
         let mut items = vec![
-            MenuItemFields::new_with_label("Close saved", &format!("{modifier_keys} U"))
+            MenuItemFields::new_with_label("Fechar arquivos salvos", &format!("{modifier_keys} U"))
                 .with_on_select_action(CodeViewAction::CloseSaved)
                 .into_item(),
             MenuItemFields::toggle_pane_action(is_maximized)

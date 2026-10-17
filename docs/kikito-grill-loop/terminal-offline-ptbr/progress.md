@@ -1770,3 +1770,10 @@
 - Reconfirmei as referências no código de UI: `Setting::description()` aparece apenas em `settings_view/agent_profiles_page.rs`, página que não é registrada na navegação OSS. As descrições de `app/src/settings/*.rs` alimentam o schema/configuração e não são apresentadas como ajuda nas páginas locais Appearance, Keybindings e About.
 - A tela Appearance usa rótulos próprios para o seletor de ícones em `appearance_page.rs`; eles já estão localizados. Descrições de ícone como “The app icon displayed in the dock” não são renderizadas nessa tela. Preservei IDs, slugs, caminhos e valores técnicos.
 - Não encontrei copy local em inglês para alterar neste follow-up. Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Tradução — editor local de código
+
+- Traduzi em `app/src/code/local_code_editor.rs` o tooltip para adicionar a seleção como contexto e o aviso de alterações salvas que ainda não aparecem na versão exibida.
+- Traduzi em `app/src/code/view.rs` o título padrão de arquivos sem nome (`Sem título`) e a ação para fechar arquivos salvos. Mantive nomes de arquivo, caminhos, conteúdo de código e saída do LSP como dados do usuário/sistema.
+- O Explorador de Projetos foi auditado separadamente. Comentários importados do GitHub e ações de comentário foram mantidos fora deste lote por pertencerem ao fluxo hospedado de revisão; sugestões de correção da última execução pertencem ao fluxo assistido por IA; o aviso de host desconectado descreve uma sessão remota. Rótulos locais da barra de status do LSP já estavam em português.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
