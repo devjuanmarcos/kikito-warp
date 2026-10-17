@@ -1219,3 +1219,13 @@
 ## Reabertura de sessões fechadas
 
 - Traduzi o controle para permitir reabrir sessões fechadas e o rótulo do período de tolerância, incluindo a unidade em segundos.
+
+## Bloqueio de recursos remotos no canal OSS
+
+- Forcei como desativados no canal OSS o changelog remoto, a gravação de sessões de computer use e o servidor auxiliar SSH remoto. O modo OSS já configura telemetria, crash reporting e autoupdate como ausentes e mantém URLs de serviço em loopback.
+- Esta é uma verificação estática de configuração e flags; a auditoria de conexões acionadas em runtime continua pendente.
+
+
+## Revisão de preferências de terminal
+
+- Auditei as preferências locais de shell/terminal e comportamento em `features_page.rs`. Os textos visíveis desse recorte já estão em português; os literais ingleses restantes são termos de busca, nomes usados para localizar atalhos ou conteúdo de links externos, não rótulos exibidos. Nenhuma alteração de código neste lote.

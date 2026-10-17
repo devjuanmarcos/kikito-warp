@@ -12,7 +12,11 @@ pub fn init_feature_flags() {
     if ChannelState::channel() == Channel::Oss {
         for flag in [
             FeatureFlag::Autoupdate,
+            FeatureFlag::Changelog,
             FeatureFlag::CrashReporting,
+            FeatureFlag::VideoRecording,
+            FeatureFlag::WindowsVideoRecording,
+            FeatureFlag::SshRemoteServer,
             FeatureFlag::WithSandboxTelemetry,
             FeatureFlag::SendTelemetryToFile,
             FeatureFlag::GlobalAIAnalyticsCollection,
