@@ -1360,3 +1360,9 @@
 
 - Removi da configuração local do visualizador Markdown o ícone de ajuda que tentava abrir a documentação em `docs.warp.dev`, além da action e URL associadas. A preferência local continua disponível.
 - `cargo fmt --all`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `git diff --check` passaram. Não executei testes.
+
+## Busca e comandos da tela de código
+
+- Traduzi os seis nomes de ações de configuração da tela de editor/revisão exibidos na Paleta de Comandos.
+- Acrescentei termos equivalentes em português aos índices de busca das configurações locais, mantendo os termos técnicos existentes como aliases.
+- `cargo fmt --all`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `git diff --check` passaram. Não executei testes.

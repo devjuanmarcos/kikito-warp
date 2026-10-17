@@ -287,7 +287,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(
         vec![
             ToggleSettingActionPair::new(
-                "auto open code review panel",
+                "Abrir automaticamente o painel de revisão de código",
                 builder(SettingsAction::EditorAndCodeReview(
                     EditorAndCodeReviewPageAction::ToggleAutoOpenCodeReviewPane,
                 )),
@@ -295,7 +295,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 flags::AUTO_OPEN_CODE_REVIEW_PANE_FLAG,
             ),
             ToggleSettingActionPair::new(
-                "code review button",
+                "Botão de revisão de código",
                 builder(SettingsAction::EditorAndCodeReview(
                     EditorAndCodeReviewPageAction::ToggleCodeReviewPanel,
                 )),
@@ -303,7 +303,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 flags::SHOW_CODE_REVIEW_BUTTON_FLAG,
             ),
             ToggleSettingActionPair::new(
-                "diff stats on code review button",
+                "Mostrar estatísticas de diff no botão de revisão de código",
                 builder(SettingsAction::EditorAndCodeReview(
                     EditorAndCodeReviewPageAction::ToggleShowCodeReviewDiffStats,
                 )),
@@ -311,7 +311,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 flags::SHOW_CODE_REVIEW_DIFF_STATS_FLAG,
             ),
             ToggleSettingActionPair::new(
-                "project explorer",
+                "Explorador de projetos",
                 builder(SettingsAction::EditorAndCodeReview(
                     EditorAndCodeReviewPageAction::ToggleProjectExplorer,
                 )),
@@ -319,7 +319,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 flags::SHOW_PROJECT_EXPLORER,
             ),
             ToggleSettingActionPair::new(
-                "global file search",
+                "Busca global de arquivos",
                 builder(SettingsAction::EditorAndCodeReview(
                     EditorAndCodeReviewPageAction::ToggleGlobalSearch,
                 )),
@@ -327,7 +327,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 flags::SHOW_GLOBAL_SEARCH,
             ),
             ToggleSettingActionPair::new(
-                "show hidden files in project explorer",
+                "Mostrar arquivos ocultos no explorador de projetos",
                 builder(SettingsAction::EditorAndCodeReview(
                     EditorAndCodeReviewPageAction::ToggleShowHiddenFiles,
                 )),
@@ -347,7 +347,7 @@ impl SettingsWidget for ExternalEditorCodeWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "code editor open files markdown AI conversations layout pane tab"
+        "editor de código arquivos abertos markdown conversas IA layout painel aba code editor open files markdown AI conversations layout pane tab"
     }
 
     fn render(
@@ -373,7 +373,7 @@ impl SettingsWidget for AutoOpenCodeReviewPaneCodeWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "oz auto open code review pane panel agent mode change first time accepted diff view conversation"
+        "abrir painel de revisão de código automaticamente primeira alteração aceita conversa modo agente oz auto open code review pane panel agent mode change first time accepted diff view conversation"
     }
 
     fn render(
@@ -414,7 +414,7 @@ impl SettingsWidget for CodeReviewPanelToggleWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "code review panel right side diff git"
+        "painel de revisão de código lado direito diferenças git code review panel right side diff git"
     }
 
     fn render(
@@ -457,7 +457,7 @@ impl SettingsWidget for CodeReviewDiffStatsToggleWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "code review diff stats lines added removed counts"
+        "estatísticas de diferenças linhas adicionadas removidas revisão de código code review diff stats lines added removed counts"
     }
 
     fn render(
@@ -499,7 +499,7 @@ impl SettingsWidget for ProjectExplorerToggleWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "project explorer file tree left panel tools"
+        "explorador de projetos árvore de arquivos painel esquerdo ferramentas project explorer file tree left panel tools"
     }
 
     fn render(
@@ -542,7 +542,7 @@ impl SettingsWidget for GlobalSearchToggleWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "global search file search left panel tools"
+        "busca global pesquisar arquivos painel esquerdo ferramentas global search file search left panel tools"
     }
 
     fn render(
@@ -582,7 +582,7 @@ impl SettingsWidget for ShowHiddenFilesToggleWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "show hidden files dotfiles project explorer file tree"
+        "mostrar arquivos ocultos dotfiles explorador de projetos árvore de arquivos show hidden files dotfiles project explorer file tree"
     }
 
     fn render(
@@ -624,7 +624,7 @@ impl SettingsWidget for FormatOnSaveToggleWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "format on save lsp language server formatting reformat editor"
+        "formatar ao salvar servidor de linguagem formatação editor format on save lsp language server formatting reformat editor"
     }
 
     fn render(
@@ -708,7 +708,7 @@ impl SettingsWidget for CodeEditorLineNumberModeWidget {
     type View = EditorAndCodeReviewPageView;
 
     fn search_terms(&self) -> &str {
-        "line number numbers relative line vim gutter code editor"
+        "números de linha linha relativa modo vim margem editor de código line number numbers relative line vim gutter code editor"
     }
 
     fn render(
