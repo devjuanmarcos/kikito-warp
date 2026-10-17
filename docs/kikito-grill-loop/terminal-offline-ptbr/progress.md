@@ -989,3 +989,8 @@
 ## Revisão — banner do modo Vim
 
 - Revisei o banner local do modo Vim: o título e a ação já estavam em português do Brasil. Mantive o nome Vim e as ações existentes sem alterações no código.
+
+## Revisão — banner para abrir arquivos no terminal
+
+- Revisei o banner de abertura de arquivos: títulos e botões já estavam em pt-BR e identificavam o aplicativo como Kikito Terminal.
+- Mantive extensões, nomes de linguagens dinâmicos, URLs, ações e identificadores internos sem alterações.
