@@ -410,13 +410,13 @@ impl MessageProvider<Option<&AcceptHistoryItem>> for InlineHistoryMessageProduce
         });
         let items = match selected {
             Some(AcceptHistoryItem::Command { .. }) => {
-                vec![enter, MessageItem::text(" to execute")]
+                vec![enter, MessageItem::text(" para executar")]
             }
             Some(AcceptHistoryItem::AIPrompt { .. }) => {
-                vec![enter, MessageItem::text(" to send")]
+                vec![enter, MessageItem::text(" para enviar")]
             }
             Some(AcceptHistoryItem::Conversation { title, .. }) => {
-                vec![enter, MessageItem::text(format!(" to open '{title}'"))]
+                vec![enter, MessageItem::text(format!(" para abrir '{title}'"))]
             }
             None => {
                 vec![MessageItem::text("")]

@@ -1024,3 +1024,8 @@
 
 - Traduzi os estados de carregamento/sem resultados dos menus inline e o cabeçalho, o botão de configuração e os rótulos de acessibilidade do histórico.
 - Mantive a consulta interna de busca, os dados apresentados, as ações e a compatibilidade sem alterações.
+
+## Tradução — instruções de seleção de resultados
+
+- Traduzi o separador de atalho nos resultados de comandos slash e as instruções para executar/enviar comandos e abrir conversas selecionadas no histórico.
+- Mantive comandos, atalhos, títulos dinâmicos e ações sem alterações.
