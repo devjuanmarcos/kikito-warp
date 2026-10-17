@@ -1366,3 +1366,10 @@
 - Traduzi os seis nomes de ações de configuração da tela de editor/revisão exibidos na Paleta de Comandos.
 - Acrescentei termos equivalentes em português aos índices de busca das configurações locais, mantendo os termos técnicos existentes como aliases.
 - `cargo fmt --all`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `git diff --check` passaram. Não executei testes.
+
+## Configurações locais e menus do workspace
+
+- Traduzi ações da Paleta de Comandos, opções locais de clique direito e atalho global, além dos modos padrão de sessão.
+- Acrescentei termos em português à busca das preferências locais e traduzi ações de menu/atalhos do workspace, preservando identificadores, ações e teclas.
+- Removi o atalho de documentação hospedada da opção local de fluxos de trabalho globais.
+- `cargo fmt --all`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `git diff --check` passaram. Não executei testes.

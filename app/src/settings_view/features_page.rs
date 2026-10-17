@@ -133,7 +133,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     // Add all of the toggle settings from the Features Page that you want to show up on the Command Palette here.
     let mut toggle_binding_pairs = vec![
         ToggleSettingActionPair::new(
-            "copy on select within the terminal",
+            "copiar ao selecionar no terminal",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleCopyOnSelect,
             )),
@@ -141,7 +141,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             flags::COPY_ON_SELECT_CONTEXT_FLAG,
         ),
         ToggleSettingActionPair::new(
-            "linux selection clipboard",
+            "área de transferência de seleção do Linux",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleLinuxClipboardSelection,
             )),
@@ -154,7 +154,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "autocomplete quotes, parentheses, and brackets",
+            "completar aspas, parênteses e colchetes automaticamente",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleAutocompleteSymbols,
             )),
@@ -167,7 +167,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "restore windows, tabs, and panes on startup",
+            "restaurar janelas, abas e painéis ao iniciar",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleRestoreSession,
             )),
@@ -201,7 +201,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "scroll reporting",
+            "relatar rolagem para aplicativos do terminal",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleScrollReporting,
             )),
@@ -214,7 +214,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "completions while typing",
+            "abrir sugestões enquanto digita",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleCompletionsOpenWhileTyping,
             )),
@@ -236,7 +236,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         )
         .with_enabled(|| FeatureFlag::NativeShellCompletions.is_enabled()),
         ToggleSettingActionPair::new(
-            "native shell completions",
+            "sugestões nativas do shell",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleNativeShellCompletions,
             )),
@@ -245,7 +245,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         )
         .with_enabled(|| FeatureFlag::NativeShellCompletions.is_enabled()),
         ToggleSettingActionPair::new(
-            "command corrections",
+            "sugerir correções para comandos",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleCommandCorrections,
             )),
@@ -258,7 +258,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "error underlining",
+            "sublinhar erros nos comandos",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleErrorUnderlining,
             )),
@@ -271,7 +271,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "syntax highlighting",
+            "realce de sintaxe nos comandos",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleSyntaxHighlighting,
             )),
@@ -284,7 +284,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "audible terminal bell",
+            "sinal sonoro do terminal",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleUseAudibleBell,
             )),
@@ -297,7 +297,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 .is_supported_on_current_platform(),
         ),
         ToggleSettingActionPair::new(
-            "autosuggestions",
+            "sugestões automáticas",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleAutosuggestions,
             )),
@@ -305,7 +305,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             flags::AUTOSUGGESTIONS_ENABLED_FLAG,
         ),
         ToggleSettingActionPair::new(
-            "autosuggestion keybinding hint",
+            "dica de atalho para aceitar sugestões automáticas",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleAutosuggestionKeybindingHint,
             )),
@@ -313,7 +313,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             flags::AUTOSUGGESTION_KEYBINDING_HINT_FLAG,
         ),
         ToggleSettingActionPair::new(
-            "autosuggestion ignore button",
+            "botão para ignorar sugestões automáticas",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleShowAutosuggestionIgnoreButton,
             )),
@@ -324,7 +324,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     ];
 
     toggle_binding_pairs.push(ToggleSettingActionPair::new(
-        "reuse existing SSH ControlMaster in the Warp SSH wrapper",
+        "reutilizar SSH ControlMaster no wrapper SSH do Kikito Terminal",
         builder(SettingsAction::FeaturesPageToggle(
             FeaturesPageAction::ToggleSshReuseControlMaster,
         )),
@@ -333,7 +333,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     ));
 
     toggle_binding_pairs.push(ToggleSettingActionPair::new(
-        "show tooltip on click on links",
+        "exibir dicas ao clicar em links",
         builder(SettingsAction::FeaturesPageToggle(
             FeaturesPageAction::ToggleLinkTooltip,
         )),
@@ -342,7 +342,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     ));
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "long-running command notifications",
+            "notificações de comandos demorados",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleLongRunningNotifications,
             )),
@@ -388,7 +388,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     #[cfg(target_os = "macos")]
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "notification sounds",
+            "sons de notificação",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleNotificationSound,
             )),
@@ -415,7 +415,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "quit warning modal",
+            "aviso antes de sair",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleShowWarningBeforeQuitting,
             )),
@@ -430,7 +430,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     );
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "mouse reporting",
+            "relatar mouse para aplicativos do terminal",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleMouseReporting,
             )),
@@ -446,7 +446,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "alias expansion",
+            "expandir aliases enquanto digita",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleAliasExpansion,
             )),
@@ -462,7 +462,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "middle-click paste",
+            "colar com o botão do meio",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleMiddleClickPaste,
             )),
@@ -478,7 +478,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "code as default editor",
+            "usar o Code como editor padrão",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleCodeAsDefaultEditor,
             )),
@@ -494,7 +494,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "input hint text",
+            "dica de entrada do terminal",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleShowInputHintText,
             )),
@@ -510,7 +510,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "editing commands with Vim keybindings",
+            "editar comandos com atalhos do Vim",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleVimMode,
             )),
@@ -558,7 +558,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "focus reporting",
+            "relatar foco para aplicativos do terminal",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleFocusReporting,
             )),
@@ -573,7 +573,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     );
 
     toggle_binding_pairs.push(ToggleSettingActionPair::new(
-        "smart select",
+        "seleção inteligente de texto",
         builder(SettingsAction::FeaturesPageToggle(
             FeaturesPageAction::ToggleSmartSelection,
         )),
@@ -583,7 +583,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     if FeatureFlag::AgentView.is_enabled() && AISettings::as_ref(app).is_any_ai_enabled(app) {
         toggle_binding_pairs.push(
             ToggleSettingActionPair::new(
-                "help block in new sessions",
+                "bloco de ajuda em novas sessões",
                 builder(SettingsAction::FeaturesPageToggle(
                     FeaturesPageAction::ToggleShowTerminalZeroStateBlock,
                 )),
@@ -626,7 +626,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     );
 
     toggle_binding_pairs.push(ToggleSettingActionPair::new(
-        "preserve input focus on block selection",
+        "manter o foco na entrada ao selecionar um bloco",
         builder(SettingsAction::FeaturesPageToggle(
             FeaturesPageAction::TogglePreserveInputFocusOnBlockSelection,
         )),
@@ -670,7 +670,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     }
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
-            "global workflows in Command Search",
+            "fluxos de trabalho globais na Busca de comandos",
             builder(SettingsAction::FeaturesPageToggle(
                 FeaturesPageAction::ToggleGlobalWorkflowsInUniversalSearch,
             )),
@@ -687,7 +687,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     if GPUState::as_ref(app).is_low_power_gpu_available() {
         toggle_binding_pairs.push(
             ToggleSettingActionPair::new(
-                "integrated GPU rendering (low power)",
+                "renderização pela GPU integrada (baixo consumo)",
                 builder(SettingsAction::FeaturesPageToggle(
                     FeaturesPageAction::TogglePreferLowPowerGPU,
                 )),
@@ -3170,7 +3170,10 @@ impl FeaturesPageView {
                     .into_iter()
                     .map(|val| {
                         DropdownItem::new(
-                            val.as_dropdown_label(),
+                            match val {
+                                RightClickBehavior::ContextMenu => "Abrir o menu de contexto",
+                                RightClickBehavior::Paste => "Colar da área de transferência",
+                            },
                             FeaturesPageAction::SetRightClickBehavior(val),
                         )
                     })
@@ -3239,7 +3242,8 @@ impl FeaturesPageView {
         }
         // the selected item needs to update if the settings gets changed via the command palette
         self.global_hotkey_dropdown.update(ctx, |dropdown, ctx| {
-            dropdown.set_selected_by_name(global_hotkey_mode.as_dropdown_label(), ctx);
+            dropdown
+                .set_selected_by_name(global_hotkey_mode_dropdown_label(global_hotkey_mode), ctx);
             ctx.notify();
         });
         ctx.notify();
@@ -4523,21 +4527,29 @@ fn init_global_hotkey_dropdown(
 ) {
     let items = vec![
         DropdownItem::new(
-            GlobalHotkeyMode::Disabled.as_dropdown_label(),
+            global_hotkey_mode_dropdown_label(GlobalHotkeyMode::Disabled),
             FeaturesPageAction::SetGlobalHotkeyMode(GlobalHotkeyMode::Disabled),
         ),
         DropdownItem::new(
-            GlobalHotkeyMode::QuakeMode.as_dropdown_label(),
+            global_hotkey_mode_dropdown_label(GlobalHotkeyMode::QuakeMode),
             FeaturesPageAction::SetGlobalHotkeyMode(GlobalHotkeyMode::QuakeMode),
         ),
         DropdownItem::new(
-            GlobalHotkeyMode::ActivationHotkey.as_dropdown_label(),
+            global_hotkey_mode_dropdown_label(GlobalHotkeyMode::ActivationHotkey),
             FeaturesPageAction::SetGlobalHotkeyMode(GlobalHotkeyMode::ActivationHotkey),
         ),
     ];
 
     dropdown.set_items(items, ctx);
-    dropdown.set_selected_by_name(hotkey_mode.as_dropdown_label(), ctx);
+    dropdown.set_selected_by_name(global_hotkey_mode_dropdown_label(hotkey_mode), ctx);
+}
+
+fn global_hotkey_mode_dropdown_label(mode: GlobalHotkeyMode) -> &'static str {
+    match mode {
+        GlobalHotkeyMode::Disabled => "Desativado",
+        GlobalHotkeyMode::QuakeMode => "Janela com atalho dedicado",
+        GlobalHotkeyMode::ActivationHotkey => "Mostrar ou ocultar todas as janelas",
+    }
 }
 
 fn init_display_count_dropdown(
@@ -4585,7 +4597,7 @@ impl SettingsWidget for NativeRedirectWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "link open desktop native redirect url intent deep link deeplink"
+        "link open desktop native redirect url intent deep link deeplink abrir link aplicativo desktop"
     }
 
     fn render(
@@ -4647,7 +4659,7 @@ impl SettingsWidget for SessionRestorationWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "restore session window tab pane startup"
+        "restore session window tab pane startup restaurar sessão janelas abas painéis início"
     }
 
     fn render(
@@ -4742,7 +4754,7 @@ impl SettingsWidget for SnackbarHeaderWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "sticky command block header snackbar"
+        "sticky command block header snackbar cabeçalho fixo comandos bloco"
     }
 
     fn render(
@@ -4795,7 +4807,7 @@ impl SettingsWidget for LinkTooltipWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "link tooltip click open"
+        "link tooltip click open links dica ao clicar"
     }
 
     fn render(
@@ -4841,7 +4853,7 @@ impl SettingsWidget for QuitWarningModalWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "warning popup modal dialog quit logout log out close"
+        "warning popup modal dialog quit logout log out close aviso confirmação sair encerrar fechar"
     }
 
     fn render(
@@ -4888,7 +4900,7 @@ impl SettingsWidget for LoginItemWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "login item startup start mac windows app restart automatic"
+        "login item startup start mac windows app restart automatic iniciar sistema aplicativo abertura"
     }
 
     fn render(
@@ -4939,7 +4951,7 @@ impl SettingsWidget for QuitWhenAllWindowsClosedWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "quit all windows closed"
+        "quit all windows closed sair fechar última janela"
     }
 
     fn render(
@@ -4986,7 +4998,7 @@ impl SettingsWidget for ShowChangelogWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "changelog updates"
+        "changelog updates notas versão atualizações novidades"
     }
 
     fn render(
@@ -5033,7 +5045,7 @@ impl SettingsWidget for MouseScrollMultiplierWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "mouse scroll wheel multiplier lines"
+        "mouse scroll wheel multiplier lines rolagem roda linhas velocidade"
     }
 
     fn render(
@@ -5117,7 +5129,7 @@ impl SettingsWidget for DefaultTerminalWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "warp default terminal application"
+        "warp default terminal application terminal padrão aplicativo"
     }
 
     fn render(
@@ -5162,7 +5174,7 @@ impl SettingsWidget for BlockLimitWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "max block size lines maximum limit memory"
+        "max block size lines maximum limit memory número limite linhas bloco"
     }
 
     fn render(
@@ -5223,7 +5235,7 @@ impl SettingsWidget for DesktopNotificationsWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "desktop notifications"
+        "desktop notifications notificações área trabalho"
     }
 
     fn render(
@@ -5408,7 +5420,7 @@ impl SettingsWidget for StartupShellWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "startup shell session"
+        "startup shell session shell inicial padrão sessão"
     }
 
     fn render(
@@ -5447,7 +5459,7 @@ impl SettingsWidget for WorkingDirectoryWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "starting working directory pwd session"
+        "starting working directory pwd session diretório inicial pasta sessão anterior personalizado"
     }
 
     fn render(
@@ -5484,7 +5496,7 @@ impl SettingsWidget for UndoCloseWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "reopen restore recover closed tab session"
+        "reopen restore recover closed tab session reabrir recuperar aba sessão fechada"
     }
 
     fn render(
@@ -5554,7 +5566,7 @@ impl SettingsWidget for ExtraMetaKeysWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "extra meta key alt option"
+        "extra meta key alt option tecla meta esquerda direita opção"
     }
 
     fn render(
@@ -5630,7 +5642,7 @@ impl SettingsWidget for GlobalHotkeyWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "global hotkey quake mode keybinding quick terminal"
+        "global hotkey quake mode keybinding quick terminal atalho global quake terminal rápido"
     }
 
     fn render(
@@ -5775,7 +5787,7 @@ impl SettingsWidget for AutocompleteSymbolsWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "autocomplete autoclose symbol bracket quote parentheses braces"
+        "autocomplete autoclose symbol bracket quote parentheses braces completar aspas parênteses colchetes chaves"
     }
 
     fn render(
@@ -5821,7 +5833,7 @@ impl SettingsWidget for ErrorUnderliningWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "error underline editor"
+        "error underline editor sublinhar erros comandos"
     }
 
     fn render(
@@ -5867,7 +5879,7 @@ impl SettingsWidget for SyntaxHighlightingWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "syntax highlighting editor"
+        "syntax highlighting editor realce sintaxe comandos"
     }
 
     fn render(
@@ -5913,7 +5925,7 @@ impl SettingsWidget for CompletionsMenuWhileTypingWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "completions menu type typing"
+        "completions menu type typing sugestões digitar menu"
     }
 
     fn render(
@@ -6045,7 +6057,7 @@ impl SettingsWidget for NativeShellCompletionsWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "native shell completions your shell command suggestions"
+        "native shell completions your shell command suggestions sugestões nativas comandos shell"
     }
 
     fn render(
@@ -6105,7 +6117,7 @@ impl SettingsWidget for CommandCorrectionsWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "suggest command corrections"
+        "suggest command corrections sugerir correções comandos"
     }
 
     fn render(
@@ -6151,7 +6163,7 @@ impl SettingsWidget for AliasExpansionWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "expand alias expansion"
+        "expand alias expansion expandir aliases"
     }
 
     fn render(
@@ -6198,7 +6210,7 @@ impl SettingsWidget for MiddleClickPasteWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "middle click paste clipboard"
+        "middle click paste clipboard clique meio colar"
     }
 
     fn render(
@@ -6243,7 +6255,7 @@ impl SettingsWidget for RightClickBehaviorWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "right click behavior paste context menu shift"
+        "right click behavior paste context menu shift botão direito clique colar menu"
     }
 
     fn render(
@@ -6294,7 +6306,7 @@ impl SettingsWidget for VimModeWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "vim mode keybindings"
+        "vim mode keybindings modo atalhos editar comandos"
     }
 
     fn render(
@@ -6611,7 +6623,7 @@ impl SettingsWidget for PreserveInputFocusOnBlockSelectionWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "preserve input focus block selection navigate arrow keys"
+        "preserve input focus block selection navigate arrow keys manter foco entrada selecionar bloco setas"
     }
 
     fn render(
@@ -6659,7 +6671,7 @@ impl SettingsWidget for AutosuggestionKeybindingHintWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "autosuggestion keybinding hint"
+        "autosuggestion keybinding hint dica atalho aceitar sugestões automáticas"
     }
 
     fn render(
@@ -6714,7 +6726,7 @@ impl SettingsWidget for AutosuggestionIgnoreButtonWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "autosuggestion ignore button hide"
+        "autosuggestion ignore button hide ignorar ocultar sugestões automáticas botão"
     }
 
     fn render(
@@ -6844,7 +6856,7 @@ impl SettingsWidget for TabKeyBehaviorWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "completions autosuggestions tab keybinding arrow accept"
+        "completions autosuggestions tab keybinding arrow accept sugestões automáticas completar aceitar tecla seta"
     }
 
     fn render(
@@ -6902,7 +6914,7 @@ impl SettingsWidget for CtrlTabBehaviorWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "ctrl tab behavior pane switch session recent"
+        "ctrl tab behavior pane switch session recent comportamento Ctrl+Tab alternar abas painéis sessões"
     }
 
     fn render(
@@ -6949,7 +6961,7 @@ impl SettingsWidget for MouseReportingWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "mouse reporting"
+        "mouse reporting relatar mouse aplicativos terminal"
     }
 
     fn render(
@@ -7004,7 +7016,7 @@ impl SettingsWidget for ScrollReportingWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "scroll reporting"
+        "scroll reporting relatar rolagem aplicativos terminal"
     }
 
     fn render(
@@ -7062,7 +7074,7 @@ impl SettingsWidget for FocusReportingWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "focus reporting"
+        "focus reporting relatar foco aplicativos terminal"
     }
 
     fn render(
@@ -7109,7 +7121,7 @@ impl SettingsWidget for AudibleBellWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "audible bell"
+        "audible bell sinal sonoro campainha terminal"
     }
 
     fn render(
@@ -7213,7 +7225,7 @@ impl SettingsWidget for SmartSelectWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "word smart select semantic separator"
+        "word smart select semantic separator palavra seleção inteligente texto separadores"
     }
 
     fn render(
@@ -7332,7 +7344,7 @@ impl SettingsWidget for CopyOnSelectWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "copy on select"
+        "copy on select copiar selecionar terminal"
     }
 
     fn render(
@@ -7377,7 +7389,7 @@ impl SettingsWidget for Osc52ClipboardAccessWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "clipboard osc 52 osc52 paste copy access terminal program"
+        "clipboard osc 52 osc52 paste copy access terminal program área transferência copiar colar programa"
     }
 
     fn render(
@@ -7415,7 +7427,7 @@ impl SettingsWidget for NewTabPlacementWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "new tab placement"
+        "new tab placement posição abas nova aba"
     }
 
     fn render(
@@ -7451,7 +7463,7 @@ impl SettingsWidget for DefaultSessionModeWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "default session mode agent terminal new pane tab open config"
+        "default session mode agent terminal new pane tab open config modo sessão padrão terminal novas sessões painel aba configuração"
     }
 
     fn render(
@@ -7495,7 +7507,6 @@ impl SettingsWidget for DefaultSessionModeWidget {
 
 #[derive(Default)]
 struct WorkflowsInCommandSearch {
-    additional_info_link: MouseStateHandle,
     switch_state: SwitchStateHandle,
 }
 
@@ -7503,7 +7514,7 @@ impl SettingsWidget for WorkflowsInCommandSearch {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "global workflows command search"
+        "global workflows command search fluxos trabalho globais busca comandos workflows YAML"
     }
 
     fn render(
@@ -7516,14 +7527,7 @@ impl SettingsWidget for WorkflowsInCommandSearch {
         let workflow_settings = CommandSearchSettings::as_ref(app);
         render_body_item::<FeaturesPageAction>(
             "Mostrar fluxos de trabalho globais na Busca de comandos (Ctrl+R)".into(),
-            Some(AdditionalInfo {
-                mouse_state: self.additional_info_link.clone(),
-                on_click_action: Some(FeaturesPageAction::OpenUrl(
-                    "https://docs.warp.dev/terminal/entry/yaml-workflows".into(),
-                )),
-                secondary_text: None,
-                tooltip_override_text: None,
-            }),
+            None,
             LocalOnlyIconState::for_setting(
                 ShowGlobalWorkflowsInUniversalSearch::storage_key(),
                 ShowGlobalWorkflowsInUniversalSearch::sync_to_cloud(),
@@ -7560,7 +7564,7 @@ impl SettingsWidget for LinuxSelectionClipboardWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "linux selection clipboard middle click"
+        "linux selection clipboard middle click Linux área transferência primária seleção colar"
     }
 
     fn render(
@@ -7614,7 +7618,7 @@ impl SettingsWidget for GPUWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "render integrated discrete gpu graphics"
+        "render integrated discrete gpu graphics renderização GPU integrada dedicada gráficos baixo consumo"
     }
 
     fn render(
@@ -7683,7 +7687,7 @@ impl SettingsWidget for WindowSystemWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "wayland x11 window system compositor"
+        "wayland x11 window system compositor sistema janelas gerenciador"
     }
 
     fn render(
@@ -7759,7 +7763,7 @@ impl SettingsWidget for GraphicsBackendWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "gpu graphics backend vulkan dx12 directx12 opengl driver"
+        "gpu graphics backend vulkan dx12 directx12 opengl driver GPU backend gráfico renderizador"
     }
 
     fn render(
@@ -7831,7 +7835,7 @@ impl SettingsWidget for AsyncFindWidget {
     type View = FeaturesPageView;
 
     fn search_terms(&self) -> &str {
-        "async asynchronous fast find search"
+        "async asynchronous fast find search busca assíncrona rápida localizar pesquisar"
     }
 
     fn should_render(&self, _app: &AppContext) -> bool {

@@ -1464,15 +1464,15 @@ pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "workspace:copy_current_path",
-            BindingDescription::new("Copy current path")
-                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Copy Current Path"),
+            BindingDescription::new("Copiar caminho atual")
+                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Copiar caminho atual"),
             WorkspaceAction::CopyCurrentPath,
         )
         .with_context_predicate(id!("Workspace")),
         EditableBinding::new(
             "workspace:open_repository",
-            BindingDescription::new("Open repository")
-                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Open Repository"),
+            BindingDescription::new("Abrir repositório")
+                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Abrir repositório"),
             WorkspaceAction::OpenRepository { path: None },
         )
         .with_context_predicate(id!("Workspace"))
@@ -1547,8 +1547,8 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "workspace:show_settings",
-            BindingDescription::new("Open Settings")
-                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Settings"),
+            BindingDescription::new("Abrir configurações")
+                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Configurações"),
             WorkspaceAction::ShowSettings,
         )
         .with_context_predicate(id!("Workspace"))
@@ -1564,8 +1564,8 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         .with_custom_action(CustomAction::ShowAccount),
         EditableBinding::new(
             "workspace:show_settings_appearance_page",
-            BindingDescription::new("Open Settings: Appearance")
-                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Appearance..."),
+            BindingDescription::new("Abrir configurações: Aparência")
+                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Aparência..."),
             WorkspaceAction::ShowSettingsPage(SettingsSection::Appearance),
         )
         .with_group(bindings::BindingGroup::Settings.as_str())
@@ -1573,7 +1573,7 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         .with_custom_action(CustomAction::ShowAppearance),
         EditableBinding::new(
             "workspace:show_settings_features_page",
-            "Open Settings: Features",
+            "Abrir configurações: Recursos",
             WorkspaceAction::ShowSettingsPage(SettingsSection::Features),
         )
         .with_group(bindings::BindingGroup::Settings.as_str())
@@ -1589,10 +1589,11 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         .with_custom_action(CustomAction::ViewSharedBlocks),
         EditableBinding::new(
             "workspace:show_settings_keyboard_shortcuts_page",
-            BindingDescription::new("Open Settings: Keyboard Shortcuts").with_custom_description(
-                bindings::MAC_MENUS_CONTEXT,
-                "Configure Keyboard Shortcuts...",
-            ),
+            BindingDescription::new("Abrir configurações: Atalhos de teclado")
+                .with_custom_description(
+                    bindings::MAC_MENUS_CONTEXT,
+                    "Configurar atalhos de teclado...",
+                ),
             WorkspaceAction::ShowSettingsPage(SettingsSection::Keybindings),
         )
         .with_group(bindings::BindingGroup::KeyboardShortcuts.as_str())
@@ -1600,8 +1601,8 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         .with_custom_action(CustomAction::ConfigureKeybindings),
         EditableBinding::new(
             "workspace:show_settings_about_page",
-            BindingDescription::new("Open Settings: About")
-                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "About Warp"),
+            BindingDescription::new("Abrir configurações: Sobre")
+                .with_custom_description(bindings::MAC_MENUS_CONTEXT, "Sobre o Kikito Terminal"),
             WorkspaceAction::ShowSettingsPage(SettingsSection::About),
         )
         .with_group(bindings::BindingGroup::Settings.as_str())
@@ -1618,7 +1619,7 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         .with_context_predicate(id!("Workspace")),
         EditableBinding::new(
             "workspace:show_settings_privacy_page",
-            BindingDescription::new("Open Settings: Privacy"),
+            BindingDescription::new("Abrir configurações: Privacidade"),
             WorkspaceAction::ShowSettingsPage(SettingsSection::Privacy),
         )
         .with_group(bindings::BindingGroup::Settings.as_str())
@@ -1648,7 +1649,7 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         .with_context_predicate(id!("Workspace")),
         EditableBinding::new(
             "workspace:show_settings_code_page",
-            BindingDescription::new("Open Settings: Code"),
+            BindingDescription::new("Abrir configurações: Código"),
             WorkspaceAction::ShowSettingsPage(SettingsSection::CodeIndexing),
         )
         .with_group(bindings::BindingGroup::Settings.as_str())
@@ -1676,7 +1677,7 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         .with_context_predicate(id!("Workspace")),
         EditableBinding::new(
             "workspace:open_settings_file",
-            "Open settings file",
+            "Abrir arquivo de configurações",
             WorkspaceAction::OpenSettingsFile,
         )
         .with_enabled(|| FeatureFlag::SettingsFile.is_enabled() && cfg!(feature = "local_fs"))
