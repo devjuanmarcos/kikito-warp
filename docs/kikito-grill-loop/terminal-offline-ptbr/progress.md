@@ -1384,3 +1384,9 @@
 
 - Ocultei no canal OSS os cartões de gerenciamento de dados e política de privacidade que direcionavam para páginas hospedadas pela Warp. Os canais que usam esses serviços mantêm os cartões.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Ações externas e páginas de conta no OSS
+
+- Ocultei da Paleta de Comandos no canal OSS as entradas de conta, equipes, blocos compartilhados, cobrança, indicações, ambientes na nuvem, servidores MCP, convite, Slack, documentação, feedback e política de privacidade.
+- Mantive disponível a ação local de visualizar logs e traduzi seu rótulo para Kikito Terminal.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
