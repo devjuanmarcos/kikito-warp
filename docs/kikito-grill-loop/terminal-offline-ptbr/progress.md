@@ -1691,3 +1691,8 @@
 - Mantive os slugs e chaves `SettingsSection::slug/from_slug`, pois são contratos persistidos e argumentos da CLI; os termos em inglês de busca interna são índices, não texto exibido. Os rótulos do painel Cloud platform e outras páginas foram excluídos por pertencerem à navegação não OSS. URLs de documentação não foram alteradas; a copy de apoio adjacente já está em português.
 - A página Keybindings ainda pode exibir descrições cadastradas por outros módulos (por exemplo, ações específicas de editor de código, terminal e painéis); esses registros não faziam parte do conjunto `EditorView` deste lote e permanecem como área de auditoria futura. Conteúdo dinâmico de provedores também fica fora da tradução local.
 - Validação: `cargo fmt --all` e `git diff --check`; `cargo check -p warp --bin warp-oss` passou. Nenhum teste foi executado.
+
+## Tentativa de captura durante atalhos da GUI OSS
+
+- Tentei abrir o binário com um `WARP_DATA_PROFILE` isolado, enviar atalhos para a paleta e Settings e amostrar conexões TCP do processo. A automação não devolveu saída de captura verificável, então descartei a tentativa como evidência. Encerrei os processos `warp-oss.exe` criados para essa tentativa; não havia instância deles ao conferir depois.
+- A captura interativa permanece pendente. A observação ociosa anterior e a revisão estática são as únicas evidências runtime/estáticas válidas até aqui.
