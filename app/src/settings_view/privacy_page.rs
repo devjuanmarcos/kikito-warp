@@ -39,7 +39,7 @@ use super::settings_page::{
 use super::{SettingsAction, SettingsSection, ToggleSettingActionPair, flags};
 use crate::appearance::Appearance;
 use crate::auth::auth_manager::AuthManager;
-use crate::channel::ChannelState;
+use crate::channel::{Channel, ChannelState};
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::send_telemetry_from_ctx;
 use crate::server::telemetry::TelemetryEvent;
@@ -1852,6 +1852,10 @@ impl SettingsWidget for DataManagementWidget {
         "data management delete account"
     }
 
+    fn should_render(&self, _app: &AppContext) -> bool {
+        ChannelState::channel() != Channel::Oss
+    }
+
     fn render(
         &self,
         _view: &Self::View,
@@ -1926,6 +1930,10 @@ impl SettingsWidget for PrivacyPolicyWidget {
 
     fn search_terms(&self) -> &str {
         "privacy policy terms"
+    }
+
+    fn should_render(&self, _app: &AppContext) -> bool {
+        ChannelState::channel() != Channel::Oss
     }
 
     fn render(

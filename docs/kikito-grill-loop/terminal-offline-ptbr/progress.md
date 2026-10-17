@@ -1379,3 +1379,8 @@
 - Traduzi rótulos da Paleta de Comandos para regras de IA, servidores MCP, navegação de tarefas/agentes, notificações, blocos compartilhados e configurações de IA.
 - Traduzi o nome da seção local Warpify como Personalização para evitar a marca antiga na interface.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Links de privacidade no OSS
+
+- Ocultei no canal OSS os cartões de gerenciamento de dados e política de privacidade que direcionavam para páginas hospedadas pela Warp. Os canais que usam esses serviços mantêm os cartões.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
