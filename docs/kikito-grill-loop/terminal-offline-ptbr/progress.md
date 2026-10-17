@@ -1445,3 +1445,9 @@
 - Traduzi a fila local de prompts e o onboarding do prompt do terminal. Links para documentação e reporte hospedados são omitidos no OSS.
 - Atualizei o modelo de licenças de terceiros para identificar a distribuição como Kikito Terminal.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+## Chaves de API e criação de ambientes locais
+
+- Traduzi a interface local de seleção e gerenciamento de chaves de API de agentes e o modal de seleção de repositórios para criação de ambientes: busca, ações, estados vazios/carregamento, acessibilidade, mensagens e botões.
+- Atualizei as asserções existentes do modal para refletir os textos traduzidos; não adicionei testes nem os executei.
+- A revisão de rede confirmou no código que o perfil OSS neutraliza a abertura de URLs HTTP(S) externas e rejeita requisições do cliente HTTP fora de endereços loopback. Essa inspeção não substitui a captura de conexões durante todos os fluxos em execução.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram.

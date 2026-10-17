@@ -52,15 +52,15 @@ const SIDECAR_HORIZONTAL_GAP: f32 = 4.;
 
 const MENU_MAX_HEIGHT: f32 = 280.;
 
-const BUTTON_TOOLTIP: &str = "API key";
+const BUTTON_TOOLTIP: &str = "Chave de API";
 
-const MENU_HEADER_LABEL: &str = "API key";
+const MENU_HEADER_LABEL: &str = "Chave de API";
 
-const SIDECAR_HEADER_LABEL: &str = "Choose a type";
+const SIDECAR_HEADER_LABEL: &str = "Escolha um tipo";
 
-const NO_SECRET_LABEL: &str = "Inherit key from environment";
+const NO_SECRET_LABEL: &str = "Herdar chave do ambiente";
 
-const NEW_ITEM_LABEL: &str = "New";
+const NEW_ITEM_LABEL: &str = "Novo";
 
 const MAIN_MENU_SAVE_POSITION_ID: &str = "auth_secret_selector_main_menu";
 type PendingDeleteKey = (Harness, String, SecretOwner);
@@ -446,7 +446,7 @@ impl AuthSecretSelector {
         // window) shouldn't pop a duplicate confirmation here.
         if removed_pending {
             let window_id = ctx.window_id();
-            let message = format!("API key '{name}' deleted.");
+            let message = format!("Chave de API '{name}' excluída.");
             ToastStack::handle(ctx).update(ctx, |ts, ctx| {
                 ts.add_ephemeral_toast(DismissibleToast::success(message), window_id, ctx);
             });
@@ -475,7 +475,7 @@ impl AuthSecretSelector {
         // double-toasting if another surface also tried to delete.
         if removed_pending {
             let window_id = ctx.window_id();
-            let message = format!("Failed to delete API key '{name}': {error}");
+            let message = format!("Não foi possível excluir a chave de API '{name}': {error}");
             ToastStack::handle(ctx).update(ctx, |ts, ctx| {
                 ts.add_ephemeral_toast(DismissibleToast::error(message), window_id, ctx);
             });
@@ -649,14 +649,17 @@ fn build_main_menu_items(
                         name: secret.name.clone(),
                         owner: secret.owner.clone(),
                     })
-                    .with_right_side_icon_a11y_label(format!("Delete API key {}", secret.name))
+                    .with_right_side_icon_a11y_label(format!(
+                        "Excluir chave de API {}",
+                        secret.name
+                    ))
                     .with_right_side_icon_disabled(is_pending_delete);
                 items.push(MenuItem::Item(fields));
             }
         }
         AuthSecretFetchState::NotFetched | AuthSecretFetchState::Loading => {
             items.push(MenuItem::Item(
-                MenuItemFields::new("Loading…")
+                MenuItemFields::new("Carregando…")
                     .with_font_size_override(ITEM_FONT_SIZE)
                     .with_padding_override(ITEM_VERTICAL_PADDING, MENU_HORIZONTAL_PADDING)
                     .with_disabled(true)
@@ -665,7 +668,7 @@ fn build_main_menu_items(
         }
         AuthSecretFetchState::Failed(_) => {
             items.push(MenuItem::Item(
-                MenuItemFields::new("Unable to load secrets")
+                MenuItemFields::new("Não foi possível carregar as chaves")
                     .with_font_size_override(ITEM_FONT_SIZE)
                     .with_padding_override(ITEM_VERTICAL_PADDING, MENU_HORIZONTAL_PADDING)
                     .with_disabled(true)
