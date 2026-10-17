@@ -1008,4 +1008,9 @@
 ## Tradução — acessibilidade e dicas do campo de comando
 
 - Traduzi o rótulo de acessibilidade, a instrução para leitores de tela e as dicas do campo de comando.
-- Mantive os atalhos Cmd+seta para cima/Cmd+L e o gatilho `#`; não alterei a lógica de entrada nem os fluxos de clipboard.
+- Mantive os atalhos Cmd+seta para cima/Cmd+L e o gatilho `#`; não alterei a lógica de entrada nem os fluxos da área de transferência.
+
+## Tradução — dicas e exemplos do modo de agente
+
+- Traduzi o texto de orientação do campo para o agente, os exemplos rotativos, as dicas de orientação/fila e os estados do menu de sugestões dinâmicas de comandos.
+- Preservei nomes de tecnologias, serviços, comandos e atalhos citados nos exemplos; substituí a expressão "Warp anything" por uma instrução natural em português.
