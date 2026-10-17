@@ -528,14 +528,14 @@ impl EditorModel {
                 let action = if inclusive_contains(&selection_after, start)
                     && inclusive_contains(&selection_after, end)
                 {
-                    "selected"
+                    "selecionado"
                 } else {
-                    "unselected"
+                    "desmarcado"
                 };
                 AccessibilityContent::new(delta, format!(", {action}"), WarpA11yRole::UserAction)
             }
             (true, false) => {
-                AccessibilityContent::new_without_help("Unselected", WarpA11yRole::UserAction)
+                AccessibilityContent::new_without_help("Desmarcado", WarpA11yRole::UserAction)
             }
         }
     }
@@ -2294,7 +2294,7 @@ impl EditorModel {
 
         ctx.emit_a11y_content(AccessibilityContent::new(
             self.selected_text(ctx),
-            ", deleted",
+            ", excluído",
             WarpA11yRole::UserAction,
         ));
         self.change_selections(new_selections, ctx);
@@ -2318,7 +2318,7 @@ impl EditorModel {
 
         ctx.emit_a11y_content(AccessibilityContent::new(
             self.selected_text(ctx),
-            ", deleted",
+            ", excluído",
             WarpA11yRole::UserAction,
         ));
         self.change_selections(new_selections, ctx);

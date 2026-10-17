@@ -1806,3 +1806,10 @@
 - O fluxo de restauração de workspace não adiciona copy fixo em inglês; nomes de shell, títulos de abas/painéis e caminhos são valores dinâmicos do usuário/sistema. A confirmação de fechamento de sessão em `close_session_confirmation_dialog.rs` explica o encerramento de uma sessão compartilhada, portanto permanece fora deste escopo local.
 - Mantive fora desta auditoria onboarding, conversas de agente, compartilhamento/equipes, code review/PR, ações de atualização e outros fluxos hospedados. Seus textos e mensagens técnicas não são copy de gerenciamento local elegível.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Tradução — editor de texto compartilhado
+
+- Traduzi em `app/src/editor/view/element.rs` a dica para percorrer sugestões locais de comando; em `app/src/editor/view/model/mod.rs` e `view/mod.rs`, traduzi os anúncios de acessibilidade para seleção, exclusão e colagem.
+- Em `accept_autosuggestion_keybinding_view.rs`, alinhei a busca do item selecionado ao nome já traduzido `Personalizado...`, preservando o comportamento de seleção do menu para atalhos customizados.
+- Mantive fora deste recorte os toasts e tooltips de entrada por voz, erros de anexos e menus de busca de arquivos ligados ao contexto de modelos/IA hospedados. Conteúdo digitado/colado e nomes de teclas permanecem intactos.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.

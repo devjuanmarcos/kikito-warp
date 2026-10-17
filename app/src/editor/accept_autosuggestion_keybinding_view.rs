@@ -151,7 +151,7 @@ impl AcceptAutosuggestionKeybinding {
                     menu.set_selected_by_name(accept_autosuggestion_keybinding_displayed, ctx);
                 // If the keybinding is not one of our default options, select the "Custom..." item.
                 if !found {
-                    menu.set_selected_by_name("Custom...", ctx);
+                    menu.set_selected_by_name("Personalizado...", ctx);
                 }
             } else {
                 // If the keybinding is not set, we show right arrow which always works.

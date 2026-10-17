@@ -8564,7 +8564,7 @@ impl TypedActionView for EditorView {
             | EditorAction::Backspace => ActionAccessibilityContent::Empty,
             EditorAction::Paste => {
                 ActionAccessibilityContent::Custom(AccessibilityContent::new_without_help(
-                    format!("Pasting: {}", self.clipboard_content(ctx)),
+                    format!("Colando: {}", self.clipboard_content(ctx)),
                     WarpA11yRole::UserAction,
                 ))
             }
