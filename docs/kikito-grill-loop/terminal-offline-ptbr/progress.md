@@ -949,3 +949,8 @@
 
 - Traduzi os avisos sobre compatibilidade de Powerlevel10k e Pure, incluindo os links de atualização e ajuda.
 - Atualizei a referência de marca para Kikito Terminal e preservei nomes técnicos e URLs.
+
+## Tradução — sugestão para executar um plano
+
+- Traduzi o rótulo e o texto de entrada da sugestão exibida quando um plano é criado.
+- Preservei o nome estável da sugestão e o fluxo de execução.
