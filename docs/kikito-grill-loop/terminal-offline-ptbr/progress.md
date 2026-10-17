@@ -728,3 +728,8 @@
 
 - Traduzi o título, a explicação, a observação e os botões do diálogo de reversão.
 - Preservei os atalhos e as ações de confirmação e cancelamento.
+
+## Tradução — opção de modal nativo
+
+- Traduzi o rótulo da opção para não exibir novamente em modais nativos.
+- Preservei o estado persistido da opção e as ações dos botões.
