@@ -1638,3 +1638,7 @@
 
 - A auditoria encontrou `AgentCliLaunchModal`: onboarding do Warp Agent CLI com link para `docs.warp.dev`, controlado por feature flag. Desativei `FeatureFlag::AgentCliLaunchModal` no conjunto de flags locais do canal OSS para evitar esse fluxo hospedado em builds OSS.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
+## Outros modais de lançamento hospedados no OSS
+
+- A mesma varredura identificou modais de Oz, orquestração multiagente e anúncio de código aberto do Warp. Eles promovem agentes em cloud, serviços hosted ou links para o repositório oficial do Warp; desativei `OzLaunchModal`, `OrchestrationLaunchModal` e `OpenWarpLaunchModal` no canal OSS junto ao bloqueio anterior de `AgentCliLaunchModal`.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
