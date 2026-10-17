@@ -1355,3 +1355,8 @@
 - Traduzi os rótulos locais da linha de status para português, incluindo aprovação automática, modelo, equipe, uso, GitHub, agente e entrada de voz; a dica do atalho de voz também foi localizada.
 - Traduzi os badges genéricos do seletor, a ação de tentar novamente e o estado de carregamento.
 - `cargo fmt --all`, `cargo check -p warp --bin warp-oss` e `cargo check -p warp_tui --bin warp-tui-oss` concluíram com sucesso. Não executei testes.
+
+## Remoção do atalho para documentação hospedada
+
+- Removi da configuração local do visualizador Markdown o ícone de ajuda que tentava abrir a documentação em `docs.warp.dev`, além da action e URL associadas. A preferência local continua disponível.
+- `cargo fmt --all`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `git diff --check` passaram. Não executei testes.
