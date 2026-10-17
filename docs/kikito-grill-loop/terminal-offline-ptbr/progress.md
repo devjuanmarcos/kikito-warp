@@ -733,3 +733,8 @@
 
 - Traduzi o rótulo da opção para não exibir novamente em modais nativos.
 - Preservei o estado persistido da opção e as ações dos botões.
+
+## Tradução — busca da barra de título
+
+- Traduzi o texto de orientação para buscar sessões, agentes e arquivos.
+- Preservei o controle e o comportamento de busca existentes.

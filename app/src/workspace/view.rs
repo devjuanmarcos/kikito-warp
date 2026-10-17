@@ -21143,7 +21143,7 @@ impl Workspace {
                         Shrinkable::new(
                             1.,
                             Text::new_inline(
-                                "Search sessions, agents, files...",
+                                "Buscar sessões, agentes e arquivos...",
                                 appearance.ui_font_family(),
                                 14.,
                             )
