@@ -1701,3 +1701,15 @@
 - Traduzi descrições dos atalhos locais de `EditableBinding` em `app/src/terminal/view/init.rs`: colar/copiar, foco e localização, seleção e navegação de blocos, marcadores, rolagem, edição durante comandos em execução, ajustes do campo de entrada da CLI e ações locais de contexto/projeto. Preservei IDs, teclas, ações e condições.
 - Mantive em inglês descrições de compartilhamento de sessão/bloco, fluxos de equipe e comandos de depuração ou onboarding, por serem funções hospedadas ou destinadas apenas a depuração. A ação `Warpify subshell` aparece no footer de subshells detectados e ativa uma integração local de shell; ela não depende de serviço hospedado, então também traduzi seu rótulo para `Ativar integração de shell no subshell`. Excluí nomes/descrições construídos dinamicamente para comandos de provedores.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu avisos de artefatos incrementais antigos, ignorados pelo Cargo. Nenhum teste foi executado.
+
+## Tradução — atalhos do editor de código
+
+- Traduzi em `app/src/code/view.rs` os atalhos de salvar arquivo, salvar como e fechar abas; em `app/src/notebooks/file/mod.rs`, os atalhos de focar a entrada do terminal a partir do arquivo, recarregar arquivo e alternar a visualização do Markdown. Preservei nomes, teclas, ações e condições.
+- Revisei os registros do editor de código e da barra de busca: as demais descrições já estavam em português. O Explorador de Projetos (`app/src/code/file_tree/view.rs`) registra atalhos fixos sem descrição configurável, portanto não há rótulos de atalho para traduzir nesse painel. Mantive identificadores e nomes de teclas em inglês por serem chaves internas/combinações.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu avisos de artefatos incrementais antigos, ignorados pelo Cargo. Nenhum teste foi executado.
+
+## Captura de rede do OSS após atalhos locais
+
+- Iniciei `target/debug/warp-oss.exe` com o perfil isolado `offline-interaction-audit-20261017c`. Em quatro amostras da árvore contendo dois processos `warp-oss.exe` — inicialização, após envio de `Ctrl+Shift+P`, após envio de `Ctrl+,` e após pedido de fechamento — não havia conexões externas. O único socket foi o listener `127.0.0.1:9282`, que corresponde ao servidor HTTP local OSS, ligado a loopback e usado pelos roteadores locais de detecção da instalação/profiling.
+- Os atalhos foram enviados à janela `Kikito Terminal`, mas não confirmei visualmente que as telas correspondentes abriram; portanto, a evidência demonstra somente que o processo permaneceu sem sockets externos observáveis durante as tentativas. Nenhum comando foi executado no terminal. Forcei o encerramento da árvore de teste e confirmei que não restaram processos `warp-oss.exe` dela.
+- Esta amostra curta não demonstra isolamento de todo cenário ou de processos que o usuário inicia no terminal. Ela complementa a observação ociosa e as barreiras estáticas documentadas em `evidence/network-boundaries.md`.
