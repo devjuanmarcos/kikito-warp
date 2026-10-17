@@ -606,8 +606,8 @@ impl WorkflowView {
                                 font_color: Some(sub_text_color),
                                 ..Default::default()
                             })
-                        .build()
-                        .finish(),
+                            .build()
+                            .finish(),
                     )
                     .with_margin_left(40.)
                     .finish()
