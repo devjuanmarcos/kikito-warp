@@ -1080,7 +1080,7 @@ impl TerminalView {
             .any(|image| image.data.len() > MAX_IMAGE_SIZE_BYTES_FOR_CLI_AGENT)
         {
             self.show_error_toast(
-                "A imagem da area de transferencia excede o limite de 500 MB.".to_owned(),
+                "A imagem da área de transferência excede o limite de 500 MB.".to_owned(),
                 ctx,
             );
             return true;
@@ -1117,7 +1117,7 @@ impl TerminalView {
             move |me, result, ctx| match result {
                 Ok(paths) => me.insert_clipboard_image_paths(paths, insert_into_rich_input, ctx),
                 Err(error) => me.show_error_toast(
-                    format!("Nao foi possivel salvar a imagem temporaria: {error}"),
+                    format!("Não foi possível salvar a imagem temporária: {error}"),
                     ctx,
                 ),
             },

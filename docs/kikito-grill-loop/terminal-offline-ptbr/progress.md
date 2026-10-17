@@ -1778,6 +1778,12 @@
 - O Explorador de Projetos foi auditado separadamente. Comentários importados do GitHub e ações de comentário foram mantidos fora deste lote por pertencerem ao fluxo hospedado de revisão; sugestões de correção da última execução pertencem ao fluxo assistido por IA; o aviso de host desconectado descreve uma sessão remota. Rótulos locais da barra de status do LSP já estavam em português.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
 
+## Auditoria — barra de entrada e colagem de imagem
+
+- Revisei `app/src/terminal/input/message_bar`, `terminal_message_bar.rs` e o fluxo local da ação de colar imagem pela área de transferência. O rótulo `Colar caminho da imagem` e sua dica já estavam traduzidos; corrigi a acentuação de dois avisos de imagem/clipboard em `app/src/terminal/view/use_agent_footer/mod.rs`.
+- Mantive intactos os prompts e ações de Agent/IA, mensagens internas de depuração/invariantes, conteúdo digitado, caminhos e nomes de arquivos. O restante da barra de mensagens inspecionada não revelou copy local elegível em inglês.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
 
 
 
