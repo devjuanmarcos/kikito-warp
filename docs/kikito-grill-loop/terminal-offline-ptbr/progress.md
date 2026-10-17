@@ -1211,3 +1211,7 @@
 ## Diretório inicial de sessões
 
 - Traduzi os rótulos de diretório inicial para janelas, abas e painéis divididos, além das opções de diretório pessoal, sessão anterior e diretório personalizado.
+
+## Configuração de endpoint de inferência
+
+- Traduzi os campos, instruções, exemplos e botões do modal local para endpoints configurados pelo usuário; mantive URLs, prefixos de chave e identificadores de modelo como valores técnicos.
