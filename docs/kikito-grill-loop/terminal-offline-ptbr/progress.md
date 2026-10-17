@@ -1647,3 +1647,8 @@
 - Revisei chamadas `ctx.open_url` em `app/src`: suporte do Agent Mode, docs de launch configs, Wayland, links de download WebAssembly, citações de documentação/memória e páginas administrativas.
 - As chamadas de suporte/citações dependem de Agent Mode ou conteúdo de agentes/cloud desativado no OSS; o fluxo de download é `wasm` e não compõe a GUI desktop OSS; a ação de docs de launch config não tem ponto de construção de item na busca atual; e o botão de documentação do Wayland já é ocultado no canal OSS. O Resource Center e modais de lançamento com links Warp também foram ocultados em etapas anteriores.
 - A abertura global de URLs mantém o bloqueio OSS para destinos HTTP(S) externos, permitindo somente intenções locais de loopback. Esta revisão é estática; captura de sockets com o binário OSS em execução continua pendente porque não havia processo OSS ativo durante a inspeção anterior.
+## Revisão estática do bootstrap OSS e serviços
+
+- Confirmei em `crates/warp_core/src/channel/state.rs` que a configuração do canal OSS usa `WarpServerConfig::local()` (`127.0.0.1:0`), `OzConfig::local()`, sem endpoint de compartilhamento, `telemetry_config: None`, `autoupdate_config: None` e `crash_reporting_config: None`.
+- Em `app/src/lib.rs`, o OSS inicializa `AuthState` local, não inicia refresh de autenticação/segredos e não inicializa nem envia erros para crash reporting. O handler central bloqueia abertura de HTTP(S) fora de loopback, e `crates/http_client` aplica a restrição de host nas requisições.
+- Validação desta etapa foi por inspeção estática; o build `cargo check -p warp --bin warp-oss` passou nas mudanças de feature flags anteriores. Captura de tráfego do executável em execução ainda não foi realizada.
