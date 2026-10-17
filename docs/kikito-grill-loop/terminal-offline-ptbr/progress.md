@@ -1373,3 +1373,9 @@
 - Acrescentei termos em português à busca das preferências locais e traduzi ações de menu/atalhos do workspace, preservando identificadores, ações e teclas.
 - Removi o atalho de documentação hospedada da opção local de fluxos de trabalho globais.
 - `cargo fmt --all`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `git diff --check` passaram. Não executei testes.
+
+## Ações locais do workspace e IA
+
+- Traduzi rótulos da Paleta de Comandos para regras de IA, servidores MCP, navegação de tarefas/agentes, notificações, blocos compartilhados e configurações de IA.
+- Traduzi o nome da seção local Warpify como Personalização para evitar a marca antiga na interface.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
