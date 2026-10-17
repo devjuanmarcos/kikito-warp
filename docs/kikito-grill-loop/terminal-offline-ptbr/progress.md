@@ -854,3 +854,8 @@
 
 - Traduzi a opção de ocultar a janela ao perder o foco do teclado.
 - Preservei o controle e o estado configurável do Quake Mode.
+
+## Tradução — seletor de modelo no prompt
+
+- Traduzi o rótulo da opção para exibir o seletor de modelos no prompt.
+- Preservei a configuração e a interface de seleção.
