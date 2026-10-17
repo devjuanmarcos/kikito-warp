@@ -1683,3 +1683,11 @@
 - Na varredura de superfícies locais de terminal e workspace, encontrei duas descrições em inglês no registro dos atalhos macOS para ajustar o nível de anúncios de acessibilidade. Traduzi para `Definir anúncios de acessibilidade concisos` e `Definir anúncios de acessibilidade detalhados` em `app/src/workspace/mod.rs`.
 - Preservei os IDs, as ações e os atalhos existentes. Mantive fora deste lote os resultados ligados a Warp Drive, cobrança, agentes na nuvem e instalação de CLIs hospedados; também não alterei descrições usadas apenas por schema e não renderizadas na interface local do OSS.
 - Validação: `git diff --check` e `cargo check -p warp --bin warp-oss` passou. Nenhum teste foi executado.
+
+## Auditoria — Settings OSS e atalhos do editor
+
+- Revisei as páginas Appearance, Keybindings e About expostas na navegação OSS, além da busca geral e das dicas/diálogos alcançados nessas páginas. Títulos, rótulos, controles, busca, estados vazios, confirmação de atalhos, tooltip de configuração local e conteúdo da página Sobre já estavam em pt-BR. Os seletores de tema, fonte, ícone e material mantêm nomes próprios/técnicos; os modais locais de tema e cores por diretório já haviam sido traduzidos em lotes anteriores.
+- A página Keybindings mostra também descrições de ações registradas por outras áreas. Traduzi o conjunto de atalhos do `EditorView` em `app/src/editor/view/mod.rs` (seleção, navegação, edição de texto, cursor múltiplo, sugestão automática e Vim), preservando IDs, condições e teclas.
+- Mantive os slugs e chaves `SettingsSection::slug/from_slug`, pois são contratos persistidos e argumentos da CLI; os termos em inglês de busca interna são índices, não texto exibido. Os rótulos do painel Cloud platform e outras páginas foram excluídos por pertencerem à navegação não OSS. URLs de documentação não foram alteradas; a copy de apoio adjacente já está em português.
+- A página Keybindings ainda pode exibir descrições cadastradas por outros módulos (por exemplo, ações específicas de editor de código, terminal e painéis); esses registros não faziam parte do conjunto `EditorView` deste lote e permanecem como área de auditoria futura. Conteúdo dinâmico de provedores também fica fora da tradução local.
+- Validação: `cargo fmt --all` e `git diff --check`; `cargo check -p warp --bin warp-oss` passou. Nenhum teste foi executado.
