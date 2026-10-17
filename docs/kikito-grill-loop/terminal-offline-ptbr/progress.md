@@ -874,3 +874,8 @@
 
 - Traduzi o rótulo e a descrição da preferência para agrupar arquivos abertos na mesma aba em um único painel do editor.
 - Preservei a opção e seu comportamento.
+
+## Tradução — estados de permissão do perfil de execução
+
+- Traduzi os quatro estados de permissão exibidos no resumo do perfil: decisão do agente, permitir sempre, perguntar sempre e estado desconhecido.
+- Mantive os valores internos e a lógica de permissão.

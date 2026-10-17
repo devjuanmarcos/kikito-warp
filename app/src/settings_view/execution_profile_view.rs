@@ -711,10 +711,10 @@ fn render_action_permission_line_with_icon(
     is_ai_enabled: bool,
 ) -> Box<dyn Element> {
     let permission_text = match permission {
-        ActionPermission::AgentDecides => "Agent decides",
-        ActionPermission::AlwaysAllow => "Always allow",
-        ActionPermission::AlwaysAsk => "Always ask",
-        ActionPermission::Unknown => "Unknown",
+        ActionPermission::AgentDecides => "O agente decide",
+        ActionPermission::AlwaysAllow => "Sempre permitir",
+        ActionPermission::AlwaysAsk => "Sempre perguntar",
+        ActionPermission::Unknown => "Desconhecido",
     };
     render_permission_line_with_icon(icon, label, permission_text, appearance, is_ai_enabled)
 }
