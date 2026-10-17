@@ -1414,3 +1414,8 @@
 - Ocultei no canal OSS as ações de busca/exportação do Warp Drive, logout e instalação global das CLIs Oz e Warp Control.
 - Traduzi o comando local “Toggle Warp AI” para “Alternar assistente de IA”.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Toasts de objetos ausentes
+
+- Traduzi para pt-BR os avisos locais exibidos quando um objeto sincronizado não é encontrado ou o acesso é negado, incluindo os caminhos de abertura por link.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

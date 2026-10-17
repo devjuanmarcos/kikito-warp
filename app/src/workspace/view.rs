@@ -16554,7 +16554,7 @@ impl Workspace {
                 if !object_found {
                     self.toast_stack.update(ctx, |toast_stack, ctx| {
                         let toast = DismissibleToast::error(String::from(
-                            "Resource not found or access denied",
+                            "Recurso não encontrado ou acesso negado",
                         ));
                         toast_stack.add_ephemeral_toast(toast, ctx);
                     });
