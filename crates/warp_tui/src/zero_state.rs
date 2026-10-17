@@ -1023,7 +1023,7 @@ fn render_project_context_body(
         // nothing may be known yet; this also covers projects with no
         // context at all.
         return column.child(
-            TuiText::new("Discovering project context…")
+            TuiText::new("Descobrindo o contexto do projeto…")
                 .with_style(builder.dim_text_style())
                 .truncate()
                 .finish(),
@@ -1039,13 +1039,13 @@ fn render_project_context_body(
         )
     };
     for file in rule_files {
-        column = status_row(column, format!("{file} loaded"));
+        column = status_row(column, format!("{file} carregado"));
     }
     if project_skill_count > 0 {
         let plural = if project_skill_count == 1 { "" } else { "s" };
         column = status_row(
             column,
-            format!("{project_skill_count} skill{plural} discovered"),
+            format!("{project_skill_count} habilidade{plural} local{plural} encontrada{plural}"),
         );
     }
     column

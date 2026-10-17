@@ -1282,3 +1282,7 @@
 ## Menu de estado do TUI
 
 - Traduzi a seção e os campos de versão, sessão, ID da conversa, diretório de trabalho, organização e e-mail.
+
+## Contexto local do projeto no TUI
+
+- Traduzi o estado de descoberta do contexto, o carregamento dos arquivos de regras locais e a contagem de habilidades do projeto na tela inicial do TUI.
