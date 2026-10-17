@@ -1737,3 +1737,9 @@
 - Revisei rótulos, tooltips, menus de contexto, avisos de encerramento do shell e estados da sessão local. As ações locais visíveis já estão em português; não encontrei strings locais em inglês para alterar neste lote. Mensagens do shell e saídas de comandos continuam dinâmicas e preservam o texto produzido pelo sistema.
 - Mantive sem alteração os fluxos de Agent/IA e infraestrutura hospedada da inicialização de projeto (indexação associada ao agente, geração assistida de AGENTS.md, criação de ambiente para cloud agents), instalação remota de servidores de linguagem, compartilhamento de sessão, SSH remoto e cópia de links/IDs de depuração. Esses caminhos dependem de serviços ou conteúdo externo e estão fora deste recorte OSS local.
 - Não houve mudança de código neste lote. `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram; nenhum teste foi executado.
+
+## Auditoria — menus e chrome da janela
+
+- Revisei a barra de menus do aplicativo, o menu de janela/dock e a origem do título da janela. No canal OSS, os menus visíveis e suas ações de janela/arquivo/edição usam rótulos já traduzidos; o título da janela acompanha o nome dinâmico da aba/sessão, sem rótulo fixo em inglês.
+- Itens em inglês encontrados ficam condicionados a canais não OSS (política de privacidade, sair, ajuda/feedback, menus AI/Drive e nova aba de agente). Mantive-os fora do escopo. Também não alterei rótulos de ações nativas de menu do sistema, identificadores internos, nomes de arquivo de configuração nem entradas de depuração que criam usuário/autenticam em serviço externo.
+- Não há integração de ícone de bandeja nesta camada do app. Nenhum código foi alterado neste lote; `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
