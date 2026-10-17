@@ -799,3 +799,8 @@
 
 - Traduzi o aviso de comando editado e o controle para restaurar o estado original.
 - Preservei a ação existente de redefinição do comando.
+
+## Tradução — seleção de temas
+
+- Traduzi as orientações dos modos claro, escuro e geral, além do estado sem resultados.
+- Preservei os modos do sistema e o filtro de temas.
