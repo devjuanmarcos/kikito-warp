@@ -1488,3 +1488,8 @@
 
 - Traduzi o título padrão “New agent conversation” para “Nova conversa com agente”. Os controles do painel já estavam em português; títulos cloud e ações de sessões compartilhadas não foram alterados.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+## Descrições dos comandos de barra
+
+- Traduzi descrições de comandos locais para conversas, terminal, MCP, chaves, logs, voz, Docker local, skills, regras, editor, abas, revisão, perfis, planejamento, histórico, ramificação e exportação.
+- Mantive a sintaxe e os argumentos dos comandos, prompts enviados aos agentes e entradas ligadas a conta, cobrança, feedback, controle remoto ou execução cloud.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `PROTOC=(WinGet protoc) cargo check -p warp_tui --bin warp-tui-oss` passaram. Não executei testes.
