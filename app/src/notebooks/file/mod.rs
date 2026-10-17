@@ -932,7 +932,7 @@ impl FileNotebookView {
             .with_child(
                 appearance
                     .ui_builder()
-                    .paragraph(format!("Could not read {}", source.display_name()))
+                    .paragraph(format!("Não foi possível ler {}", source.display_name()))
                     .with_style(self.state_style(appearance))
                     .build()
                     .finish(),
@@ -945,7 +945,7 @@ impl FileNotebookView {
                         .with_text_and_icon_label(
                             TextAndIcon::new(
                                 TextAndIconAlignment::TextFirst,
-                                "Try again".to_string(),
+                                "Tentar novamente".to_string(),
                                 Icon::Refresh.to_warpui_icon(error_text_color),
                                 MainAxisSize::Min,
                                 MainAxisAlignment::Center,
@@ -970,7 +970,7 @@ impl FileNotebookView {
         Align::new(
             appearance
                 .ui_builder()
-                .paragraph(format!("Loading {}...", source.display_name()))
+                .paragraph(format!("Carregando {}...", source.display_name()))
                 .with_style(self.state_style(appearance))
                 .build()
                 .finish(),
@@ -982,7 +982,7 @@ impl FileNotebookView {
         Align::new(
             appearance
                 .ui_builder()
-                .paragraph("Missing source file".to_string())
+                .paragraph("Arquivo de origem ausente".to_string())
                 .with_style(self.state_style(appearance))
                 .build()
                 .finish(),

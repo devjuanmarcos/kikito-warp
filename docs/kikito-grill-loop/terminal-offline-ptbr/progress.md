@@ -783,3 +783,8 @@
 
 - Traduzi as dicas dos modos de código-fonte e visualização, além do comando de tela cheia.
 - Preservei os modos Mermaid e a ação de abrir o diagrama ampliado.
+
+## Tradução — estados de arquivos em notebooks
+
+- Traduzi as mensagens de carregamento, ausência e falha de leitura de arquivos.
+- Traduzi a ação de tentar novamente e preservei o nome dinâmico do arquivo.
