@@ -182,15 +182,36 @@ impl Client {
     }
 
     pub fn from_client_builder(client_builder: reqwest::ClientBuilder) -> reqwest::Result<Self> {
-        client_builder.build().map(|client| Self {
-            wrapped: client,
-            include_warp_headers: true,
-            #[cfg(target_family = "wasm")]
-            omit_credentials: false,
-            before_request_sent: None,
-            after_response_received: None,
-            iap_token_provider: None,
-        })
+        let redirect_policy = if ChannelState::channel() == Channel::Oss {
+            reqwest::redirect::Policy::custom(|attempt| {
+                if is_loopback_url(attempt.url()) {
+                    attempt.follow()
+                } else {
+                    attempt.stop()
+                }
+            })
+        } else {
+            reqwest::redirect::Policy::default()
+        };
+
+        let client_builder = if ChannelState::channel() == Channel::Oss {
+            client_builder.no_proxy()
+        } else {
+            client_builder
+        };
+
+        client_builder
+            .redirect(redirect_policy)
+            .build()
+            .map(|client| Self {
+                wrapped: client,
+                include_warp_headers: true,
+                #[cfg(target_family = "wasm")]
+                omit_credentials: false,
+                before_request_sent: None,
+                after_response_received: None,
+                iap_token_provider: None,
+            })
     }
 
     pub fn set_before_request_fn(&mut self, hook_fn: RequestHookFn) {

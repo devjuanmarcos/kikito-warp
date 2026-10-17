@@ -1334,3 +1334,17 @@
 - Traduzi os nomes de fallback `File` e `Folder` na árvore de arquivos para `Arquivo` e `Pasta`.
 - Traduzi o estado local `Enable {server}` para `Ativar {server}` no rodapé de suporte a linguagens; as mensagens dinâmicas do servidor permanecem como recebidas.
 - Traduzi descrições dos campos de configuração do diretório inicial das novas sessões, incluindo configuração global e opções separadas para painel, aba e janela.
+
+## Continuação da localização local
+
+- Traduzi para português o título da aba de configurações e a ação para abrir o arquivo local de preferências.
+- Traduzi “Advanced” para “Avançado” na configuração de diretório de trabalho e atualizei o rótulo do editor interno para “Kikito Terminal”.
+- As demais superfícies locais adjacentes de aparência, atalhos, automação, editor e revisão foram auditadas; os rótulos visíveis já estavam em português. Itens de conta, nuvem, agentes e serviços externos ficaram fora do escopo.
+
+## Proteção contra redirecionamentos externos
+
+- A auditoria encontrou que uma requisição permitida para loopback poderia seguir um redirecionamento HTTP até um host público. O cliente compartilhado e o cache de assets agora interrompem redirecionamentos não loopback no canal OSS; o cliente de controle local não segue redirecionamentos.
+- A busca por conexões diretas identificou usos locais no controle do app e na ponte ACP. Conexões MCP, sessões compartilhadas/remotas e subscriptions GraphQL permanecem desativadas no OSS.
+- `cargo check -p http_client -p asset_cache -p local_control`, `cargo clippy -p http_client -p asset_cache -p local_control --all-targets -- -D warnings` e `cargo check -p warp --bin warp-oss` passaram após a correção. Não executei testes.
+- A verificação de rede enquanto ações da interface são usadas continua pendente; a auditoria estática e a observação em repouso não cobrem todos os fluxos em runtime.
+- Os clientes OSS também ignoram proxies de ambiente nesse tráfego local; isso impede que uma URL loopback seja enviada a um proxy externo.

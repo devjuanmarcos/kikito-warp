@@ -147,14 +147,30 @@ async fn fetch_file_to_memory(url: Url) -> Result<Bytes, anyhow::Error> {
         bail!("Kikito Terminal blocks remote asset downloads in offline mode");
     }
 
+    let client_builder = reqwest::Client::builder();
+    let client_builder = if ChannelState::channel() == Channel::Oss {
+        client_builder
+            .no_proxy()
+            .redirect(reqwest::redirect::Policy::custom(|attempt| {
+                if is_loopback_url(attempt.url()) {
+                    attempt.follow()
+                } else {
+                    attempt.stop()
+                }
+            }))
+    } else {
+        client_builder
+    };
+    let client = client_builder.build()?;
+
     cfg_if::cfg_if! {
         if #[cfg(target_family = "wasm")] {
-            let response = reqwest::get(url).await?;
+            let response = client.get(url).send().await?;
         } else {
             // On non-web platforms, reqwest expects that it is operating within
             // a Tokio-compatible runtime, so use async-compat to wrap the call
             // so reqwest's expectations are met.
-            let response = async_compat::Compat::new(async move { reqwest::get(url).await }).await?;
+            let response = async_compat::Compat::new(async move { client.get(url).send().await }).await?;
         }
     }
     let content = response.error_for_status()?.bytes().await?;

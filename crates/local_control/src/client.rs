@@ -51,7 +51,11 @@ pub fn send_request(
             "local control endpoint is disabled for this instance",
         )
     })?;
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("the local-control HTTP client should be constructible");
     let response = client
         .post(endpoint.url())
         .header("Authorization", credential.authorization_value())
