@@ -980,3 +980,8 @@
 
 - Traduzi o título e a ação do banner que oferece expansão automática de aliases.
 - Atualizei a referência de marca para Kikito Terminal e mantive os valores e a renderização do alias intactos.
+
+## Tradução — configuração do modo de agente
+
+- Traduzi o título, a explicação e o botão do banner de configuração do Agent Mode.
+- Atualizei a referência de marca para Kikito Terminal e preservei o comando `/init`, as ações e os identificadores técnicos.
