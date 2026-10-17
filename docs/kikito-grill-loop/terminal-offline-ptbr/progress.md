@@ -1493,3 +1493,8 @@
 - Traduzi descrições de comandos locais para conversas, terminal, MCP, chaves, logs, voz, Docker local, skills, regras, editor, abas, revisão, perfis, planejamento, histórico, ramificação e exportação.
 - Mantive a sintaxe e os argumentos dos comandos, prompts enviados aos agentes e entradas ligadas a conta, cobrança, feedback, controle remoto ou execução cloud.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss`, `cargo clippy -p warp --bin warp-oss -- -D warnings` e `PROTOC=(WinGet protoc) cargo check -p warp_tui --bin warp-tui-oss` passaram. Não executei testes.
+## Avisos de anexos no campo de entrada
+
+- Traduzi os estados do prompt que informam quando comandos ou texto selecionado foram anexados como contexto, incluindo as quantidades e a indicação de remoção pelo atalho Escape.
+- A view compartilhada da barra de entrada não tinha rótulos estáticos locais pendentes. Os seletores de prompts da Warp Drive são cloud-only; as views locais de prompts e skills não definem rótulos próprios.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
