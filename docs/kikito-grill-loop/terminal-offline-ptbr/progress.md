@@ -1750,3 +1750,10 @@
 - Os menus do Explorador de projetos, rótulos de arquivo/pasta e estados locais já estavam em português. Mantive nomes de arquivos e diretórios intactos.
 - Mantive em inglês o texto de indisponibilidade para sessões remotas, pois descreve especificamente o modo remoto. Traduzi “Clone repository” e a explicação do botão; a operação de clonagem continua podendo acessar o host Git escolhido pelo usuário. Logs de diagnóstico não são copy da interface.
 - `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
+
+
+## Auditoria — boas-vindas e configuração inicial
+
+- O caminho `app/src/onboarding` não existe nesta checkout. Revisei as telas equivalentes em `workspace/view/onboarding.rs`, `workspace/hoa_onboarding` e a lógica de preferências em `settings/onboarding.rs`. O copy visível de boas-vindas/configuração local já está em português; não foi necessária alteração de código.
+- Mantive fora do escopo o onboarding de login/conta e as partes sobre caixa de entrada de agentes, execução hospedada e links para documentação externa. Os textos restantes em inglês nesta superfície são comentários, logs ou nomes internos, não copy exibido ao usuário.
+- `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
