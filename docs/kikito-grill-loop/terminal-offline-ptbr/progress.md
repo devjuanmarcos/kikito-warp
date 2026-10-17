@@ -1069,11 +1069,17 @@
 
 - Traduzi os rótulos compartilhados para maximizar e minimizar painéis.
 - Como são criados por um helper comum, os rótulos atualizados aparecem nos menus locais de painéis; a lógica e atalhos permanecem iguais.
+
 ## Tradução — menus de divisão de painéis
 
 - Traduzi os itens de divisão nas quatro direções e os itens de maximizar/minimizar/fechar painel nos menus locais de configurações e variáveis de ambiente.
 - Preservei as ações, os atalhos e as condições de exibição.
+
 ## Tradução — ações para abrir no desktop
 
 - Substituí os rótulos visíveis “Open in Warp” por “Abrir no Kikito Terminal” e traduzi a explicação para abrir uma conversa no aplicativo para desktop.
 - Traduzi também o botão para ver execuções na nuvem; ações, identificadores e destinos foram preservados.
+## Abas e grupos — menus contextuais
+
+- Revisei os menus de abas individuais e seleção múltipla: ações de fixar/desafixar, renomear, fechar e agrupar já estavam em português; os rótulos de mover para grupo e remover do grupo também foram mantidos.
+- Traduzi os resumos de abas ocultas para “+ N mais” e “e mais N”, preservando contagens e comportamento.

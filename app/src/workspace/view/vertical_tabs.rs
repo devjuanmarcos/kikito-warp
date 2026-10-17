@@ -5085,7 +5085,7 @@ fn render_summary_overflow_line(
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     Text::new_inline(
-        format!("+ {hidden_count} more"),
+        format!("+ {hidden_count} mais"),
         appearance.ui_font_family(),
         10.,
     )
@@ -7079,7 +7079,7 @@ fn render_code_detail_section(
 
     if extra_open_tabs > 0 {
         section.add_child(render_detail_wrapping_text(
-            format!("and {extra_open_tabs} more"),
+            format!("e mais {extra_open_tabs}"),
             12.,
             text_colors.sub,
             None,
