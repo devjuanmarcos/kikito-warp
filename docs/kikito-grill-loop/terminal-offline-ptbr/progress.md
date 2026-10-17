@@ -1513,3 +1513,9 @@
 - Traduzi os status e controles locais do painel de envio de arquivos: aguardando senha, envio/conclusão/falha, destino, ações para ver/fechar a sessão, remoção e cabeçalho.
 - Mantive nomes de comandos, caminhos, host remoto e detalhes dinâmicos sem alteração.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Status da navegação na paleta de comandos
+
+- Traduzi os status de execução/conclusão e os rótulos de acessibilidade da navegação entre sessões. Os comandos e prompts dinâmicos continuam intactos.
+- As descrições dos comandos de barra e as ações de conta, autenticação, cobrança e cloud ficaram fora deste lote.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

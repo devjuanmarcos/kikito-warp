@@ -103,7 +103,7 @@ impl crate::search::item::SearchItem for SearchItem {
 
     fn accessibility_label(&self) -> String {
         format!(
-            "Selected {}. {}.",
+            "Selecionado {}. {}.",
             self.navigation_data().prompt(),
             self.navigation_data()
                 .command_context()
