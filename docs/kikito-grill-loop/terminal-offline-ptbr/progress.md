@@ -1207,3 +1207,7 @@
 ## Integração de shell e configurações SSH
 
 - Traduzi descrições, placeholders e controles locais de integração de shells e SSH, incluindo as opções de instalação. Substituí o rótulo da funcionalidade por descrições em português e removi o link para a documentação externa. `main_page.rs` e `show_blocks_view.rs` ficaram fora deste lote por tratarem de conta, atualização e blocos compartilhados remotos.
+
+## Diretório inicial de sessões
+
+- Traduzi os rótulos de diretório inicial para janelas, abas e painéis divididos, além das opções de diretório pessoal, sessão anterior e diretório personalizado.
