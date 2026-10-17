@@ -1743,3 +1743,10 @@
 - Revisei a barra de menus do aplicativo, o menu de janela/dock e a origem do título da janela. No canal OSS, os menus visíveis e suas ações de janela/arquivo/edição usam rótulos já traduzidos; o título da janela acompanha o nome dinâmico da aba/sessão, sem rótulo fixo em inglês.
 - Itens em inglês encontrados ficam condicionados a canais não OSS (política de privacidade, sair, ajuda/feedback, menus AI/Drive e nova aba de agente). Mantive-os fora do escopo. Também não alterei rótulos de ações nativas de menu do sistema, identificadores internos, nomes de arquivo de configuração nem entradas de depuração que criam usuário/autenticam em serviço externo.
 - Não há integração de ícone de bandeja nesta camada do app. Nenhum código foi alterado neste lote; `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
+
+## Auditoria — explorador e entrada de projetos locais
+
+- Traduzi os botões de abertura de pasta/repositório e criação de projeto, seus tooltips e descrições de atalhos na tela de entrada local. IDs e atalhos foram preservados.
+- Os menus do Explorador de projetos, rótulos de arquivo/pasta e estados locais já estavam em português. Mantive nomes de arquivos e diretórios intactos.
+- Mantive em inglês o texto de indisponibilidade para sessões remotas, pois descreve especificamente o modo remoto. Traduzi “Clone repository” e a explicação do botão; a operação de clonagem continua podendo acessar o host Git escolhido pelo usuário. Logs de diagnóstico não são copy da interface.
+- `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. Nenhum teste foi executado.
