@@ -788,3 +788,9 @@
 
 - Traduzi as mensagens de carregamento, ausência e falha de leitura de arquivos.
 - Traduzi a ação de tentar novamente e preservei o nome dinâmico do arquivo.
+
+## Tradução — dicas dos chips de contexto
+
+- Traduzi dicas para alterar a branch do Git e o diretório de trabalho, além do rótulo desse
+  diretório.
+- Preservei as ações dos chips e os valores exibidos.
