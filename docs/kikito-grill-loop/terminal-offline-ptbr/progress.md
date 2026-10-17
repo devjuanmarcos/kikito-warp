@@ -1401,3 +1401,10 @@
 - Traduzi a notificação local de permissão de notificações. O atalho para instruções hospedadas só aparece fora do OSS.
 - O banner de recuperação gráfica no Linux mantém a explicação local, mas oculta o botão que abriria a documentação externa no OSS.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. O primeiro check apontou imports exclusivos de Linux não usados no Windows; deixei-os condicionais à plataforma e a segunda verificação passou. Não executei testes.
+
+## Tooltips e ações locais de arquivo
+
+- Traduzi os tooltips de links detectados no terminal para abrir arquivos, pastas e links.
+- Traduzi os botões do editor local de roteadores de modelos e o tooltip para abrir arquivos na revisão de código.
+- A revisão da tela de Aparência não encontrou mais textos visíveis em inglês no canal OSS; não foram necessárias alterações.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

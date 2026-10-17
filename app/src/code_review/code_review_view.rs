@@ -2643,7 +2643,7 @@ impl CodeReviewView {
                 ActionButton::new("", NakedTheme)
                     .with_icon(Icon::LinkExternal)
                     .with_size(ButtonSize::InlineActionHeader)
-                    .with_tooltip("Open file")
+                    .with_tooltip("Abrir arquivo")
                     .on_click(move |ctx| {
                         ctx.dispatch_typed_action(CodeReviewAction::OpenInNewTab {
                             path: open_tab_path.clone(),

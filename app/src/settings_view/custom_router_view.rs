@@ -48,7 +48,7 @@ impl CustomRouterView {
     pub fn new(router: CustomModelRouter, ctx: &mut ViewContext<Self>) -> Self {
         let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
         let open_file_button = ctx.add_typed_action_view(|_ctx| {
-            ActionButton::new("Open file", SecondaryTheme)
+            ActionButton::new("Abrir arquivo", SecondaryTheme)
                 .with_icon(Icon::File)
                 .with_size(ButtonSize::Small)
                 .with_height(HEADER_BUTTON_HEIGHT)
@@ -61,7 +61,7 @@ impl CustomRouterView {
         });
 
         let edit_button = ctx.add_typed_action_view(|_ctx| {
-            ActionButton::new("Edit", SecondaryTheme)
+            ActionButton::new("Editar", SecondaryTheme)
                 .with_icon(Icon::Pencil)
                 .with_size(ButtonSize::Small)
                 .with_height(HEADER_BUTTON_HEIGHT)
@@ -74,7 +74,7 @@ impl CustomRouterView {
         });
 
         let delete_button = ctx.add_typed_action_view(|_ctx| {
-            ActionButton::new("Delete", DangerSecondaryTheme)
+            ActionButton::new("Excluir", DangerSecondaryTheme)
                 .with_icon(Icon::Trash)
                 .with_size(ButtonSize::Small)
                 .with_height(HEADER_BUTTON_HEIGHT)
