@@ -25,6 +25,7 @@ use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent_conversations_model::AgentConversationsModel;
 use crate::appearance::Appearance;
 use crate::auth::AuthStateProvider;
+use crate::channel::{Channel, ChannelState};
 use crate::code::buffer_location::LocalOrRemotePath;
 #[cfg(feature = "local_fs")]
 use crate::code::file_tree::FileTreeEvent;
@@ -375,7 +376,10 @@ impl LeftPanelView {
             }
         });
 
-        let active_view = views.first().copied().unwrap_or(ToolPanelView::WarpDrive);
+        let active_view = views
+            .first()
+            .copied()
+            .unwrap_or(ToolPanelView::ProjectExplorer);
         let toolbelt_buttons = views
             .iter()
             .map(|view| Self::create_toolbelt_button_config(view, ctx))
@@ -521,6 +525,8 @@ impl LeftPanelView {
         if !is_current_view_available {
             if let Some(first_view) = views.first().copied() {
                 active_view_state::set(self, first_view, ctx);
+            } else {
+                active_view_state::set(self, ToolPanelView::ProjectExplorer, ctx);
             }
         } else {
             self.update_button_active_states();
@@ -1119,6 +1125,17 @@ impl LeftPanelView {
         force_open: bool,
         ctx: &mut ViewContext<Self>,
     ) {
+        if ChannelState::channel() == Channel::Oss
+            && matches!(
+                action,
+                LeftPanelAction::WarpDrive
+                    | LeftPanelAction::ConversationListView
+                    | LeftPanelAction::SignIn
+            )
+        {
+            return;
+        }
+
         match action {
             LeftPanelAction::ProjectExplorer => {
                 active_view_state::set(self, ToolPanelView::ProjectExplorer, ctx);
@@ -1331,7 +1348,9 @@ impl View for LeftPanelView {
 
         let active_view = self.active_view.get();
         let availability = self.active_view_availability(app);
-        let content_area: Box<dyn Element> = if availability != ToolPanelAvailability::Available {
+        let content_area: Box<dyn Element> = if self.toolbelt_buttons.is_empty() {
+            Shrinkable::new(1.0, Container::new(Empty::new().finish()).finish()).finish()
+        } else if availability != ToolPanelAvailability::Available {
             Shrinkable::new(
                 1.0,
                 self.render_unavailable_panel(appearance, active_view, availability),

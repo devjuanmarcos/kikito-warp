@@ -1241,3 +1241,11 @@
 ## Agrupamento de abas no workspace
 
 - Revisei os menus locais de agrupamento e seleção de abas em `tab_grouping.rs`; os rótulos e o fallback de grupo sem título já estão em português. Nenhum texto de interface precisou de alteração.
+
+## Seções da lista de conversas
+
+- Traduzi os títulos das seções da lista para `ATIVAS` e `ANTERIORES`. Mantive fora deste lote a ação de compartilhamento e suas superfícies remotas.
+
+## Remoção de login no painel lateral OSS
+
+- O canal OSS não inclui mais Drive nem histórico de conversas nas ferramentas do painel lateral. Ações antigas ou disparadas por atalhos não abrem o fluxo de autenticação; se não houver ferramenta local disponível, o painel fica vazio.

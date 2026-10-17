@@ -922,8 +922,8 @@ fn render_section_header(
 
     let title_text = Text::new_inline(
         match section {
-            ConversationSection::Active => "ACTIVE",
-            ConversationSection::Past => "PAST",
+            ConversationSection::Active => "ATIVAS",
+            ConversationSection::Past => "ANTERIORES",
         },
         appearance.ui_font_family(),
         11.,

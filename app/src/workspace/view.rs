@@ -6799,10 +6799,12 @@ impl Workspace {
                 );
             }
             LeftPanelEvent::SignInRequested => {
-                self.open_require_login_modal(AuthViewVariant::RequireLoginCloseable, ctx);
-                self.require_login_modal.update(ctx, |modal, ctx| {
-                    modal.start_sign_in(ctx);
-                });
+                if ChannelState::channel() != Channel::Oss {
+                    self.open_require_login_modal(AuthViewVariant::RequireLoginCloseable, ctx);
+                    self.require_login_modal.update(ctx, |modal, ctx| {
+                        modal.start_sign_in(ctx);
+                    });
+                }
             }
         }
     }
@@ -14975,6 +14977,10 @@ impl Workspace {
     }
 
     fn open_require_login_modal(&mut self, variant: AuthViewVariant, ctx: &mut ViewContext<Self>) {
+        if ChannelState::channel() == Channel::Oss {
+            return;
+        }
+
         self.require_login_modal.update(ctx, |modal, ctx| {
             modal.set_variant(ctx, variant);
         });
@@ -24083,10 +24089,12 @@ impl Workspace {
     /// Computes the list of available left panel views based on current AI settings and feature flags.
     fn compute_left_panel_views(ctx: &AppContext) -> Vec<ToolPanelView> {
         let mut views = vec![];
+        let is_oss = ChannelState::channel() == Channel::Oss;
         if cfg!(feature = "local_fs") && *CodeSettings::as_ref(ctx).show_project_explorer.value() {
             views.push(ToolPanelView::ProjectExplorer);
         }
-        if FeatureFlag::AgentViewConversationListView.is_enabled()
+        if !is_oss
+            && FeatureFlag::AgentViewConversationListView.is_enabled()
             && *AISettings::as_ref(ctx).show_conversation_history
         {
             views.push(ToolPanelView::ConversationListView);
@@ -24099,7 +24107,7 @@ impl Workspace {
                 entry_focus: GlobalSearchEntryFocus::Results,
             });
         }
-        if *WarpDriveSettings::as_ref(ctx).enable_warp_drive {
+        if !is_oss && *WarpDriveSettings::as_ref(ctx).enable_warp_drive {
             views.push(ToolPanelView::WarpDrive);
         }
         views
