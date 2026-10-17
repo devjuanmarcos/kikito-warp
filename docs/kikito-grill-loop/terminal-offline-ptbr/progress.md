@@ -1034,3 +1034,8 @@
 
 - Traduzi os rótulos das abas para Tudo e Comandos; mantive Prompts como termo técnico.
 - Preservei os enums de filtro e o comportamento de seleção do histórico.
+
+## Tradução — seletor de modelos do campo de entrada
+
+- Traduzi o rótulo de categoria, o botão de configuração e os avisos de compatibilidade entre o agente básico e o agente de uso completo do terminal.
+- Mantive o comando `/model`, as variantes, filtros e lógica de seleção intactos.
