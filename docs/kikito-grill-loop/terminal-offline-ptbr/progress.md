@@ -1826,3 +1826,9 @@
 - Traduzi o rótulo do link de documentação no modal de salvamento de configuração, os nomes gerados para novas abas e descrições padrão do parâmetro de branch da worktree. O placeholder visual de branch agora usa `minha-feature-branch`; preservei o valor default `my-feature-branch`, pois pode ser usado como nome real da branch.
 - Os demais botões, placeholders, estados de carregamento e mensagens de validação nos modais locais já estavam em português. Mantive sem tradução o conteúdo dinâmico de erros TOML/sistema, identificadores, valores de configuração e nomes técnicos dos agentes. O destino do link de documentação permanece uma URL externa.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — editor de variáveis de ambiente
+
+- Traduzi os rótulos fixos `Save`, `Variables` e `Load`, além do título inicial `Untitled`, nos componentes do editor local de variáveis de ambiente. Os títulos, campos, validações, diálogos de comando e confirmação de alterações não salvas já estavam em português.
+- Mantive os nomes de variáveis, comandos e valores do usuário. Os avisos de lixeira/restauração e ações Copy link/Duplicate/Trash pertencem à gestão de coleções sincronizadas; nomes como 1Password e LastPass são marcas externas. Ambos ficaram fora deste recorte OSS local.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.

@@ -488,7 +488,7 @@ impl EnvVarCollectionView {
             view.handle_cloud_model_event(event, ctx);
         });
 
-        let pane_configuration = ctx.add_model(|_ctx| PaneConfiguration::new("Untitled"));
+        let pane_configuration = ctx.add_model(|_ctx| PaneConfiguration::new("Sem título"));
 
         let active_env_var_collection_data = ctx.add_model(ActiveEnvVarCollectionData::new);
         ctx.subscribe_to_model(
@@ -660,7 +660,14 @@ impl EnvVarCollectionView {
 
         let title = collection.title.clone().unwrap_or_default();
 
-        self.set_pane_title(if title.is_empty() { "Untitled" } else { &title }, ctx);
+        self.set_pane_title(
+            if title.is_empty() {
+                "Sem título"
+            } else {
+                &title
+            },
+            ctx,
+        );
         if let Some(server_id) = env_var_collection.id.into_server() {
             self.pane_configuration.update(ctx, |pane_config, ctx| {
                 pane_config
