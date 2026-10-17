@@ -809,3 +809,8 @@
 
 - Traduzi a dica do controle que abre o menu de inserção de blocos.
 - Preservei o identificador do botão e o comportamento do menu.
+
+## Tradução — título inicial do caderno
+
+- Traduzi o placeholder do título vazio do caderno para Sem título.
+- Mantive o valor do título e a persistência sem alteração.

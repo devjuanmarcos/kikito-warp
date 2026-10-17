@@ -355,7 +355,7 @@ impl NotebookView {
                 ..Default::default()
             };
             let mut editor = EditorView::single_line(options, ctx);
-            editor.set_placeholder_text("Untitled", ctx);
+            editor.set_placeholder_text("Sem título", ctx);
             editor
         });
         ctx.subscribe_to_view(&title, |notebook, _, event, ctx| {
