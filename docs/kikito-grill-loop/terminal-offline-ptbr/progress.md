@@ -944,3 +944,8 @@
 
 - Traduzi os textos de apresentação das notificações e os trechos de status, duração, saída e erro.
 - Preservei os dados dinâmicos, o comando exibido e a estrutura dos avisos.
+
+## Tradução — compatibilidade dos prompts de shell
+
+- Traduzi os avisos sobre compatibilidade de Powerlevel10k e Pure, incluindo os links de atualização e ajuda.
+- Atualizei a referência de marca para Kikito Terminal e preservei nomes técnicos e URLs.

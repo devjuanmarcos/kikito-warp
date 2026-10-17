@@ -23495,23 +23495,25 @@ impl TerminalView {
         let show_banner = if honor_ps1 {
             let banner_content = if shell_plugins.contains("p10k_unsupported") {
                 Some(BannerTextContent::formatted_text(vec![
-                    FormattedTextFragment::bold("Powerlevel10k now supports Warp!  "),
+                    FormattedTextFragment::bold(
+                        "Powerlevel10k agora oferece suporte ao Kikito Terminal!  ",
+                    ),
                     FormattedTextFragment::plain_text(
-                        "You seem to be running an older (unsupported) version, please follow ",
+                        "Parece que você está usando uma versão antiga (sem suporte). Siga ",
                     ),
                     FormattedTextFragment::hyperlink(
-                        "these instructions",
+                        "estas instruções",
                         P10K_UPDATE_INSTRUCTIONS_URL,
                     ),
-                    FormattedTextFragment::plain_text(" to update to the latest version."),
+                    FormattedTextFragment::plain_text(" para atualizar para a versão mais recente."),
                 ]))
             } else if shell_plugins.contains("pure") {
                 Some(BannerTextContent::formatted_text(vec![
                     FormattedTextFragment::plain_text(
-                        "Pure is not yet supported in Warp. You might consider one of the \
-                        supported prompts as an alternative.  ",
+                        "O Pure ainda não é compatível com o Kikito Terminal. Você pode usar um dos prompts \
+                        compatíveis.  ",
                     ),
-                    FormattedTextFragment::hyperlink("Learn more", PROMPT_COMPATIBILITY_URL),
+                    FormattedTextFragment::hyperlink("Saiba mais", PROMPT_COMPATIBILITY_URL),
                 ]))
             } else {
                 None
