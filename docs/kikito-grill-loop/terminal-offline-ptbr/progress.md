@@ -1506,7 +1506,7 @@
 ## Menu local de histórico inline
 
 - Traduzi o cabeçalho do menu de histórico e o título padrão das conversas sem nome.
-- `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. A execução do Clippy foi interrompida antes de terminar, então não foi validada nessa etapa. Não executei testes.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. O Clippy foi repetido e concluído depois da interrupção inicial. Não executei testes.
 
 ## Status de envio de arquivos por SSH
 
