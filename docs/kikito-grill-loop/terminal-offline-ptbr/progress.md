@@ -879,3 +879,8 @@
 
 - Traduzi os quatro estados de permissão exibidos no resumo do perfil: decisão do agente, permitir sempre, perguntar sempre e estado desconhecido.
 - Mantive os valores internos e a lógica de permissão.
+
+## Tradução — demais estados de permissão
+
+- Padronizei em português os estados exibidos para escrita, uso do computador, perguntas, execução de agentes e permissões booleanas.
+- Preservei as variantes e a lógica internas do perfil.
