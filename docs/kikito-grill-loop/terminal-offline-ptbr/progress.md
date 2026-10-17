@@ -1185,3 +1185,8 @@
 
 - Confirmei que "Comunicar problema" abria o formulário de issues do GitHub e "Mais informações" abria a documentação externa do Warp. Removi esses dois controles e as ações que abriam URLs.
 - Mantive a cópia do erro de inicialização do PTY e o texto explicativo do encerramento prematuro; não havia controle de fechar neste banner.
+
+## Seletor de shell
+
+- Traduzi as opções fixas `Default` e `Custom` do seletor de shell nas configurações para Padrão e Personalizado. O placeholder do caminho, os nomes dos shells, os detalhes e as opções da paleta já estavam localizados.
+- Preservei nomes próprios (PowerShell, Git Bash e WSL), comandos, caminhos e valores persistidos.
