@@ -1200,3 +1200,7 @@
 
 - Traduzi os dois cabeçalhos dos seletores de servidores MCP e o aviso de quando o limite de uso reinicia, incluindo os nomes dos meses em português e a data no fuso local.
 - As strings aparecem como cabeçalho de dropdown na página local de perfis e no widget de uso quando esse widget está ativo.
+
+## Privacidade — redação de segredos
+
+- Traduzi os rótulos das abas pessoal/organização, o aviso de configuração somente pela organização e o estado vazio dos padrões corporativos. Fluxos de conta, telemetria e armazenamento remoto ficaram fora deste lote.

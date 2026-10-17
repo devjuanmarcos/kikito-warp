@@ -765,7 +765,7 @@ impl SecretRedactionWidget {
             .count();
 
         let personal_tab = self.render_tab(
-            "Personal".to_string(),
+            "Pessoais".to_string(),
             personal_count,
             SecretRedactionTab::Personal,
             active_tab == SecretRedactionTab::Personal,
@@ -776,7 +776,7 @@ impl SecretRedactionWidget {
         let is_enterprise_tab_active = active_tab == SecretRedactionTab::Enterprise;
 
         let enterprise_tab = self.render_tab(
-            "Enterprise".to_string(),
+            "Organização".to_string(),
             enterprise_count,
             SecretRedactionTab::Enterprise,
             is_enterprise_tab_active,
@@ -792,7 +792,7 @@ impl SecretRedactionWidget {
         if is_enterprise_tab_active {
             row.add_child(Shrinkable::new(1., Empty::new().finish()).finish());
             row.add_child(self.render_info(
-                "Enterprise secret redaction cannot be modified.".to_string(),
+                "Os padrões da organização não podem ser alterados.".to_string(),
                 appearance,
             ));
         }
@@ -911,7 +911,7 @@ impl SecretRedactionWidget {
 
         if enterprise_regex_list.is_empty() {
             return ui_builder
-                .paragraph("No enterprise regexes have been configured by your organization.")
+                .paragraph("Sua organização ainda não configurou expressões regulares.")
                 .with_style(UiComponentStyles {
                     font_color: Some(description_text_color),
                     ..Default::default()
@@ -1187,7 +1187,7 @@ impl SettingsWidget for SecretRedactionWidget {
                     Container::new({
                         if is_enterprise_enabled {
                             self.render_info(
-                                "Enabled by your organization.".to_string(),
+                                "Ativado pela sua organização.".to_string(),
                                 appearance,
                             )
                         } else {
