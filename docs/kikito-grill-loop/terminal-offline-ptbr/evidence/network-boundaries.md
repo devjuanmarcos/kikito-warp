@@ -34,3 +34,9 @@ Esta evidência reúne a revisão estática dos caminhos de rede do próprio pro
 - A política de `crates/http_client` não cobre WebSocket, porque o crate `websocket` conecta diretamente via TCP. A proteção atual é por disponibilidade/gating dos consumidores, e não por bloqueio de socket no nível do processo.
 - O TTY remoto mantido no código usa um endpoint loopback configurado localmente; o transporte de WebSocket não o encaminha mais ao proxy de ambiente.
 - Esta é uma inspeção estática dos pontos encontrados no código; não comprova, por si só, ausência de outros sockets durante todos os fluxos ou em processos filhos. A validação runtime permanece parcial.
+
+## Captura runtime da árvore de processos
+
+- Em 2026-10-17, iniciei `target/debug/warp-oss.exe` oculto com o perfil temporário `offline-runtime-audit-20261017h`, aguardei 12 segundos e consultei os sockets TCP de todos os descendentes do processo GUI.
+- A árvore continha o processo GUI, seu processo auxiliar `warp-oss.exe`, `OpenConsole.exe`, `conhost.exe` e processos `powershell.exe` iniciados pelo terminal. O único socket TCP observado foi `LISTEN 127.0.0.1:9282` no processo GUI; não foi observada conexão TCP externa nessa amostra.
+- Encerrei a árvore de processos criada para a auditoria e confirmei que os processos monitorados não continuaram ativos. A amostra não capturou UDP, DNS fora de TCP, tráfego anterior/posterior aos 12 segundos, nem execução de comandos do usuário; não é prova de isolamento total.
