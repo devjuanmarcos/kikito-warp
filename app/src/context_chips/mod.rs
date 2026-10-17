@@ -208,7 +208,7 @@ impl ContextChipKind {
     pub fn to_chip(&self) -> Option<ContextChip> {
         match self {
             Self::WorkingDirectory => Some(ContextChip::builtin_with_runtime_policy(
-                "Working Directory",
+                "Diretório de trabalho",
                 builtins::working_directory,
                 RefreshConfig::OnDemandOnly,
                 ChipRuntimePolicy::new(
@@ -222,7 +222,7 @@ impl ContextChipKind {
                 ),
             )),
             Self::Username => Some(ContextChip::builtin_with_runtime_policy(
-                "User",
+                "Usuário",
                 builtins::username,
                 RefreshConfig::OnDemandOnly,
                 ChipRuntimePolicy::new(
@@ -244,7 +244,7 @@ impl ContextChipKind {
                 ),
             )),
             Self::VirtualEnvironment => Some(ContextChip::builtin_with_runtime_policy(
-                "Python Virtualenv",
+                "Ambiente virtual Python",
                 builtins::virtual_environment,
                 RefreshConfig::OnDemandOnly,
                 ChipRuntimePolicy::new(
@@ -258,7 +258,7 @@ impl ContextChipKind {
                 ),
             )),
             Self::CondaEnvironment => Some(ContextChip::builtin_with_runtime_policy(
-                "Conda Environment",
+                "Ambiente Conda",
                 builtins::conda_environment,
                 RefreshConfig::OnDemandOnly,
                 ChipRuntimePolicy::new(
@@ -272,7 +272,7 @@ impl ContextChipKind {
                 ),
             )),
             Self::NodeVersion => Some(ContextChip::builtin_with_runtime_policy(
-                "Node.js Version",
+                "Versão do Node.js",
                 builtins::node_version,
                 RefreshConfig::OnDemandOnly,
                 ChipRuntimePolicy::new(
@@ -286,17 +286,17 @@ impl ContextChipKind {
                 ),
             )),
             Self::Date => Some(ContextChip::builtin(
-                "Date",
+                "Data",
                 builtins::date,
                 DATE_REFRESH_CONFIG,
             )),
             Self::Time12 => Some(ContextChip::builtin(
-                "Time (12-hour format)",
+                "Hora (formato de 12 horas)",
                 builtins::time12,
                 TIME_REFRESH_CONFIG,
             )),
             Self::Time24 => Some(ContextChip::builtin(
-                "Time (24-hour format)",
+                "Hora (formato de 24 horas)",
                 builtins::time24,
                 TIME_REFRESH_CONFIG,
             )),
@@ -305,13 +305,13 @@ impl ContextChipKind {
                 None
             }
             Self::ShellGitBranch => Some(ContextChip::shell_builtin(
-                "Git Branch",
+                "Branch do Git",
                 builtins::shell_git_branch(),
                 Some(builtins::shell_other_git_branches()),
                 GIT_REFRESH_CONFIG,
             )),
             Self::GitBranchStatus => Some(ContextChip::shell_builtin(
-                "Git Branch Status",
+                "Status da branch do Git",
                 builtins::shell_git_branch_status(),
                 // Same branch list as ShellGitBranch, so clicking the chip
                 // opens the same branch-switcher menu.
@@ -320,7 +320,7 @@ impl ContextChipKind {
             )),
             Self::GitDiffStats => Some(
                 ContextChip::shell_builtin(
-                    "Git Diff Stats",
+                    "Estatísticas do diff do Git",
                     builtins::shell_git_line_changes(),
                     None,
                     GIT_REFRESH_CONFIG,
@@ -334,25 +334,25 @@ impl ContextChipKind {
                 RefreshConfig::OnDemandOnly,
             )),
             Self::KubernetesContext => Some(ContextChip::shell_builtin(
-                "Kubernetes Context",
+                "Contexto do Kubernetes",
                 builtins::kubernetes_current_context(),
                 None,
                 RefreshConfig::OnDemandOnly,
             )),
             Self::SvnBranch => Some(ContextChip::shell_builtin(
-                "Svn Branch",
+                "Branch do SVN",
                 builtins::svn_branch_context(),
                 None,
                 RefreshConfig::OnDemandOnly,
             )),
             Self::SvnDirtyItems => Some(ContextChip::shell_builtin(
-                "Svn Uncommitted File Count",
+                "Quantidade de arquivos sem commit no SVN",
                 builtins::svn_dirty_items(),
                 None,
                 RefreshConfig::OnDemandOnly,
             )),
             Self::Ssh => Some(ContextChip::builtin(
-                "Remote Login",
+                "Login remoto",
                 builtins::ssh_session,
                 RefreshConfig::OnDemandOnly,
             )),

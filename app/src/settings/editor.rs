@@ -161,7 +161,7 @@ pub enum WarpPromptSeparator {
 impl WarpPromptSeparator {
     pub fn dropdown_item_label(&self) -> &'static str {
         match self {
-            Self::None => "None",
+            Self::None => "Nenhum",
             Self::PercentSign => "%",
             Self::DollarSign => "$",
             Self::ChevronSymbol => ">",
