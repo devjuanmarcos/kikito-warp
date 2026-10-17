@@ -191,17 +191,17 @@ const AUTO_APPROVE_FEEDBACK_DURATION: Duration = Duration::from_secs(3);
 const VOICE_INPUT_BORDER_REPAINT_INTERVAL: Duration = Duration::from_millis(33);
 
 /// The footer hint shown while the ctrl-c exit confirmation is armed.
-const CTRL_C_EXIT_HINT: &str = "ctrl-c again to exit";
-const RUNNING_COMMAND_DETACH_HINT: &str = "ctrl-c to return to command";
+const CTRL_C_EXIT_HINT: &str = "Ctrl+C novamente para sair";
+const RUNNING_COMMAND_DETACH_HINT: &str = "Ctrl+C para voltar ao comando";
 /// The footer hint shown when the ctrl-c kill-child window is armed.
 /// Replaces the exit hint when viewing a child agent conversation.
 pub(crate) const CTRL_C_KILL_CHILD_HINT: &str = "ctrl-c again to kill child agent";
-const STARTING_SHELL_HINT: &str = "Starting shell...";
+const STARTING_SHELL_HINT: &str = "Iniciando o shell...";
 /// The hint row plus its top padding. The zero state accounts for this temporary
 /// chrome so its centered position already matches the post-bootstrap layout.
 const STARTING_SHELL_CHROME_ROWS: u16 = 2;
-const SETTINGS_PARSE_FAILED_HINT: &str = "Settings failed to load: invalid syntax.";
-const SETTINGS_INVALID_VALUES_HINT: &str = "Settings failed to load: invalid values.";
+const SETTINGS_PARSE_FAILED_HINT: &str = "Falha ao carregar as configurações: sintaxe inválida.";
+const SETTINGS_INVALID_VALUES_HINT: &str = "Falha ao carregar as configurações: valores inválidos.";
 
 fn settings_file_error_hint(error: &SettingsFileError) -> &'static str {
     match error {
@@ -212,8 +212,8 @@ fn settings_file_error_hint(error: &SettingsFileError) -> &'static str {
 
 /// Fallback strings for the /status status menu.
 const STATUS_UNAVAILABLE: &str = "\u{2014}"; // em dash
-const STATUS_UNTITLED_SESSION: &str = "Untitled";
-const STATUS_DEV_BUILD: &str = "dev build";
+const STATUS_UNTITLED_SESSION: &str = "Sem título";
+const STATUS_DEV_BUILD: &str = "versão de desenvolvimento";
 const STATUS_NOT_SIGNED_IN: &str = "Not signed in";
 
 fn status_menu_is_open(mode: TuiInputSuggestionsMode) -> bool {
@@ -349,7 +349,7 @@ fn zero_state_ascii_load_failure_hint(failure: ZeroStateAnimationLoadFailure) ->
 
 /// Transient hint shown when a shell command is rejected because the PTY is
 /// already running a command.
-const COMMAND_ALREADY_RUNNING_HINT: &str = "cannot run — command already running";
+const COMMAND_ALREADY_RUNNING_HINT: &str = "não é possível executar — já há um comando em execução";
 const NEW_CONVERSATION_COMMAND_RUNNING_HINT: &str =
     "cannot start new conversation while terminal command is running";
 const FORK_NO_ACTIVE_CONVERSATION_HINT: &str = "/fork requires an active conversation";
@@ -368,9 +368,9 @@ const THEME_INVALID_ARGUMENT_HINT: &str = "O tema deve ser auto, light ou dark."
 /// Footer label shown while the input is in `!` shell mode. The how-to-exit
 /// guidance lives in the input's placeholder ghost text, so the footer only
 /// names the mode.
-const SHELL_MODE_HINT: &str = "Shell mode";
-const COPY_SELECTION_HINT: &str = "copied to clipboard";
-const COPY_FAILED_HINT: &str = "failed to copy to clipboard";
+const SHELL_MODE_HINT: &str = "Modo shell";
+const COPY_SELECTION_HINT: &str = "copiado para a área de transferência";
+const COPY_FAILED_HINT: &str = "falha ao copiar para a área de transferência";
 const COPY_DEBUGGING_ID_HINT: &str = "Debugging information copied to clipboard";
 const COPY_DEBUGGING_ID_NO_TOKEN_HINT: &str =
     "No debugging ID available for this conversation yet.";
@@ -383,16 +383,16 @@ const VIM_MODE_DISABLED_HINT: &str = "Modo Vim desativado.";
 const VIM_MODE_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração do modo Vim.";
 const THEME_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração do tema.";
 const ZERO_STATE_ASCII_INITIAL_LOAD_FAILED_HINT: &str =
-    "Could not load custom ASCII art. Using the built-in Warp logo.";
+    "Não foi possível carregar a arte ASCII personalizada. Usando o logotipo do Kikito Terminal.";
 const ZERO_STATE_ASCII_RELOAD_FAILED_HINT: &str =
-    "Could not reload custom ASCII art. Keeping the current object.";
+    "Não foi possível recarregar a arte ASCII personalizada. Mantendo o objeto atual.";
 #[cfg(feature = "voice_input")]
 const VOICE_USAGE_HINT: &str = "Usage: /voice (no arguments)";
 const AUTO_APPROVE_ENABLED_HINT: &str = "Auto approve on";
 const AUTO_APPROVE_DISABLED_HINT: &str = "Auto approve off";
-const STATUSLINE_SAVED_HINT: &str = "Statusline configuration saved.";
-const STATUSLINE_RESET_HINT: &str = "Statusline reset to defaults.";
-const STATUSLINE_PERSISTENCE_FAILED_HINT: &str = "Could not save the statusline configuration.";
+const STATUSLINE_SAVED_HINT: &str = "Configuração da linha de status salva.";
+const STATUSLINE_RESET_HINT: &str = "Linha de status redefinida para o padrão.";
+const STATUSLINE_PERSISTENCE_FAILED_HINT: &str = "Não foi possível salvar a configuração da linha de status.";
 const COST_NO_ACTIVE_CONVERSATION_HINT: &str =
     "Cannot show conversation cost: no active conversation";
 const COST_EMPTY_CONVERSATION_HINT: &str = "Cannot show conversation cost: conversation is empty";
@@ -5115,12 +5115,15 @@ impl TuiTerminalSessionView {
                 });
                 let hint = match theme {
                     TuiTheme::Auto => format!(
-                        "Theme set to auto mode (currently {}).",
-                        TuiTheme::from(Appearance::as_ref(ctx).theme()).display_name()
+                        "Tema definido como automático (atualmente {}).",
+                        match TuiTheme::from(Appearance::as_ref(ctx).theme()) {
+                            TuiTheme::Auto => "automático",
+                            TuiTheme::Light => "claro",
+                            TuiTheme::Dark => "escuro",
+                        }
                     ),
-                    TuiTheme::Light | TuiTheme::Dark => {
-                        format!("Theme set to {} mode.", theme.display_name())
-                    }
+                    TuiTheme::Light => "Tema definido para o modo claro.".to_owned(),
+                    TuiTheme::Dark => "Tema definido para o modo escuro.".to_owned(),
                 };
                 self.show_success_hint(hint, ctx);
             }

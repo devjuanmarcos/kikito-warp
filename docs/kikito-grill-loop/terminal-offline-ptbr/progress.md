@@ -1295,3 +1295,7 @@
 ## Preferências locais no TUI
 
 - Traduzi as mensagens de alteração e persistência do tema e do modo Vim no ciclo de sessão do TUI. Mantive `auto`, `light` e `dark` como valores aceitos pelo comando.
+
+## Estados e controles locais da sessão TUI
+
+- Traduzi dicas de shell/saída, erros locais de configuração, estado sem título, rótulos de modo shell/cópia, feedback da linha de status e confirmações do comando `/theme`. Atualizei a referência visível ao logotipo do app para Kikito Terminal. Mantive fora mensagens de autenticação, conta, agente e conversa remota.
