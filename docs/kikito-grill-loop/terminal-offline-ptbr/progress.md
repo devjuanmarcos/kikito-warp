@@ -909,3 +909,8 @@
 
 - Traduzi o nome exibido do atalho e as dicas de ferramenta para maximizar e minimizar o painel de revisão de código.
 - Preservei a ação, o ID do atalho e os ícones.
+
+## Tradução — expansão da lista de conversas
+
+- Traduzi os rótulos alternados do botão da lista de conversas: ver todas e mostrar menos.
+- Mantive a ação que expande e recolhe a lista.

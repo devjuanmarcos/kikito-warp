@@ -54,7 +54,7 @@ use crate::workspace::view::conversation_list::item::{
 use crate::workspace::{ToastStack, WorkspaceAction};
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
-const VIEW_ALL_LABEL: &str = "View all";
+const VIEW_ALL_LABEL: &str = "Ver todas";
 /// Maximum number of past items to show before the user toggles "view all".
 const INITIAL_MAX_PAST_ITEMS: usize = 10;
 
@@ -1228,7 +1228,7 @@ impl TypedActionView for ConversationListView {
                 self.view_all = !self.view_all;
 
                 let label = if self.view_all {
-                    "Show less"
+                    "Mostrar menos"
                 } else {
                     VIEW_ALL_LABEL
                 };
