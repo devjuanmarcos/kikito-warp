@@ -1779,6 +1779,7 @@
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
 
 
+
 ## Auditoria — barra de entrada e colagem de imagem
 
 - Revisei `app/src/terminal/input/message_bar`, `terminal_message_bar.rs` e o fluxo local da ação de colar imagem pela área de transferência. O rótulo `Colar caminho da imagem` e sua dica já estavam traduzidos; corrigi a acentuação de dois avisos de imagem/clipboard em `app/src/terminal/view/use_agent_footer/mod.rs`.
@@ -1877,3 +1878,10 @@
 - Conferi o registro em `app/src/settings_view/mod.rs`: no canal OSS, `settings_pages` e a navegação são filtrados para `Appearance`, `Keybindings` e `About`. Essas três páginas, a busca e seus diálogos/dicas locais já foram auditados em lotes anteriores; o shell de configurações não expõe páginas locais adicionais no OSS.
 - Páginas como recursos, integrações de shell, editor/revisão, privacidade e blocos compartilhados não entram nessa lista OSS. Não reabri esses lotes; `show_blocks_view.rs` e as páginas hospedadas permanecem excluídas por dependerem de conta/serviços externos.
 - Não encontrei nova string fixa para traduzir nesta verificação de cobertura. Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Varredura residual — textos fixos na GUI do OSS
+
+- Fiz uma busca residual em módulos de `app/src` fora dos lotes já documentados e conferi os candidatos contra a construção da interface e os gates do canal OSS. Não encontrei copy local fixo em inglês ainda sem cobertura que justificasse alteração neste lote.
+- Classifiquei as ocorrências encontradas: atalhos, tipos, erros de Rust, nomes de ações internas e logs não são texto da interface; os prompts de criação assistida dependem de IA; cadernos, revisão compartilhada, conta, autenticação, Drive, cobrança, atualização e gerenciamento de agentes dependem de serviços externos; as telas locais de entrada de projetos, dicas, aparência/temas e configurações correspondentes já constam como auditadas acima.
+- Não alterei nomes de produtos/protocolos, texto do usuário, saída dinâmica de processos, identificadores, comandos ou conteúdo técnico. Este passe cobre a busca residual e não substitui a revisão visual dos fluxos hospedados, que permanecem fora do escopo offline OSS.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
