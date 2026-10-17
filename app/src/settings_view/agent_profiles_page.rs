@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use ::ai::api_keys::ApiKeyManager;
+use chrono::Datelike;
 use itertools::Itertools;
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
 use regex::Regex;
@@ -702,7 +703,7 @@ impl AgentProfilesPageView {
             let mut dropdown = FilterableDropdown::new(ctx);
             dropdown.set_top_bar_max_width(AI_SETTINGS_DROPDOWN_WIDTH);
             dropdown.set_menu_width(AI_SETTINGS_DROPDOWN_WIDTH, ctx);
-            dropdown.set_menu_header_to_static("Select MCP servers");
+            dropdown.set_menu_header_to_static("Selecionar servidores MCP");
             dropdown
         });
         Self::refresh_mcp_allowlist_dropdown(&mcp_allowlist_dropdown, ctx);
@@ -716,7 +717,7 @@ impl AgentProfilesPageView {
             let mut dropdown = FilterableDropdown::new(ctx);
             dropdown.set_top_bar_max_width(AI_SETTINGS_DROPDOWN_WIDTH);
             dropdown.set_menu_width(AI_SETTINGS_DROPDOWN_WIDTH, ctx);
-            dropdown.set_menu_header_to_static("Select MCP servers");
+            dropdown.set_menu_header_to_static("Selecionar servidores MCP");
             dropdown
         });
         Self::refresh_mcp_denylist_dropdown(&mcp_denylist_dropdown, ctx);
@@ -2116,8 +2117,23 @@ impl SettingsWidget for UsageWidget {
         app: &AppContext,
     ) -> Box<dyn Element> {
         let ai_request_usage_model = AIRequestUsageModel::as_ref(app);
-        let next_refresh_time = ai_request_usage_model.next_refresh_time();
-        let formatted_next_refresh_time = next_refresh_time.format("%b %d").to_string();
+        let next_refresh_time = ai_request_usage_model.next_refresh_time_local();
+        let month = match next_refresh_time.month() {
+            1 => "janeiro",
+            2 => "fevereiro",
+            3 => "março",
+            4 => "abril",
+            5 => "maio",
+            6 => "junho",
+            7 => "julho",
+            8 => "agosto",
+            9 => "setembro",
+            10 => "outubro",
+            11 => "novembro",
+            12 => "dezembro",
+            _ => unreachable!(),
+        };
+        let formatted_next_refresh_time = format!("{} de {month}", next_refresh_time.day());
         let workspaces = UserWorkspaces::as_ref(app);
         let workspace_is_delinquent_due_to_payment_issue = workspaces
             .team_for_view_handle(&self.view_handle, app)
@@ -2140,7 +2156,9 @@ impl SettingsWidget for UsageWidget {
                 .with_child(
                     appearance
                         .ui_builder()
-                        .paragraph(format!("Resets {formatted_next_refresh_time}"))
+                        .paragraph(format!(
+                            "O limite de uso será redefinido em {formatted_next_refresh_time}"
+                        ))
                         .with_style(UiComponentStyles {
                             font_color: Some(blended_colors::text_sub(
                                 appearance.theme(),

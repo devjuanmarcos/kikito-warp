@@ -1195,3 +1195,8 @@
 
 - Traduzi o título do banner de inicialização de subshell e a opção para não exibi-lo novamente.
 - Os demais banners locais desta pasta já estavam em português; excluí login AWS/Bedrock, sessões compartilhadas e sugestões de prompt associadas ao agente/cloud.
+
+## Perfis de agentes: seleção MCP e uso
+
+- Traduzi os dois cabeçalhos dos seletores de servidores MCP e o aviso de quando o limite de uso reinicia, incluindo os nomes dos meses em português e a data no fuso local.
+- As strings aparecem como cabeçalho de dropdown na página local de perfis e no widget de uso quando esse widget está ativo.
