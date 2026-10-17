@@ -1532,3 +1532,11 @@
 - Traduzi o estado vazio do seletor inline de habilidades, a dica de fechar com Escape, o selo “Habilidade do projeto”, o rótulo de acessibilidade e o aviso quando uma habilidade local é acionada em uma sessão remota.
 - Mantive o nome da habilidade, os comandos e o atalho Escape intactos.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Menus locais de contexto do terminal
+
+- Traduzi ações de busca no menu de contexto da entrada, busca de comandos com IA, alternância da dica da entrada e cópia de seleção no menu da tela alternativa. Os itens antigos “Ask Warp AI” agora usam o rótulo já localizado “Perguntar à IA do Kikito Terminal”.
+- Confirmei os gates OSS: `init_feature_flags` desativa `CreatingSharedSessions`; itens de compartilhamento também exigem `ContextFlag::CreateSharedSession`. `Save as workflow` só aparece quando `WarpDriveSettings::is_warp_drive_enabled` retorna true, condição que exige estado autenticado e Drive habilitado; o perfil OSS inicia desconectado. Esses itens cloud não foram alterados.
+- A busca com IA só aparece quando existe um provedor habilitado em `AISettings`; os textos mudaram sem alterar o fluxo, IDs ou atalhos.
+- Também traduzi os três nomes de atalhos registrados em `terminal/view/init.rs` para a IA sobre seleção, último bloco e texto selecionado; IDs e eventos de telemetry não mudaram. `ASK_AI_ASSISTANT_TEXT` já estava em pt-BR como “Perguntar à IA do Kikito Terminal”.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
