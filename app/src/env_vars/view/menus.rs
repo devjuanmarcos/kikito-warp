@@ -31,7 +31,7 @@ pub struct Menus {
 impl EnvVarCollectionView {
     pub(super) fn initialize_menus(ctx: &mut ViewContext<Self>) -> Menus {
         let command_item = Self::item(
-            "Command",
+            "Comando",
             EnvVarCollectionAction::DisplayCommandDialog,
             None,
             Some(Icon::Terminal),
@@ -52,14 +52,14 @@ impl EnvVarCollectionView {
         );
 
         let edit_item = Self::item(
-            "Edit",
+            "Editar",
             EnvVarCollectionAction::EditCommand,
             None,
             Some(Icon::Terminal),
         );
 
         let clear_secret_item = Self::item(
-            "Clear secret",
+            "Limpar segredo",
             EnvVarCollectionAction::ClearSecret,
             None,
             Some(Icon::Trash),

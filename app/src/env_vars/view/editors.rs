@@ -21,8 +21,8 @@ use crate::env_vars::view::env_var_collection::{
 const LABEL_FONT_SIZE: f32 = 12.;
 const METADATA_SPACING: f32 = 8.;
 const LAST_ROW_ELEMENT_SPACING: f32 = 2.;
-const TITLE_LABEL_TEXT: &str = "Title";
-const DESCRIPTION_LABEL_TEXT: &str = "Description";
+const TITLE_LABEL_TEXT: &str = "Título";
+const DESCRIPTION_LABEL_TEXT: &str = "Descrição";
 
 const VERTICAL_TEXT_INPUT_PADDING: f32 = 5.;
 const HORIZONTAL_TEXT_INPUT_PADDING: f32 = 10.;

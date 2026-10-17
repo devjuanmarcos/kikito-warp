@@ -70,19 +70,20 @@ const SECTION_SPACING: f32 = 16.;
 
 // Variable rows
 pub(super) const ROW_SPACING: f32 = 8.;
-pub const EDUCATION_TEXT: &str = "Add secret or command. Warp never stores external secrets";
+pub const EDUCATION_TEXT: &str =
+    "Adicione um segredo ou comando. O Kikito Terminal nunca armazena segredos externos.";
 const VARIABLE_FONT_SIZE: f32 = 13.;
 const DESCRIPTION_EDITOR_CUTOFF: f32 = 30.;
 const DESCRIPTION_BOTTOM_MARGIN: f32 = 12.;
 const DIVIDER_BOTTOM_MARGIN: f32 = 4.;
 const PLACEHOLDER_FONT_SIZE: f32 = 14.;
-const VARIABLE_VALUE_PLACEHOLDER_TEXT: &str = "Value";
-const VARIABLE_DESCRIPTION_PLACEHOLDER_TEXT: &str = "Description";
-const VARIABLE_NAME_PLACEHOLDER_TEXT: &str = "Variable";
+const VARIABLE_VALUE_PLACEHOLDER_TEXT: &str = "Valor";
+const VARIABLE_DESCRIPTION_PLACEHOLDER_TEXT: &str = "Descrição";
+const VARIABLE_NAME_PLACEHOLDER_TEXT: &str = "Variável";
 
 // Text input fields
-const TITLE_PLACEHOLDER_TEXT: &str = "Add a title";
-const DESCRIPTION_PLACEHOLDER_TEXT: &str = "Add a description";
+const TITLE_PLACEHOLDER_TEXT: &str = "Adicione um título";
+const DESCRIPTION_PLACEHOLDER_TEXT: &str = "Adicione uma descrição";
 
 // Button spacing
 const BUTTON_CONTAINER_HORIZONTAL_MARGIN: f32 = 36.;
@@ -95,8 +96,8 @@ pub(super) const ERROR_ALERT_MARGIN_TOP: f32 = 8.;
 
 pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([EditableBinding::new(
-        "Close Env Var Collection",
-        "Close",
+        "Fechar coleção de variáveis de ambiente",
+        "Fechar",
         EnvVarCollectionAction::Close,
     )
     .with_custom_action(CustomAction::CloseCurrentSession)
@@ -742,7 +743,8 @@ impl EnvVarCollectionView {
                     crate::workspace::ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                         toast_stack.add_ephemeral_toast(
                             DismissibleToast::error(
-                                "An error occurred while trying to invoke the env var".to_owned(),
+                                "Ocorreu um erro ao tentar executar a variável de ambiente"
+                                    .to_owned(),
                             ),
                             window_id,
                             ctx,
@@ -1585,7 +1587,11 @@ impl BackingView for EnvVarCollectionView {
         app: &AppContext,
     ) -> view::HeaderContent {
         let title = self.title_editor.as_ref(app).buffer_text(app);
-        let title = if title.is_empty() { "Untitled" } else { &title };
+        let title = if title.is_empty() {
+            "Sem título"
+        } else {
+            &title
+        };
         view::HeaderContent::simple(title)
     }
 
