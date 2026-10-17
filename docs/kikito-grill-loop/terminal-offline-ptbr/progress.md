@@ -1121,3 +1121,9 @@
 
 - Auditei categorias, opções de tema e janela, tooltips e controles de fonte, cursor, abas e entrada; não encontrei outros rótulos ou descrições locais em inglês para traduzir.
 - Mantive nomes de temas e materiais visuais, termos técnicos e identificadores internos.
+
+
+## Indexação da base de código
+
+- Traduzi o cabeçalho visível "Code" para "Código" e os estados de indexação de repositórios: sem índice, limite atingido, indisponível, desativado, na fila, indexando, sincronizado, desatualizado e falha.
+- Preservei nomes de arquivos de configuração, termos técnicos, siglas, IDs e mensagens internas usadas para comparar falhas remotas.

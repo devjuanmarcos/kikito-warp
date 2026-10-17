@@ -71,7 +71,7 @@ const SUB_SECTION_MARGIN: f32 = 8.;
 
 const STATUS_ICON_SIZE: f32 = 16.;
 const LSP_STATUS_INDICATOR_SIZE: f32 = 8.;
-const CODE_FEATURE_NAME: &str = "Code";
+const CODE_FEATURE_NAME: &str = "Código";
 const INITIALIZATION_SETTINGS_HEADER: &str = "Configuração da inicialização";
 const CODEBASE_INDEXING_LABEL: &str = "Indexação da base de código";
 const CODEBASE_INDEX_DESCRIPTION: &str = "O Kikito Terminal pode indexar automaticamente os repositórios de código enquanto você navega por eles, ajudando os agentes a entender o contexto rapidamente e oferecer soluções. O código nunca é armazenado no servidor. Se não for possível indexar uma base de código, o Kikito Terminal ainda pode navegar por ela e obter informações usando as ferramentas grep e find.";
@@ -1541,7 +1541,7 @@ impl CodePageWidget {
 
         match status.state {
             RemoteCodebaseIndexState::NotEnabled => IndexingStatusPresentation {
-                text: Cow::from("No index created"),
+                text: Cow::from("Nenhum índice criado"),
                 color: theme.disabled_ui_text_color().into_solid(),
                 icon: Some(Icon::SlashCircle),
                 refresh_action: Some(IndexingRefreshAction::RequestRemote),
@@ -1551,9 +1551,9 @@ impl CodePageWidget {
                 let limit_reached = remote_codebase_index_limit_reached(status);
                 IndexingStatusPresentation {
                     text: Cow::from(if limit_reached {
-                        "Index limit reached"
+                        "Limite de índices atingido"
                     } else {
-                        "Unavailable"
+                        "Indisponível"
                     }),
                     color: if limit_reached {
                         theme.ui_warning_color()
@@ -1570,14 +1570,14 @@ impl CodePageWidget {
                 }
             }
             RemoteCodebaseIndexState::Disabled => IndexingStatusPresentation {
-                text: Cow::from("Disabled"),
+                text: Cow::from("Desativado"),
                 color: theme.disabled_ui_text_color().into_solid(),
                 icon: Some(Icon::SlashCircle),
                 refresh_action: Some(IndexingRefreshAction::RequestRemote),
                 show_delete: true,
             },
             RemoteCodebaseIndexState::Queued => IndexingStatusPresentation {
-                text: Cow::from("Queued"),
+                text: Cow::from("Na fila"),
                 color: theme.disabled_ui_text_color().into_solid(),
                 icon: None,
                 refresh_action: None,
@@ -1586,11 +1586,11 @@ impl CodePageWidget {
             RemoteCodebaseIndexState::Indexing => {
                 let text = match (status.progress_completed, status.progress_total) {
                     (Some(completed), Some(total)) => {
-                        Cow::from(format!("Indexing - {completed} / {total}"))
+                        Cow::from(format!("Indexando - {completed} / {total}"))
                     }
-                    (Some(completed), None) => Cow::from(format!("Indexing - {completed}")),
-                    (None, Some(total)) => Cow::from(format!("Indexing - 0 / {total}")),
-                    (None, None) => Cow::from("Indexing..."),
+                    (Some(completed), None) => Cow::from(format!("Indexando - {completed}")),
+                    (None, Some(total)) => Cow::from(format!("Indexando - 0 / {total}")),
+                    (None, None) => Cow::from("Indexando..."),
                 };
 
                 IndexingStatusPresentation {
@@ -1602,21 +1602,21 @@ impl CodePageWidget {
                 }
             }
             RemoteCodebaseIndexState::Ready => IndexingStatusPresentation {
-                text: Cow::from("Synced"),
+                text: Cow::from("Sincronizado"),
                 color: theme.ansi_fg_green(),
                 icon: Some(Icon::Check),
                 refresh_action: Some(IndexingRefreshAction::Resync),
                 show_delete: true,
             },
             RemoteCodebaseIndexState::Stale => IndexingStatusPresentation {
-                text: Cow::from("Stale"),
+                text: Cow::from("Desatualizado"),
                 color: theme.nonactive_ui_detail().into_solid(),
                 icon: Some(Icon::ClockRefresh),
                 refresh_action: Some(IndexingRefreshAction::Resync),
                 show_delete: true,
             },
             RemoteCodebaseIndexState::Failed => IndexingStatusPresentation {
-                text: Cow::from("Failed"),
+                text: Cow::from("Falha"),
                 color: theme.ui_error_color(),
                 icon: Some(Icon::AlertTriangle),
                 refresh_action: Some(IndexingRefreshAction::Resync),
