@@ -1668,3 +1668,18 @@
 
 - Os macros de telemetria assíncronos já filtravam `Channel::Oss`, mas os macros síncronos e o caminho por executor não. Adicionei a mesma condição de canal aos três macros em `app/src/server/telemetry/macros.rs`, impedindo que handlers/eventos no OSS criem tarefas de envio síncrono ou registrem eventos pelo executor.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
+## Revisão estática dos limites de rede do processo OSS
+
+- Registrei as barreiras encontradas no cliente HTTP, no carregamento de assets, na abertura de links da GUI e no início de servidores MCP. Os caminhos OSS bloqueiam destinos HTTP externos, restringem redirecionamentos de assets a loopback e não iniciam MCP. A configuração de canal mantém endpoints locais e desliga configuração de telemetria, atualização e crash reporting.
+- Esclareci o limite do produto: comandos que o usuário inicia no terminal, como Codex, Claude ou ferramentas de linha de comando, são processos externos e podem abrir conexões próprias; isso não é tráfego do processo do Kikito Terminal.
+- A captura anterior continua sendo ociosa. Não medi sockets durante ações reais da GUI; portanto, a revisão estática não prova ausência absoluta de conexões em todo cenário.
+## Tradução — confirmação de reenvio ao agente
+
+- Traduzi a mensagem temporária `again to send to agent` para `novamente para enviar ao agente` em `app/src/terminal/view/agent_view.rs`. Ela aparece quando o usuário precisa pressionar Enter novamente para confirmar o envio do prompt ao agente.
+- Mantive o atalho Enter, a janela de confirmação e a lógica de envio sem alterações.
+- `git diff --check` passou. `cargo check -p warp --bin warp-oss` passou; nenhum teste foi executado.
+## Tradução — atalhos de anúncios de acessibilidade
+
+- Na varredura de superfícies locais de terminal e workspace, encontrei duas descrições em inglês no registro dos atalhos macOS para ajustar o nível de anúncios de acessibilidade. Traduzi para `Definir anúncios de acessibilidade concisos` e `Definir anúncios de acessibilidade detalhados` em `app/src/workspace/mod.rs`.
+- Preservei os IDs, as ações e os atalhos existentes. Mantive fora deste lote os resultados ligados a Warp Drive, cobrança, agentes na nuvem e instalação de CLIs hospedados; também não alterei descrições usadas apenas por schema e não renderizadas na interface local do OSS.
+- Validação: `git diff --check` e `cargo check -p warp --bin warp-oss` passou. Nenhum teste foi executado.
