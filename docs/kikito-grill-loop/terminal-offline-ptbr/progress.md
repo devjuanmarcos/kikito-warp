@@ -1634,3 +1634,7 @@
 
 - Traduzi a dica `Cancel` do botão que interrompe uma tarefa de agente para `Cancelar` em `app/src/terminal/view/pane_impl.rs`. O botão é uma ação de interface local e não depende de serviço hospedado.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
+## Modal hospedado do Warp Agent CLI no canal OSS
+
+- A auditoria encontrou `AgentCliLaunchModal`: onboarding do Warp Agent CLI com link para `docs.warp.dev`, controlado por feature flag. Desativei `FeatureFlag::AgentCliLaunchModal` no conjunto de flags locais do canal OSS para evitar esse fluxo hospedado em builds OSS.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.

@@ -31,6 +31,7 @@ pub fn init_feature_flags() {
             FeatureFlag::CloudEnvironments,
             FeatureFlag::CloudRunners,
             FeatureFlag::CloudAgentRunners,
+            FeatureFlag::AgentCliLaunchModal,
             FeatureFlag::RemoteCodebaseIndexing,
             FeatureFlag::CloudObjects,
             FeatureFlag::CloudMode,
