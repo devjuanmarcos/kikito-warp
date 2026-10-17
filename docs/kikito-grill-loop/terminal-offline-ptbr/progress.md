@@ -1629,3 +1629,8 @@
 - Classifiquei como não elegíveis neste escopo os artigos do bloco Advanced Setup que abrem documentação/blog hospedados em `warp.dev`, o convite “Invite a friend to Warp” (só renderiza com identidade autenticada, ausente no OSS), e a seção de changelog (FeatureFlag::Changelog desabilitada no OSS). Mantive protocolos, IDs de configuração e telemetry sem alteração.
 - Após revisão, traduzi todos os títulos e descrições locais de Getting Started/Maximize Warp e a seção foi nomeada “Primeiros passos”. Ajustei a dica de ações em blocos para não prometer compartilhamento e limitei a descrição da busca a comandos anteriores, sem workflows cloud. O Resource Center agora omite a seção de changelog no canal OSS, onde a feature está desabilitada, e omite Advanced Setup nesse canal porque seus três itens levam a docs/blog hospedados em Warp; ambos permanecem com o comportamento anterior nos demais canais. O convite continua oculto no OSS pela condição de identidade autenticada.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`. Não executei testes nem Clippy.
+
+## Tooltip de cancelamento de agente local
+
+- Traduzi a dica `Cancel` do botão que interrompe uma tarefa de agente para `Cancelar` em `app/src/terminal/view/pane_impl.rs`. O botão é uma ação de interface local e não depende de serviço hospedado.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss` passaram. O check emitiu somente avisos de artefatos incrementais antigos que o Cargo ignorou. Não executei testes nem Clippy.
