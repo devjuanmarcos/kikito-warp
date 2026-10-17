@@ -136,13 +136,13 @@ fn first_zero_state_matches_welcome_design_copy() {
         });
         let rendered = lines.join("\n");
         for expected in [
-            "Welcome to Warp",
-            "What’s different about Warp",
-            "✶ State of the art coding agents",
-            "✶ Frontier and open-weight models",
-            "✶ Fully customizable model routers",
-            "✶ Orchestration for fleets of agents",
-            "✶ Better shell command support",
+            "Kikito Terminal",
+            "Um terminal para suas ferramentas locais",
+            "✶ Organize abas, painéis e sessões locais",
+            "✶ Execute comandos nos shells instalados",
+            "✶ Use Codex, Claude e outras ferramentas no terminal",
+            "✶ Acompanhe o contexto local do projeto",
+            "✶ Personalize temas e atalhos",
         ] {
             assert!(
                 rendered.contains(expected),

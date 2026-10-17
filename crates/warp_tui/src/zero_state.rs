@@ -649,7 +649,7 @@ fn render_standard_top_section(
 
     let mut column = TuiFlex::column()
         .child(
-            TuiText::new("Warp Agent CLI")
+            TuiText::new("Kikito Terminal")
                 .with_style(title_style)
                 .truncate()
                 .finish(),

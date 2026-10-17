@@ -237,16 +237,16 @@ fn signed_out_welcome_matches_designed_copy_and_layout() {
             let lines = frame.buffer.to_lines();
 
             for expected in [
-                "Welcome to Warp",
+                "Kikito Terminal",
                 "> Press enter to get started",
                 "Log in with Warp",
                 "Copy login URL (c)",
-                "What’s different about Warp",
-                "✶ State of the art coding agents",
-                "✶ Frontier and open-weight models",
-                "✶ Fully customizable model routers",
-                "✶ Orchestration for fleets of agents",
-                "✶ Better shell command support",
+                "Um terminal para suas ferramentas locais",
+                "✶ Organize abas, painéis e sessões locais",
+                "✶ Execute comandos nos shells instalados",
+                "✶ Use Codex, Claude e outras ferramentas no terminal",
+                "✶ Acompanhe o contexto local do projeto",
+                "✶ Personalize temas e atalhos",
             ] {
                 assert!(
                     lines.iter().any(|line| line.contains(expected)),
@@ -255,12 +255,12 @@ fn signed_out_welcome_matches_designed_copy_and_layout() {
             }
             let title_row = lines
                 .iter()
-                .position(|line| line.contains("Welcome to Warp"))
+                .position(|line| line.contains("Kikito Terminal"))
                 .expect("welcome title renders");
             assert!(title_row > 0 && title_row < 12);
             assert_eq!(
                 lines[title_row]
-                    .find("Welcome to Warp")
+                    .find("Kikito Terminal")
                     .expect("welcome title offset"),
                 3
             );
@@ -320,15 +320,15 @@ fn signed_out_welcome_uses_figma_brand_colors_in_dark_and_light_themes() {
                     frame.buffer[(u16::try_from(column).unwrap(), u16::try_from(row).unwrap())].fg
                 };
 
-                assert_eq!(cell_color("Welcome to Warp", 0), brand_primary);
+                assert_eq!(cell_color("Kikito Terminal", 0), brand_primary);
                 assert_eq!(cell_color("> Press enter to get started", 0), brand_accent);
                 assert_eq!(cell_color("> Press enter to get started", 8), brand_accent);
                 assert_eq!(
-                    cell_color("✶ State of the art coding agents", 0),
+                    cell_color("✶ Organize abas, painéis e sessões locais", 0),
                     brand_accent
                 );
                 assert_eq!(
-                    cell_color("✶ Better shell command support", 0),
+                    cell_color("✶ Personalize temas e atalhos", 0),
                     brand_accent
                 );
             });

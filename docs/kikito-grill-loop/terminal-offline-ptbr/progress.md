@@ -1302,3 +1302,7 @@
 ## Paleta local de comandos do TUI
 
 - Traduzi descrições de `/theme`, `/vim-mode`, `/statusline`, `/reset-statusline` e `/exit`, além dos estados de carregamento/lista vazia da paleta e da dica de completar comandos do shell. Mantive comandos e argumentos intactos; deixei de fora `/status` por incluir informações de conta.
+
+## Primeiro uso e marca do TUI
+
+- Atualizei títulos e apresentação inicial para Kikito Terminal em português. Removi da tela de primeiro uso as promessas de agentes, modelos e orquestração hospedados; agora ela apresenta abas, painéis, shells, CLIs e contexto local do projeto.
