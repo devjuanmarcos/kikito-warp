@@ -934,3 +934,8 @@
 
 - Traduzi a pergunta sobre o uso de Ctrl+A/Ctrl+E e os botões para escolher entre atalhos Emacs e IDE.
 - Preservei as teclas exibidas e as ações de dispensa temporária ou permanente.
+
+## Tradução — sugestões de pergunta ao assistente no terminal
+
+- Traduzi as sugestões exibidas ao pedir explicação sobre uma seleção, um bloco ou um comando.
+- Preservei o contexto enviado ao assistente e o fluxo de preenchimento do campo.

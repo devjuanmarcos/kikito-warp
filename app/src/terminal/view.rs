@@ -721,7 +721,7 @@ const MOVE_LINE_END_BINDING_NAME: &str = "editor_view:move_to_line_end";
 
 const DEFAULT_AI_BLOCK_HEIGHT: f32 = 96.;
 
-pub const DEFAULT_ASK_AI_AUTOSUGGESTION_TEXT: &str = "What happened here?";
+pub const DEFAULT_ASK_AI_AUTOSUGGESTION_TEXT: &str = "O que aconteceu aqui?";
 
 const WARP_MD_PATH: &str = "WARP.md";
 
@@ -20441,7 +20441,7 @@ impl TerminalView {
                 populate_input_box,
             } => {
                 if *populate_input_box {
-                    let query_prefix = "Explain the following:\n";
+                    let query_prefix = "Explique o seguinte:\n";
                     let formatted_selection = { format!("```\n{}\n```", text.trim()) };
                     let combined_query = Some(format!("{query_prefix}{formatted_selection}"));
                     (combined_query, None)
@@ -20460,7 +20460,7 @@ impl TerminalView {
             }
 
             AskAIType::FromAICommandSearch { query } => {
-                let query_prefix = "What is the command to: ";
+                let query_prefix = "Qual é o comando para: ";
                 (Some(format!("{}{}", query_prefix, query.trim())), None)
             }
         };
