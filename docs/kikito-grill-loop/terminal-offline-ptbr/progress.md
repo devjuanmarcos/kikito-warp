@@ -1519,3 +1519,10 @@
 - Traduzi os status de execução/conclusão e os rótulos de acessibilidade da navegação entre sessões. Os comandos e prompts dinâmicos continuam intactos.
 - As descrições dos comandos de barra e as ações de conta, autenticação, cobrança e cloud ficaram fora deste lote.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Filtros locais da busca e paleta
+
+- Traduzi nomes e placeholders dos filtros locais de histórico, ações, sessões, abas, configurações de abertura, arquivos, comandos, blocos, código, regras, repositórios, comandos de barra e conversas; também as categorias de sugestões por IA, habilidades e modelos.
+- Workflows, Agent Mode Workflows, notebooks, planos, Warp Drive e variáveis de ambiente são conectados ao Warp Drive e não entram na paleta OSS quando `WarpDriveSettings` está desativado. Mantive seus rótulos. Prompt History é compartilhado com o menu de histórico do modo cloud, então também ficou sem alteração.
+- “Skills” virou “habilidades” na interface; o tipo/filtro técnico e demais identificadores permanecem inalterados.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
