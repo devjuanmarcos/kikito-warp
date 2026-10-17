@@ -8720,13 +8720,16 @@ impl Input {
         // Emit the a11y content as the last step so that it overwrites any of the a11y content
         // emitted by the editor (if multiple `AccessibilityContent`s are emitted within the same
         // event loop, the last one wins).
-        let mut accessibility_text = format!("Workflow command {} inserted.", &command_to_insert);
+        let mut accessibility_text = format!(
+            "Comando do fluxo de trabalho {} inserido.",
+            &command_to_insert
+        );
         if let Some(a11y_content) = self.selected_workflow_a11y_text(ctx) {
             let _ = write!(accessibility_text, " {a11y_content}");
         }
         ctx.emit_a11y_content(AccessibilityContent::new(
             accessibility_text,
-            "Press shift-tab to select the next workflow argument",
+            "Pressione Shift+Tab para selecionar o próximo argumento do fluxo de trabalho",
             WarpA11yRole::UserAction,
         ));
 
@@ -8826,7 +8829,9 @@ impl Input {
             .and_then(|selected_workflow_state| {
                 selected_workflow_state.more_info_view.read(ctx, |view, _| {
                     view.selected_argument()
-                        .map(|argument| format!("Selected Workflow argument {}", argument.name()))
+                        .map(|argument| {
+                            format!("Argumento selecionado do fluxo de trabalho {}", argument.name())
+                        })
                 })
             })
     }

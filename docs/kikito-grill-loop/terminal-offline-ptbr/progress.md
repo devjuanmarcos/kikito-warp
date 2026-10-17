@@ -1147,3 +1147,8 @@
 
 - Traduzi as ações de revelar, ocultar e copiar segredos, além das opções para mostrar um arquivo no Finder ou a pasta correspondente.
 - Confirmei que são tooltips locais do terminal: as ações de segredo são renderizadas para conteúdo local; as opções de arquivo usam `local_fs`, habilitado para builds desktop compatíveis.
+
+## Acessibilidade do seletor de argumentos
+
+- Traduzi as mensagens acessíveis de inserção de um fluxo de trabalho, seleção do próximo argumento por Shift+Tab e identificação do argumento selecionado.
+- Essas mensagens são emitidas pelo fluxo local do seletor de argumentos; mantive o atalho e o conteúdo dinâmico do comando/nome do argumento.
