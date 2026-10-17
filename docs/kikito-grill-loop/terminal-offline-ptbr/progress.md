@@ -904,3 +904,8 @@
 
 - Traduzi a confirmação de fechamento, a explicação sobre o compartilhamento e os rótulos dos botões e da opção para não exibir novamente.
 - Mantive as ações de fechar, cancelar e lembrar a preferência.
+
+## Tradução — controles de maximização do painel de revisão
+
+- Traduzi o nome exibido do atalho e as dicas de ferramenta para maximizar e minimizar o painel de revisão de código.
+- Preservei a ação, o ID do atalho e os ícones.

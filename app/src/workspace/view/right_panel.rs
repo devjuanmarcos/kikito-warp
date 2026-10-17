@@ -444,7 +444,7 @@ impl RightPanelView {
 
         app.register_editable_bindings([EditableBinding::new(
             "workspace:toggle_maximize_code_review_panel",
-            "Toggle Maximize Code Review Panel",
+            "Alternar maximização do painel de revisão de código",
             RightPanelAction::ToggleMaximize,
         )
         .with_enabled(|| cfg!(feature = "local_fs"))
@@ -1126,9 +1126,9 @@ impl RightPanelView {
 
     pub fn set_maximized(&mut self, is_maximized: bool, ctx: &mut ViewContext<Self>) {
         let (icon, tooltip) = if is_maximized {
-            (Icon::Minimize, "Minimize")
+            (Icon::Minimize, "Minimizar")
         } else {
-            (Icon::Maximize, "Maximize")
+            (Icon::Maximize, "Maximizar")
         };
 
         self.maximize_button.update(ctx, |button, ctx| {
