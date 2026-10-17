@@ -1571,3 +1571,9 @@
 - Traduzi as dicas locais do campo de entrada e os rótulos de atalhos para comandos, modo shell, conversas, histórico de entrada, aprovação automática, planos e controle do terminal. Atualizei as expectativas relacionadas sem executar testes.
 - Mantive o atalho e a dica de orquestração de agentes fora do lote por pertencerem ao fluxo de agentes; identificadores, comandos e o termo técnico `Terminal` não mudaram.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Aviso local de uso em falhas do agente no TUI
+
+- Traduzi o aviso estático `This response won't count towards your usage.` para `Esta resposta não será contabilizada no seu uso.`. Atualizei as expectativas correspondentes sem executar testes.
+- Mantive mensagens encaminhadas por provedores/servidores e textos de autenticação, créditos e assinaturas. O pedido de desculpas compartilhado chega combinado com mensagem dinâmica, então também ficou intacto.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.

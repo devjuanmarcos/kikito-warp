@@ -207,7 +207,7 @@ fn first_credit_gate_consumes_once_and_reacts_to_delayed_marker_readiness() {
             assert!(
                 lines
                     .iter()
-                    .all(|line| !line.contains("won't count towards your usage"))
+                    .all(|line| !line.contains("não será contabilizada no seu uso"))
             );
         });
         markers.update(&mut app, |markers, ctx| {
@@ -299,7 +299,7 @@ fn agent_block_renders_invalid_api_key_detail_without_usage_notice() {
             assert!(
                 lines
                     .iter()
-                    .all(|line| !line.contains("won't count towards your usage"))
+                    .all(|line| !line.contains("não será contabilizada no seu uso"))
             );
         });
     });

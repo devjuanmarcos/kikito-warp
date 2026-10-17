@@ -20,9 +20,9 @@ use warp::tui_export::{
     AIAgentOutputMessageType, AIAgentText, AIAgentTextSection, AIAgentTodo, AIBlockModel,
     AIBlockModelHelper, AIBlockOutputStatus, AIConversationId, AuthStateProvider, BlockId,
     BlocklistAIActionEvent, BlocklistAIActionModel, BlocklistAIHistoryModel,
-    CHATGPT_CONTINUED_WITH_WARP_CREDITS_TEXT, CancellationReason, FAILED_OUTPUT_USAGE_NOTICE_TEXT,
-    FailedOutputPresentation, MessageId, ModelEvent, ModelEventDispatcher, ReceivedMessageDisplay,
-    RenderableAIError, SummarizationType, TelemetryEvent, TerminalModel, TodoOperation, TodoStatus,
+    CHATGPT_CONTINUED_WITH_WARP_CREDITS_TEXT, CancellationReason, FailedOutputPresentation,
+    MessageId, ModelEvent, ModelEventDispatcher, ReceivedMessageDisplay, RenderableAIError,
+    SummarizationType, TelemetryEvent, TerminalModel, TodoOperation, TodoStatus,
     TuiOnboardingMarker, TuiOnboardingMarkers, TuiOnboardingMarkersEvent, UserWorkspaces,
     chatgpt_subscription_message_with_links, failed_output_presentation,
     should_show_failed_output_usage_notice,
@@ -69,6 +69,7 @@ const FIRST_CREDIT_GATE_TITLE: &str = "You need AI credits in order to use Warp�
 const FIRST_CREDIT_GATE_ACTION_LABEL: &str = "Start using AI";
 const FIRST_CREDIT_GATE_ACTION_HINT: &str = "(ctrl+o).";
 const FAILURE_WARNING_PREFIX: &str = "⚠ ";
+const FAILED_OUTPUT_USAGE_NOTICE_TEXT: &str = "Esta resposta não será contabilizada no seu uso.";
 
 pub(crate) fn upgrade_url(app: &AppContext) -> String {
     let user_id = AuthStateProvider::as_ref(app).get().user_id();
