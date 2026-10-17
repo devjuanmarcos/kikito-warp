@@ -18030,7 +18030,8 @@ impl Workspace {
             let window_id = ctx.window_id();
             WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                 let toast = DismissibleToast::default(
-                    "No terminal pane open. Open a new pane to attach as context.".to_owned(),
+                    "Não há um painel de terminal aberto. Abra um novo painel para anexar o contexto."
+                        .to_owned(),
                 );
                 toast_stack.add_ephemeral_toast(toast, window_id, ctx);
             });
@@ -18048,8 +18049,7 @@ impl Workspace {
         {
             let window_id = ctx.window_id();
             WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                let toast =
-                    DismissibleToast::default("This plan is already in context.".to_owned());
+                let toast = DismissibleToast::default("Este plano já está no contexto.".to_owned());
                 toast_stack.add_ephemeral_toast(toast, window_id, ctx);
             });
             return;
@@ -22497,7 +22497,7 @@ impl Workspace {
             AISettings::as_ref(app)
                 .is_any_ai_enabled(app)
                 .then(|| WorkspaceBannerButtonDetails {
-                    text: "Fix with Warp Agent".to_owned(),
+                    text: "Corrigir com o assistente de IA".to_owned(),
                     action: WorkspaceAction::FixSettingsWithOz {
                         error_description: error.to_string(),
                     },
@@ -22531,7 +22531,10 @@ impl Workspace {
     }
 
     fn render_reauth_banner_element(&self) -> Option<WorkspaceBannerFields> {
-        if self.reauth_banner_dismissed || !self.auth_state.needs_reauth() {
+        if ChannelState::channel() == Channel::Oss
+            || self.reauth_banner_dismissed
+            || !self.auth_state.needs_reauth()
+        {
             return None;
         }
 
@@ -24649,7 +24652,7 @@ impl TypedActionView for Workspace {
                     .active_local_bundled_skill("modify-settings", ctx)
                     .cloned();
                 let query = format!(
-                    "My settings.toml file has an error: {error_description}. Please fix it."
+                    "Meu arquivo settings.toml contém um erro: {error_description}. Corrija-o, por favor."
                 );
                 self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
                     pane_group.add_terminal_pane_in_agent_mode(None, None, ctx);

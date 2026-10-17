@@ -1425,3 +1425,16 @@
 - Traduzi os estados e resumos do importador de configurações locais, incluindo carregamento, perfil selecionado, opções e aviso de sessão nova.
 - Traduzi as dicas do agente, os rótulos de ações e o atalho “Saiba mais”. No OSS, as dicas do Warp Drive são omitidas e nenhuma dica oferece links para documentação hospedada.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Bloqueio central de autenticação no OSS
+
+- Impedi tentativas de login, refresh de credenciais, API key, autorização por dispositivo, criação/vinculação de usuário anônimo e geração de links de autenticação no perfil OSS.
+- O caminho de atualização do estado local de onboarding continua local, mas não envia a atualização ao servidor.
+- O banner de reautenticação também fica oculto no OSS. Os controles da interface já não iniciavam o login nesse canal; estas proteções cobrem chamadas internas e credenciais antigas.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Mensagens de contexto e correção de configurações
+
+- Traduzi avisos para anexar planos como contexto e o prompt enviado ao assistente para corrigir um `settings.toml` local.
+- Traduzi o botão para “Corrigir com o assistente de IA” e mantive “Abrir arquivo” como ação local.
+- `git diff --check` passou; não executei testes.
