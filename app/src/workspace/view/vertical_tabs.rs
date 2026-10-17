@@ -3693,18 +3693,18 @@ impl TypedPane<'_> {
     fn kind_label(&self) -> &'static str {
         match self {
             TypedPane::Terminal(_) => "Terminal",
-            TypedPane::Code(_) => "Code",
-            TypedPane::CodeDiff => "Code Diff",
-            TypedPane::File => "File",
+            TypedPane::Code(_) => "Código",
+            TypedPane::CodeDiff => "Diferenças de código",
+            TypedPane::File => "Arquivo",
             TypedPane::Notebook { .. } => "Notebook",
-            TypedPane::Workflow { .. } => "Workflow",
-            TypedPane::Settings => "Settings",
-            TypedPane::EnvVarCollection => "Environment Variables",
-            TypedPane::EnvironmentManagement => "Environments",
-            TypedPane::AIFact => "Rules",
-            TypedPane::AIDocument => "Plan",
-            TypedPane::ExecutionProfileEditor => "Execution Profile",
-            TypedPane::Other => "Other",
+            TypedPane::Workflow { .. } => "Fluxo de trabalho",
+            TypedPane::Settings => "Configurações",
+            TypedPane::EnvVarCollection => "Variáveis de ambiente",
+            TypedPane::EnvironmentManagement => "Ambientes",
+            TypedPane::AIFact => "Regras",
+            TypedPane::AIDocument => "Plano",
+            TypedPane::ExecutionProfileEditor => "Perfil de execução",
+            TypedPane::Other => "Outro",
         }
     }
 
@@ -3714,7 +3714,7 @@ impl TypedPane<'_> {
                 .file_view(app)
                 .as_ref(app)
                 .contains_unsaved_changes(app)
-                .then(|| "Unsaved".to_string()),
+                .then(|| "Não salvo".to_string()),
             TypedPane::Terminal(_)
             | TypedPane::CodeDiff
             | TypedPane::File
@@ -4324,7 +4324,7 @@ fn terminal_kind_badge_label(is_oz_agent: bool, cli_agent: Option<CLIAgent>) -> 
     if let Some(cli_agent) = cli_agent {
         cli_agent.display_name().to_string()
     } else if is_oz_agent {
-        "Warp Agent".to_string()
+        "Agente Kikito".to_string()
     } else {
         "Terminal".to_string()
     }

@@ -1157,3 +1157,12 @@
 
 - Auditei `line_editor_status.rs`: o módulo apenas acompanha eventos internos de atividade do editor do shell e não contém textos de interface ou acessibilidade.
 - Conferi os rótulos e a ajuda acessível do campo de entrada associados em `input.rs`; já estão em português, sem outras strings locais em inglês nesse fluxo.
+
+## Identificação de painéis nas abas verticais
+
+- Localizei os rótulos de tipo de painel exibidos nas abas e resumos; traduzi os nomes restantes de código, arquivo, fluxo de trabalho, configurações, ambientes, regras, plano e perfil de execução, além do estado de alterações não salvas.
+- Atualizei o rótulo visível do agente do próprio app para Agente Kikito; nomes dos tipos/IDs e lógica permaneceram intactos.
+
+## Auditoria de tooltips em pane_group
+
+- Os tooltips em inglês de `pane_group/pane/view/header/sharing.rs` pertencem aos controles de compartilhamento e permissão de conteúdo compartilhado; não são superfícies locais do perfil OSS offline e ficaram fora do lote.
