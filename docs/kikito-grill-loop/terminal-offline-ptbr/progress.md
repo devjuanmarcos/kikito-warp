@@ -1558,3 +1558,9 @@
 - Traduzi as descrições de atalhos para navegar/remover anexos e devolver o foco ao campo de entrada. Também localizei os marcadores `[image]`/`[file]` e o status `loading…` no painel de anexos.
 - Mantive nomes dinâmicos de arquivos, conteúdo da área de transferência e comandos sem alteração. Atualizei as expectativas de renderização associadas, sem executar testes.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
+
+## Auditoria da configuração local da linha de status no TUI
+
+- Auditei o seletor aberto por `/statusline`, as descrições dos atalhos, o rodapé, as confirmações de salvar/restaurar e os nomes dos itens da linha de status. A copy estática local já está em português; nenhum texto foi alterado neste lote.
+- Itens `Git`, `Vim` e `Pull request` foram mantidos como termos técnicos. A lista inclui também metadados de modelo/equipe/créditos, que não fazem parte da copy local tratada nesta auditoria.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.
