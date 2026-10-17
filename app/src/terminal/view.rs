@@ -837,16 +837,16 @@ impl NotificationsTrigger {
     pub fn discovery_banner_copy(&self) -> &'static str {
         match self {
             NotificationsTrigger::LongRunningCommand(..) => {
-                "Warp can notify you when long-running commands finish."
+                "O Kikito Terminal pode avisar quando comandos longos forem concluídos."
             }
             NotificationsTrigger::AgentTaskCompleted(..) => {
-                "Warp can notify you when an agent finishes responding."
+                "O Kikito Terminal pode avisar quando um agente terminar de responder."
             }
             NotificationsTrigger::NeedsAttention => {
-                "Warp can notify you when a command or agent needs your attention."
+                "O Kikito Terminal pode avisar quando um comando ou agente precisar da sua atenção."
             }
             NotificationsTrigger::PasswordPrompt => {
-                "Warp can notify you when you're prompted to enter a password."
+                "O Kikito Terminal pode avisar quando o terminal solicitar uma senha."
             }
         }
     }
@@ -875,9 +875,9 @@ impl NotificationsTrigger {
         let (title_suffix, body_prefix) = match self {
             LongRunningCommand(command_succeeded, block_duration) => {
                 let status = if *command_succeeded {
-                    "finished"
+                    "concluído"
                 } else {
-                    "failed"
+                    "falhou"
                 };
 
                 let duration_seconds = block_duration.as_secs_f32();
@@ -888,21 +888,21 @@ impl NotificationsTrigger {
                 };
 
                 (
-                    format!(" {status} after {duration_seconds}s"),
-                    "Latest output: ".to_string(),
+                    format!(" {status} após {duration_seconds}s"),
+                    "Saída mais recente: ".to_string(),
                 )
             }
             AgentTaskCompleted(command_succeeded) => {
                 if *command_succeeded {
-                    (" finished".to_string(), "Latest output: ".to_string())
+                    (" concluído".to_string(), "Saída mais recente: ".to_string())
                 } else {
-                    (" failed".to_string(), "Error: ".to_string())
+                    (" falhou".to_string(), "Erro: ".to_string())
                 }
             }
-            NotificationsTrigger::NeedsAttention => (" blocked".to_string(), "".to_string()),
+            NotificationsTrigger::NeedsAttention => (" bloqueado".to_string(), "".to_string()),
             PasswordPrompt => (
-                " is waiting for a password".to_string(),
-                "Latest output: ".to_string(),
+                " aguardando uma senha".to_string(),
+                "Saída mais recente: ".to_string(),
             ),
         };
 

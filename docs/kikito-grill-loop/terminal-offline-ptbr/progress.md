@@ -939,3 +939,8 @@
 
 - Traduzi as sugestões exibidas ao pedir explicação sobre uma seleção, um bloco ou um comando.
 - Preservei o contexto enviado ao assistente e o fluxo de preenchimento do campo.
+
+## Tradução — notificações de comandos e sessões
+
+- Traduzi os textos de apresentação das notificações e os trechos de status, duração, saída e erro.
+- Preservei os dados dinâmicos, o comando exibido e a estrutura dos avisos.
