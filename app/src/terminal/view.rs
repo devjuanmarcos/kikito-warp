@@ -4071,11 +4071,11 @@ impl TerminalView {
         let osc52_clipboard_blocked_banner = ctx.add_typed_action_view(|_| {
             Banner::<TerminalAction>::new_with_buttons(
                 BannerTextContent::plain_text(
-                    "A terminal program tried to access your clipboard. This is disabled by default for security reasons.",
+                    "Um programa do terminal tentou acessar a área de transferência. Por segurança, isso fica desativado por padrão.",
                 ),
                 vec![
                     BannerTextButton::new(
-                        "Allow".to_string(),
+                        "Permitir".to_string(),
                         Rc::new(|event_ctx, _ctx, _position| {
                             event_ctx.dispatch_typed_action(BannerAction::<TerminalAction>::Action(
                                 TerminalAction::Osc52AllowBlockedClipboardOperation,
@@ -4083,7 +4083,7 @@ impl TerminalView {
                         }),
                     ),
                     BannerTextButton::new(
-                        "Don't show again".to_string(),
+                        "Não mostrar novamente".to_string(),
                         Rc::new(|event_ctx, _ctx, _position| {
                             event_ctx.dispatch_typed_action(
                                 BannerAction::<TerminalAction>::Dismiss(DismissalType::Permanent),
@@ -10676,7 +10676,7 @@ impl TerminalView {
 
         let a11y_content = AccessibilityContent::new(
             trigger.discovery_banner_copy(),
-            "You can enable notifications through the command palette.",
+            "Você pode ativar as notificações pela paleta de comandos.",
             WarpA11yRole::TextRole,
         );
         ctx.emit_a11y_content(a11y_content);
@@ -10715,7 +10715,7 @@ impl TerminalView {
 
         let a11y_content = AccessibilityContent::new(
             banner_title,
-            "Make sure you have enabled access for Warp notifications in System Preferences.",
+            "Verifique se o Kikito Terminal tem permissão para enviar notificações nas configurações do sistema.",
             WarpA11yRole::TextRole,
         );
         ctx.emit_a11y_content(a11y_content);
@@ -13657,7 +13657,7 @@ impl TerminalView {
 
                 if self.is_navigated_away_from_window(ctx) {
                     let notification_title =
-                        title.clone().unwrap_or_else(|| "Notification".to_string());
+                        title.clone().unwrap_or_else(|| "Notificação".to_string());
                     let notification = BlockNotification {
                         title: notification_title,
                         body: body.clone(),
@@ -23375,15 +23375,17 @@ impl TerminalView {
         }
         let text = match blocked_type {
             Osc52ClipboardBlockedType::Write => {
-                "A terminal program tried to write to your clipboard. This is disabled by default for security reasons, to protect against malicious software."
+                "Um programa do terminal tentou escrever na área de transferência. Por padrão, isso fica desativado por segurança e para proteger contra software malicioso."
             }
             Osc52ClipboardBlockedType::Read => {
-                "A terminal program tried to read your clipboard. This is disabled by default for security reasons, to protect against malicious software."
+                "Um programa do terminal tentou ler a área de transferência. Por padrão, isso fica desativado por segurança e para proteger contra software malicioso."
             }
         };
         let button_label = match blocked_type {
-            Osc52ClipboardBlockedType::Write => "Allow clipboard writes",
-            Osc52ClipboardBlockedType::Read => "Allow clipboard reads and writes",
+            Osc52ClipboardBlockedType::Write => "Permitir gravação na área de transferência",
+            Osc52ClipboardBlockedType::Read => {
+                "Permitir leitura e gravação na área de transferência"
+            }
         };
         self.osc52_clipboard_blocked_banner
             .update(ctx, |banner, ctx| {
@@ -26868,7 +26870,7 @@ impl TerminalView {
         if shell_type == ShellType::PowerShell {
             ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                 let toast =
-                    DismissibleToast::error("PowerShell subshells not supported".to_owned());
+                    DismissibleToast::error("Subshells do PowerShell não têm suporte.".to_owned());
                 toast_stack.add_ephemeral_toast(toast, window_id, ctx);
             });
             return;

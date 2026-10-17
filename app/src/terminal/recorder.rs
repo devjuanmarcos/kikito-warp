@@ -168,7 +168,7 @@ impl PtyRecorder {
                 let path_str = path.to_string_lossy().into_owned();
                 toast = toast
                     .with_link(
-                        ToastLink::new("Open".to_string())
+                        ToastLink::new("Abrir".to_string())
                             .with_onclick_action(WorkspaceAction::OpenInExplorer { path }),
                     )
                     .with_on_body_click(move |ctx| {

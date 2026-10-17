@@ -1840,3 +1840,10 @@
 - Nos diálogos e avisos de comportamento local próximos (encerramento de shell, modo Vim, expansão de alias, filtro de blocos e avisos de sistema), os textos visíveis fixos já estão em português; não precisei alterar código. Saída de processo e nomes de shell foram preservados.
 - Mantive fora desta revisão prompts de agente, workflows, faturamento, AWS Bedrock, sessões compartilhadas e setup cloud, por dependerem de recursos externos ou hospedados.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — banners e notificações locais do terminal
+
+- Traduzi em `app/src/terminal/view.rs` as mensagens e ações de bloqueio de acesso OSC 52 à área de transferência, o fallback acessível de notificação sem título, as dicas de acessibilidade das notificações e o erro de subshells do PowerShell. Em `app/src/terminal/recorder.rs`, traduzi a ação local `Open` para `Abrir`.
+- Os banners de descoberta/erro de notificações, shell encerrado, expansão de aliases, Vim e abertura/edição de arquivos já estavam em português. Preservei conteúdo dinâmico do terminal e de processos.
+- Mantive fora do escopo banners de login AWS, sessões compartilhadas, prompts de agente e avisos de SSH que dependem da extensão/serviço Warp; o conteúdo de `ssh_tmux_deprecation_banner.rs` também remete à extensão e documentação externas.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
