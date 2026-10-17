@@ -238,7 +238,7 @@ impl View for TerminalViewZeroStateBlock {
                 Message::new(vec![MessageItem::clickable(
                     vec![
                         MessageItem::keystroke(keystroke),
-                        MessageItem::text("open code review"),
+                        MessageItem::text("abrir revisão de código"),
                     ],
                     |ctx| {
                         ctx.dispatch_typed_action(WorkspaceAction::ToggleRightPanel);

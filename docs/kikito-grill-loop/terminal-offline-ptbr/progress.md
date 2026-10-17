@@ -1273,3 +1273,7 @@
 ## Ciclo de vida do shell local
 
 - Revisei erros de inicialização/fallback em `terminal_manager.rs` e avisos de encerramento do shell. As mensagens visíveis de OSS já estão em português; erros internos e avisos de sessão compartilhada/SSH não foram tratados como copy local. Nenhuma alteração de código neste lote.
+
+## Atalhos da sessão de terminal
+
+- Traduzi a dica de atalho local para abrir o painel de revisão de código no bloco inicial do terminal. A dica de nova conversa com agente na nuvem ficou fora do escopo.
