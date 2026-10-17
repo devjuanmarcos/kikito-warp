@@ -1229,3 +1229,7 @@
 ## Revisão de preferências de terminal
 
 - Auditei as preferências locais de shell/terminal e comportamento em `features_page.rs`. Os textos visíveis desse recorte já estão em português; os literais ingleses restantes são termos de busca, nomes usados para localizar atalhos ou conteúdo de links externos, não rótulos exibidos. Nenhuma alteração de código neste lote.
+
+## Revisão de Aparência
+
+- Auditei rótulos, descrições, opções e campos da página local de Aparência. Os textos de interface encontrados neste recorte já estão em português; os nomes em inglês restantes são identificadores, nomes técnicos ou conteúdo remoto. Nenhuma alteração de código neste lote.
