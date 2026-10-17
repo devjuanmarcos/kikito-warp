@@ -1261,3 +1261,7 @@
 ## Busca global local
 
 - Auditei rótulos, placeholders, controles de busca, estados vazios e sessões incompatíveis em `global_search/view.rs`; os textos locais já estão em português. Mantive em inglês apenas estados exclusivos de conexão/sessão remota, fora do escopo. Nenhuma alteração de código neste lote.
+
+## Menus locais do aplicativo
+
+- Auditei os menus de janela, aba, depuração e arquivo em `app_menus.rs`; os rótulos locais visíveis já estão em português. Excluí privacidade/documentação externas, logout e itens de conta/IA não disponíveis no OSS. Nenhuma alteração de código neste lote.
