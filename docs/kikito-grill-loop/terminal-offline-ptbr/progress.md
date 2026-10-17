@@ -1438,3 +1438,10 @@
 - Traduzi avisos para anexar planos como contexto e o prompt enviado ao assistente para corrigir um `settings.toml` local.
 - Traduzi o botão para “Corrigir com o assistente de IA” e mantive “Abrir arquivo” como ação local.
 - `git diff --check` passou; não executei testes.
+
+## Tradução do TUI, fila de prompts e onboarding
+
+- Traduzi para pt-BR os rótulos e mensagens locais da sessão TUI: conversas, ações, atalhos, anexos de imagem, entrada por voz, exportação, MCP e estados do agente. Mantive comandos, IDs e conteúdo dinâmico intactos; textos específicos de sessões cloud continuam em inglês porque esse recurso não está disponível no OSS.
+- Traduzi a fila local de prompts e o onboarding do prompt do terminal. Links para documentação e reporte hospedados são omitidos no OSS.
+- Atualizei o modelo de licenças de terceiros para identificar a distribuição como Kikito Terminal.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

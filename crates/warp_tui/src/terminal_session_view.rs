@@ -195,7 +195,7 @@ const CTRL_C_EXIT_HINT: &str = "Ctrl+C novamente para sair";
 const RUNNING_COMMAND_DETACH_HINT: &str = "Ctrl+C para voltar ao comando";
 /// The footer hint shown when the ctrl-c kill-child window is armed.
 /// Replaces the exit hint when viewing a child agent conversation.
-pub(crate) const CTRL_C_KILL_CHILD_HINT: &str = "ctrl-c again to kill child agent";
+pub(crate) const CTRL_C_KILL_CHILD_HINT: &str = "Ctrl+C novamente para encerrar o agente filho";
 const STARTING_SHELL_HINT: &str = "Iniciando o shell...";
 /// The hint row plus its top padding. The zero state accounts for this temporary
 /// chrome so its centered position already matches the post-bootstrap layout.
@@ -214,7 +214,7 @@ fn settings_file_error_hint(error: &SettingsFileError) -> &'static str {
 const STATUS_UNAVAILABLE: &str = "\u{2014}"; // em dash
 const STATUS_UNTITLED_SESSION: &str = "Sem título";
 const STATUS_DEV_BUILD: &str = "versão de desenvolvimento";
-const STATUS_NOT_SIGNED_IN: &str = "Not signed in";
+const STATUS_NOT_SIGNED_IN: &str = "Sem autenticação";
 
 fn status_menu_is_open(mode: TuiInputSuggestionsMode) -> bool {
     matches!(
@@ -301,7 +301,7 @@ fn render_mcp_install_footer(
     }
     spans.extend([
         ("Esc".to_owned(), builder.primary_text_style()),
-        (" to cancel".to_owned(), builder.muted_text_style()),
+        (" para cancelar".to_owned(), builder.muted_text_style()),
     ]);
     TuiFlex::row().child(TuiText::from_spans(spans).truncate().finish())
 }
@@ -351,18 +351,19 @@ fn zero_state_ascii_load_failure_hint(failure: ZeroStateAnimationLoadFailure) ->
 /// already running a command.
 const COMMAND_ALREADY_RUNNING_HINT: &str = "não é possível executar — já há um comando em execução";
 const NEW_CONVERSATION_COMMAND_RUNNING_HINT: &str =
-    "cannot start new conversation while terminal command is running";
-const FORK_NO_ACTIVE_CONVERSATION_HINT: &str = "/fork requires an active conversation";
-const FORK_EMPTY_CONVERSATION_HINT: &str = "Nothing to fork — start a conversation first.";
-const FORK_NO_RESUME_ID_HINT: &str = "This conversation cannot be forked until it has a resume ID.";
-const FORK_FAILED_HINT: &str = "Conversation forking failed.";
+    "não é possível iniciar uma conversa enquanto um comando do terminal estiver em execução";
+const FORK_NO_ACTIVE_CONVERSATION_HINT: &str = "/fork exige uma conversa ativa";
+const FORK_EMPTY_CONVERSATION_HINT: &str = "Nada para ramificar. Inicie uma conversa primeiro.";
+const FORK_NO_RESUME_ID_HINT: &str =
+    "Não é possível ramificar esta conversa até que ela tenha um ID de retomada.";
+const FORK_FAILED_HINT: &str = "Falha ao ramificar a conversa.";
 const SWITCH_COMMAND_RUNNING_HINT: &str =
-    "Cannot switch conversations while a command is in progress.";
+    "Não é possível trocar de conversa enquanto um comando estiver em execução.";
 const SWITCH_CONVERSATION_RUNNING_HINT: &str =
-    "Cannot switch conversations while the current conversation is in progress.";
-const SWITCH_LOADING_HINT: &str = "Another conversation is already loading.";
-const SWITCH_UNAVAILABLE_HINT: &str = "That conversation is no longer available.";
-const LOADING_CONVERSATION_HINT: &str = "Loading conversation…";
+    "Não é possível trocar de conversa enquanto a conversa atual estiver em andamento.";
+const SWITCH_LOADING_HINT: &str = "Outra conversa já está sendo carregada.";
+const SWITCH_UNAVAILABLE_HINT: &str = "Essa conversa não está mais disponível.";
+const LOADING_CONVERSATION_HINT: &str = "Carregando conversa…";
 const THEME_INVALID_ARGUMENT_HINT: &str = "O tema deve ser auto, light ou dark.";
 
 /// Footer label shown while the input is in `!` shell mode. The how-to-exit
@@ -371,13 +372,15 @@ const THEME_INVALID_ARGUMENT_HINT: &str = "O tema deve ser auto, light ou dark."
 const SHELL_MODE_HINT: &str = "Modo shell";
 const COPY_SELECTION_HINT: &str = "copiado para a área de transferência";
 const COPY_FAILED_HINT: &str = "falha ao copiar para a área de transferência";
-const COPY_DEBUGGING_ID_HINT: &str = "Debugging information copied to clipboard";
+const COPY_DEBUGGING_ID_HINT: &str =
+    "Informações de depuração copiadas para a área de transferência";
 const COPY_DEBUGGING_ID_NO_TOKEN_HINT: &str =
-    "No debugging ID available for this conversation yet.";
-const LOG_BUNDLE_FAILED_HINT: &str = "Failed to create log bundle (check logs)";
-const NLD_ENABLED_HINT: &str = "Natural language detection enabled.";
-const NLD_DISABLED_HINT: &str = "Natural language detection disabled.";
-const NLD_PERSISTENCE_FAILED_HINT: &str = "Could not save the natural language detection setting.";
+    "Ainda não há um ID de depuração disponível para esta conversa.";
+const LOG_BUNDLE_FAILED_HINT: &str = "Falha ao criar o pacote de logs (consulte os logs)";
+const NLD_ENABLED_HINT: &str = "Detecção de linguagem natural ativada.";
+const NLD_DISABLED_HINT: &str = "Detecção de linguagem natural desativada.";
+const NLD_PERSISTENCE_FAILED_HINT: &str =
+    "Não foi possível salvar a configuração de detecção de linguagem natural.";
 const VIM_MODE_ENABLED_HINT: &str = "Modo Vim ativado.";
 const VIM_MODE_DISABLED_HINT: &str = "Modo Vim desativado.";
 const VIM_MODE_PERSISTENCE_FAILED_HINT: &str =
@@ -388,21 +391,21 @@ const ZERO_STATE_ASCII_INITIAL_LOAD_FAILED_HINT: &str =
 const ZERO_STATE_ASCII_RELOAD_FAILED_HINT: &str =
     "Não foi possível recarregar a arte ASCII personalizada. Mantendo o objeto atual.";
 #[cfg(feature = "voice_input")]
-const VOICE_USAGE_HINT: &str = "Usage: /voice (no arguments)";
-const AUTO_APPROVE_ENABLED_HINT: &str = "Auto approve on";
-const AUTO_APPROVE_DISABLED_HINT: &str = "Auto approve off";
+const VOICE_USAGE_HINT: &str = "Uso: /voice (sem argumentos)";
+const AUTO_APPROVE_ENABLED_HINT: &str = "Aprovação automática ativada";
+const AUTO_APPROVE_DISABLED_HINT: &str = "Aprovação automática desativada";
 const STATUSLINE_SAVED_HINT: &str = "Configuração da linha de status salva.";
 const STATUSLINE_RESET_HINT: &str = "Linha de status redefinida para o padrão.";
 const STATUSLINE_PERSISTENCE_FAILED_HINT: &str =
     "Não foi possível salvar a configuração da linha de status.";
 const COST_NO_ACTIVE_CONVERSATION_HINT: &str =
-    "Cannot show conversation cost: no active conversation";
-const COST_EMPTY_CONVERSATION_HINT: &str = "Cannot show conversation cost: conversation is empty";
+    "Não é possível mostrar o custo: não há uma conversa ativa";
+const COST_EMPTY_CONVERSATION_HINT: &str = "Não é possível mostrar o custo: a conversa está vazia";
 const COST_CONVERSATION_IN_PROGRESS_HINT: &str =
-    "Cannot show conversation cost: conversation is in progress";
+    "Não é possível mostrar o custo: a conversa está em andamento";
 
 fn log_bundle_success_message(path: &Path) -> String {
-    format!("Log bundle saved to {}", path.display())
+    format!("Pacote de logs salvo em {}", path.display())
 }
 
 /// Shell command that invokes the TUI for the current build channel.
@@ -472,11 +475,11 @@ fn bordered_input(
 
 fn mcp_primary_action_hint(action: TuiMcpAction) -> Option<&'static str> {
     match action {
-        TuiMcpAction::Enable(_) => Some("to install and enable"),
-        TuiMcpAction::Start(_) => Some("to start"),
-        TuiMcpAction::Stop(_) => Some("to stop"),
-        TuiMcpAction::Retry(_) => Some("to retry"),
-        TuiMcpAction::ReopenAuthorization(_) => Some("to authenticate"),
+        TuiMcpAction::Enable(_) => Some("para instalar e ativar"),
+        TuiMcpAction::Start(_) => Some("para iniciar"),
+        TuiMcpAction::Stop(_) => Some("para parar"),
+        TuiMcpAction::Retry(_) => Some("para tentar novamente"),
+        TuiMcpAction::ReopenAuthorization(_) => Some("para autenticar"),
         TuiMcpAction::LogOut(_) | TuiMcpAction::ReloadConfig => None,
     }
 }
@@ -497,14 +500,14 @@ fn render_mcp_menu_footer(
         spans.extend([
             ("Ctrl+R".to_owned(), builder.primary_text_style()),
             (
-                " to log out & remove credentials  ".to_owned(),
+                " para sair e remover as credenciais  ".to_owned(),
                 builder.muted_text_style(),
             ),
         ]);
     }
     spans.extend([
         ("Esc".to_owned(), builder.primary_text_style()),
-        (" to close".to_owned(), builder.muted_text_style()),
+        (" para fechar".to_owned(), builder.muted_text_style()),
     ]);
     TuiFlex::row().child(TuiText::from_spans(spans).truncate().finish())
 }
@@ -562,9 +565,9 @@ enum ConversationRestoreState {
 fn export_file_success_message(export: &ConversationFileExport) -> String {
     let path = export.path().display();
     if export.overwrote_existing() {
-        format!("Conversation exported to {path} (overwrote existing file)")
+        format!("Conversa exportada para {path} (arquivo existente substituído)")
     } else {
-        format!("Conversation exported to {path}")
+        format!("Conversa exportada para {path}")
     }
 }
 
@@ -593,7 +596,7 @@ fn resolve_status_email(
 fn format_status_conversation_id(conversation_id: Option<AIConversationId>) -> String {
     conversation_id
         .map(|id| id.to_string())
-        .unwrap_or_else(|| "None".to_owned())
+        .unwrap_or_else(|| "Nenhum".to_owned())
 }
 
 /// Typed actions handled by [`TuiTerminalSessionView`].
@@ -819,7 +822,7 @@ pub(crate) fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             ATTACH_AGENT_TO_RUNNING_COMMAND_BINDING_NAME,
-            "Use the agent with the running command",
+            "Usar o agente com o comando em execução",
             TuiTerminalSessionAction::AttachAgentToRunningCommand,
         )
         .with_context_predicate(
@@ -830,7 +833,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("ctrl-shift-enter"),
         EditableBinding::new(
             DETACH_AGENT_FROM_RUNNING_COMMAND_BINDING_NAME,
-            "Return control to the running command",
+            "Devolver o controle ao comando em execução",
             TuiTerminalSessionAction::DetachAgentFromRunningCommand,
         )
         .with_context_predicate(
@@ -841,7 +844,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("escape"),
         EditableBinding::new(
             ACCEPT_BLOCKED_TERMINAL_USE_ACTION_BINDING_NAME,
-            "Accept the blocked terminal-use action",
+            "Aceitar a ação bloqueada de uso do terminal",
             TuiTerminalSessionAction::AcceptBlockedTerminalUseAction,
         )
         .with_context_predicate(
@@ -852,7 +855,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("ctrl-enter"),
         EditableBinding::new(
             AUTO_APPROVE_TOGGLE_BINDING_NAME,
-            "Toggle auto approve",
+            "Alternar aprovação automática",
             TuiTerminalSessionAction::ToggleAutoApprove {
                 show_feedback: true,
             },
@@ -862,7 +865,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("ctrl-shift-I"),
         EditableBinding::new(
             PLAN_TOGGLE_BINDING_NAME,
-            "Toggle the latest plan",
+            "Alternar o plano mais recente",
             TuiTerminalSessionAction::TogglePlan,
         )
         .with_context_predicate(view_context)
@@ -870,7 +873,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("ctrl-shift-P"),
         EditableBinding::new(
             CONTEXTUAL_PLAN_TOGGLE_BINDING_NAME,
-            "Toggle the latest visible plan",
+            "Alternar o plano visível mais recente",
             TuiTerminalSessionAction::TogglePlan,
         )
         .with_context_predicate(
@@ -882,7 +885,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("ctrl-p"),
         EditableBinding::new(
             FOCUS_ATTACHMENTS_BINDING_NAME,
-            "Focus image attachments",
+            "Focar nos anexos de imagem",
             TuiTerminalSessionAction::FocusAttachments,
         )
         .with_context_predicate(
@@ -893,7 +896,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("tab"),
         EditableBinding::new(
             PASTE_IMAGE_BINDING_NAME,
-            "Paste from the clipboard",
+            "Colar da área de transferência",
             TuiTerminalSessionAction::PasteFromClipboard,
         )
         .with_context_predicate(
@@ -904,7 +907,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("ctrl-v"),
         EditableBinding::new(
             PASTE_IMAGE_BINDING_NAME,
-            "Paste from the clipboard",
+            "Colar da área de transferência",
             TuiTerminalSessionAction::PasteFromClipboard,
         )
         .with_context_predicate(
@@ -916,7 +919,7 @@ pub(crate) fn init(app: &mut AppContext) {
         #[cfg(feature = "voice_input")]
         EditableBinding::new(
             VOICE_INPUT_BINDING_NAME,
-            "Start voice input",
+            "Iniciar entrada por voz",
             TuiTerminalSessionAction::StartVoiceInput,
         )
         .with_context_predicate(
@@ -928,7 +931,7 @@ pub(crate) fn init(app: &mut AppContext) {
         #[cfg(windows)]
         EditableBinding::new(
             PASTE_IMAGE_BINDING_NAME,
-            "Paste from the clipboard",
+            "Colar da área de transferência",
             TuiTerminalSessionAction::PasteFromClipboard,
         )
         .with_context_predicate(
@@ -944,7 +947,7 @@ pub(crate) fn init(app: &mut AppContext) {
     app.register_editable_bindings([
         EditableBinding::new(
             "tui:orchestration_tabs:focus_input",
-            "Return focus to the session input",
+            "Devolver o foco à entrada da sessão",
             TuiTerminalSessionAction::FocusDefaultInteractionTarget,
         )
         .with_context_predicate(tab_context.clone())
@@ -952,7 +955,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("down"),
         EditableBinding::new(
             "tui:orchestration_tabs:focus_input",
-            "Return focus to the session input",
+            "Devolver o foco à entrada da sessão",
             TuiTerminalSessionAction::FocusDefaultInteractionTarget,
         )
         .with_context_predicate(tab_context.clone())
@@ -960,7 +963,7 @@ pub(crate) fn init(app: &mut AppContext) {
         .with_key_binding("shift-down"),
         EditableBinding::new(
             "tui:orchestration_tabs:focus_main",
-            "Return to the main agent and focus its input",
+            "Voltar ao agente principal e focar na entrada dele",
             TuiTerminalSessionAction::FocusMainOrchestrationTab,
         )
         .with_context_predicate(tab_context)
@@ -3057,7 +3060,7 @@ impl TuiTerminalSessionView {
             None => {
                 self.fail_conversation_restore(
                     request_id,
-                    "The conversation could not be loaded.".to_owned(),
+                    "Não foi possível carregar a conversa.".to_owned(),
                     ctx,
                 );
                 return;
@@ -3075,7 +3078,7 @@ impl TuiTerminalSessionView {
         if !matches_target {
             self.fail_conversation_restore(
                 request_id,
-                "The restored conversation did not match the requested conversation.".to_owned(),
+                "A conversa restaurada não corresponde à conversa solicitada.".to_owned(),
                 ctx,
             );
             return;
@@ -4199,7 +4202,7 @@ impl TuiTerminalSessionView {
                 self.show_transient_hint(hint.clone(), ctx);
             }
             TuiVoiceInputEvent::Cancelled => {
-                self.show_transient_hint("Voice input cancelled".to_owned(), ctx);
+                self.show_transient_hint("Entrada por voz cancelada".to_owned(), ctx);
             }
             TuiVoiceInputEvent::StateChanged(_) => ctx.notify(),
         }
@@ -4396,7 +4399,7 @@ impl TuiTerminalSessionView {
                             .update(ctx, |flow, ctx| flow.start(request, ctx))
                         {
                             self.show_error_hint(
-                                "Unable to open the MCP installation flow".to_owned(),
+                                "Não foi possível abrir o fluxo de instalação do MCP".to_owned(),
                                 ctx,
                             );
                         }
@@ -4596,7 +4599,7 @@ impl TuiTerminalSessionView {
         self.transcript.update(ctx, |transcript, ctx| {
             transcript.append_notice(
                 format!(
-                    "Forked conversation. To resume the original in another session, run: {resume_command}"
+                    "Conversa ramificada. Para retomar a original em outra sessão, execute: {resume_command}"
                 ),
                 ctx,
             );
@@ -4785,8 +4788,7 @@ impl TuiTerminalSessionView {
                     .filter(|argument| !argument.is_empty())
                 else {
                     self.show_transient_hint(
-                        "Please describe the project you want to create after /create-new-project"
-                            .to_owned(),
+                        "Descreva o projeto que deseja criar após /create-new-project".to_owned(),
                         ctx,
                     );
                     return;
@@ -4808,7 +4810,7 @@ impl TuiTerminalSessionView {
                     match copy_to_clipboard(&markdown) {
                         Ok(()) => {
                             self.show_success_hint(
-                                "Conversation copied to clipboard".to_owned(),
+                                "Conversa copiada para a área de transferência".to_owned(),
                                 ctx,
                             );
                         }
@@ -4818,7 +4820,10 @@ impl TuiTerminalSessionView {
                         }
                     }
                 } else {
-                    self.show_transient_hint("No active conversation to export".to_owned(), ctx);
+                    self.show_transient_hint(
+                        "Não há uma conversa ativa para exportar".to_owned(),
+                        ctx,
+                    );
                 }
                 self.input_view.update(ctx, |input, ctx| input.clear(ctx));
                 record_static_slash_command_accepted(command.name, true, ctx);
@@ -4829,7 +4834,10 @@ impl TuiTerminalSessionView {
                     .as_ref(ctx)
                     .selected_conversation(ctx)
                 else {
-                    self.show_transient_hint("No active conversation to export".to_owned(), ctx);
+                    self.show_transient_hint(
+                        "Não há uma conversa ativa para exportar".to_owned(),
+                        ctx,
+                    );
                     return;
                 };
                 let title = conversation.title();
@@ -5540,9 +5548,9 @@ impl TuiTerminalSessionView {
                     .and_then(|exchange| exchange.time_since_start());
                 if let Some(elapsed) = warping_elapsed {
                     let label = if conversation.is_summarizing() {
-                        "Summarizing conversation"
+                        "Resumindo a conversa"
                     } else {
-                        "Warping"
+                        "Gerando resposta"
                     };
                     content = content.child(
                         TuiContainer::new(self.render_warping_indicator(label, elapsed, ctx))
