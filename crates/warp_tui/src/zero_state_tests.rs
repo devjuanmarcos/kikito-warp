@@ -254,7 +254,7 @@ fn custom_endpoint_summary_tracks_configuration_and_local_keys() {
         app.read(|ctx| {
             assert_eq!(
                 custom_endpoint_status_label(ApiKeyManager::as_ref(ctx)),
-                Some(("2 need API keys · /api-keys".to_owned(), false))
+                Some(("2 sem chave de API · /api-keys".to_owned(), false))
             );
         });
 
@@ -267,7 +267,7 @@ fn custom_endpoint_summary_tracks_configuration_and_local_keys() {
             assert_eq!(
                 custom_endpoint_status_label(ApiKeyManager::as_ref(ctx)),
                 Some((
-                    "1 connected · 1 need API keys · /api-keys".to_owned(),
+                    "1 com chave de API · 1 sem chave de API · /api-keys".to_owned(),
                     false
                 ))
             );
@@ -281,7 +281,7 @@ fn custom_endpoint_summary_tracks_configuration_and_local_keys() {
         app.read(|ctx| {
             assert_eq!(
                 custom_endpoint_status_label(ApiKeyManager::as_ref(ctx)),
-                Some(("2 connected · /api-keys".to_owned(), false))
+                Some(("2 com chave de API · /api-keys".to_owned(), false))
             );
         });
 
@@ -292,7 +292,7 @@ fn custom_endpoint_summary_tracks_configuration_and_local_keys() {
             assert_eq!(
                 custom_endpoint_status_label(ApiKeyManager::as_ref(ctx)),
                 Some((
-                    "Configuration error · fix agents.custom_endpoints".to_owned(),
+                    "Erro de configuração · corrija agents.custom_endpoints".to_owned(),
                     true
                 ))
             );
@@ -320,7 +320,7 @@ fn custom_endpoint_section_is_hidden_until_an_endpoint_is_configured() {
                 20,
             )
             .join("\n");
-            assert!(!rendered.contains("Custom endpoints"));
+            assert!(!rendered.contains("Endpoints personalizados"));
         });
 
         ApiKeyManager::handle(&app).update(&mut app, |manager, ctx| {
@@ -342,8 +342,8 @@ fn custom_endpoint_section_is_hidden_until_an_endpoint_is_configured() {
                 20,
             )
             .join("\n");
-            assert!(rendered.contains("Custom endpoints"));
-            assert!(rendered.contains("2 need API keys · /api-keys"));
+            assert!(rendered.contains("Endpoints personalizados"));
+            assert!(rendered.contains("2 sem chave de API · /api-keys"));
         });
     });
 }

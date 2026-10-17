@@ -1595,3 +1595,10 @@
 - Confirmei que a janela de Settings no canal OSS mantém apenas as páginas Appearance, Keybindings e About (`settings_view/mod.rs`). As chamadas que renderizam diretamente `Setting::description()` ficam na página de perfis de agentes, excluída dessa navegação local; não encontrei esses metadados nas telas locais da GUI nem do TUI.
 - O TUI pode exportar um JSON Schema por um comando de linha de comando de execução única. As descrições `schemars`/`SettingSchemaEntry` vão para esse artefato técnico; não são copy de menu, help ou status renderizada durante a sessão. Mantive essas descrições, os nomes e valores serializados sem alteração neste lote.
 - Não encontrei descrições locais elegíveis para traduzir neste escopo. Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`. Não executei testes nem Clippy.
+
+## Zero-state local do TUI OSS
+
+- O título e a orientação de primeira execução, além do contexto local de projeto e habilidades, já estavam em pt-BR. Traduzi o fallback `dev build` para `compilação de desenvolvimento` e os estados locais de endpoints personalizados; mantive `/api-keys` e `agents.custom_endpoints` como comandos/caminho de configuração.
+- O updater não é registrado no canal OSS e o changelog é desativado. A linha de conta e a seção MCP ainda eram permitidas pela visibilidade padrão apesar de não se aplicarem ao OSS; agora ficam ocultas nesse canal. A linha de versão OSS também não consulta o modelo de updater, que não é registrado nesse canal. Os textos dinâmicos de changelog, conta, atualizador e MCP foram mantidos sem tradução.
+- As descrições em `app/src/settings/tui_zero_state.rs` são metadados do schema, não copy exibida pelo zero-state.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp_tui --bin warp-tui-oss`. Não executei testes nem Clippy.

@@ -92,11 +92,12 @@ impl ZeroStateSectionVisibility {
             return Self::default();
         }
         let settings = TuiZeroStateSettings::as_ref(ctx);
+        let is_oss = ChannelState::channel() == warp_core::channel::Channel::Oss;
         Self {
-            signed_in_user: *settings.show_signed_in_user.value(),
-            changelog: *settings.show_changelog.value(),
+            signed_in_user: !is_oss && *settings.show_signed_in_user.value(),
+            changelog: !is_oss && *settings.show_changelog.value(),
             project_info: *settings.show_project_info.value(),
-            mcp: *settings.show_mcp.value(),
+            mcp: !is_oss && *settings.show_mcp.value(),
             animation: *settings.show_animation.value(),
         }
     }
@@ -781,7 +782,7 @@ fn render_custom_endpoints_section(
     column
         .child(blank_row())
         .child(
-            TuiText::new("Custom endpoints")
+            TuiText::new("Endpoints personalizados")
                 .with_style(header_style)
                 .truncate()
                 .finish(),
@@ -792,7 +793,7 @@ fn render_custom_endpoints_section(
 fn custom_endpoint_status_label(manager: &ApiKeyManager) -> Option<(String, bool)> {
     if !manager.custom_endpoint_settings_valid() {
         return Some((
-            "Configuration error · fix agents.custom_endpoints".to_owned(),
+            "Erro de configuração · corrija agents.custom_endpoints".to_owned(),
             true,
         ));
     }
@@ -806,10 +807,10 @@ fn custom_endpoint_status_label(manager: &ApiKeyManager) -> Option<(String, bool
         .count();
     let missing = definitions.len() - connected;
     let label = match (connected, missing) {
-        (0, missing) => format!("{missing} need API keys · /api-keys"),
-        (connected, 0) => format!("{connected} connected · /api-keys"),
+        (0, missing) => format!("{missing} sem chave de API · /api-keys"),
+        (connected, 0) => format!("{connected} com chave de API · /api-keys"),
         (connected, missing) => {
-            format!("{connected} connected · {missing} need API keys · /api-keys")
+            format!("{connected} com chave de API · {missing} sem chave de API · /api-keys")
         }
     };
     Some((label, false))
@@ -944,11 +945,14 @@ fn autoupdate_status_label(status: TuiAutoupdateStatus) -> Option<&'static str> 
 fn render_version_line(builder: &TuiUiBuilder, app: &AppContext) -> Box<dyn TuiElement> {
     let muted = builder.muted_text_style();
     let Some(version) = ChannelState::app_version() else {
-        return TuiText::new("dev build")
+        return TuiText::new("compilação de desenvolvimento")
             .with_style(muted)
             .truncate()
             .finish();
     };
+    if ChannelState::channel() == warp_core::channel::Channel::Oss {
+        return TuiText::new(version).with_style(muted).truncate().finish();
+    }
     let status = TuiAutoupdater::as_ref(app).status();
     let Some(label) = autoupdate_status_label(status) else {
         return TuiText::new(version).with_style(muted).truncate().finish();
