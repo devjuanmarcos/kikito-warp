@@ -1127,3 +1127,8 @@
 
 - Traduzi o cabeçalho visível "Code" para "Código" e os estados de indexação de repositórios: sem índice, limite atingido, indisponível, desativado, na fila, indexando, sincronizado, desatualizado e falha.
 - Preservei nomes de arquivos de configuração, termos técnicos, siglas, IDs e mensagens internas usadas para comparar falhas remotas.
+
+## Menus do aplicativo
+
+- Traduzi o menu de ajuda, o controle manual de status de rede em depuração e os itens locais de reabertura de sessão e configurações de inicialização.
+- Mantive sem alteração os itens de conta, feedback/documentação externos e menus ligados a serviços remotos.
