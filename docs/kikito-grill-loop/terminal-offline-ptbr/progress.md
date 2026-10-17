@@ -889,3 +889,8 @@
 
 - Traduzi o cabeçalho da seção de modelos e os rótulos de modelo base, uso completo do terminal e uso do computador.
 - Mantive nomes de modelos, permissões e comportamento.
+
+## Tradução — opções de visualização das abas verticais
+
+- Traduzi os títulos e as opções da seção de visualização no menu das abas verticais.
+- Preservei os modos, as ações e os valores internos.
