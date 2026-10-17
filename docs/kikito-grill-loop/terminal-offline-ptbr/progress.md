@@ -1014,3 +1014,8 @@
 
 - Traduzi o texto de orientação do campo para o agente, os exemplos rotativos, as dicas de orientação/fila e os estados do menu de sugestões dinâmicas de comandos.
 - Preservei nomes de tecnologias, serviços, comandos e atalhos citados nos exemplos; substituí a expressão "Warp anything" por uma instrução natural em português.
+
+## Tradução — nomes de ações do campo de comando
+
+- Traduzi rótulos de atalhos e ações locais para histórico, tela, rolagem, buscas, sugestões, fluxos de trabalho e modo de agente.
+- Atualizei a referência de marca no rótulo do registro de rede; mantive IDs de ações e atalhos sem alterações.
