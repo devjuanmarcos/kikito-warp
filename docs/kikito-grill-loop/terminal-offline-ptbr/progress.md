@@ -864,3 +864,8 @@
 
 - Traduzi o título da janela de temas e suas instruções de acessibilidade.
 - Preservei o papel da janela e a instrução para fechá-la com Esc.
+
+## Tradução — atalho global no Wayland
+
+- Traduzi o título, o aviso de compatibilidade e o rótulo do link de documentação.
+- Mantive a URL, o estado desativado e a ação do atalho.
