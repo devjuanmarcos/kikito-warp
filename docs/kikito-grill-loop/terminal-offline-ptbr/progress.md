@@ -1779,6 +1779,7 @@
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
 
 
+
 ## Auditoria — barra de entrada e colagem de imagem
 
 - Revisei `app/src/terminal/input/message_bar`, `terminal_message_bar.rs` e o fluxo local da ação de colar imagem pela área de transferência. O rótulo `Colar caminho da imagem` e sua dica já estavam traduzidos; corrigi a acentuação de dois avisos de imagem/clipboard em `app/src/terminal/view/use_agent_footer/mod.rs`.
@@ -1846,4 +1847,10 @@
 - Traduzi em `app/src/terminal/view.rs` as mensagens e ações de bloqueio de acesso OSC 52 à área de transferência, o fallback acessível de notificação sem título, as dicas de acessibilidade das notificações e o erro de subshells do PowerShell. Em `app/src/terminal/recorder.rs`, traduzi a ação local `Open` para `Abrir`.
 - Os banners de descoberta/erro de notificações, shell encerrado, expansão de aliases, Vim e abertura/edição de arquivos já estavam em português. Preservei conteúdo dinâmico do terminal e de processos.
 - Mantive fora do escopo banners de login AWS, sessões compartilhadas, prompts de agente e avisos de SSH que dependem da extensão/serviço Warp; o conteúdo de `ssh_tmux_deprecation_banner.rs` também remete à extensão e documentação externas.
+- Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
+
+## Auditoria — busca no terminal
+
+- Revisei o componente local de busca em `app/src/view_components/find.rs` e sua integração com `app/src/terminal/find`. Placeholder, dicas de regex/sensibilidade a maiúsculas, busca no bloco, instruções de acessibilidade, resultado atual, estado sem resultados e indicador de busca já estão em português. Não encontrei copy fixo em inglês que exigisse alteração.
+- Mantive `Find` como nome interno da view e os identificadores de ações/controles, além dos valores numéricos de contagem. As mensagens `Scanning`/`Complete` e erros RegexDFAs pertencem a estados internos/logs, não à interface visível. O texto pesquisado e a saída do shell permanecem dados dinâmicos.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p warp --bin warp-oss`; nenhum teste foi executado.
