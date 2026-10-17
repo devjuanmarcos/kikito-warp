@@ -1901,3 +1901,4 @@
 - Corrigi `crates/websocket/src/proxy.rs` para não enviar destinos loopback por proxies de ambiente, mesmo sem uma entrada correspondente em `NO_PROXY`. O TTY remoto local usa `127.0.0.1:3030`.
 - Validação: `cargo fmt --all`, `git diff --check` e `cargo check -p websocket` passaram; nenhum teste foi executado.
 - Na varredura ampliada dos caminhos de rede diretos em `app/src`, confirmei que o tracing nativo retorna sem exporter no canal OSS, as chamadas de telemetria passam pelo cliente HTTP com bloqueio OSS e o carregamento de credenciais AWS retorna antes da inicialização do SDK. Listeners locais e o bridge ACP foram classificados como comunicação local; a auditoria não equivale a firewall de processo.
+- Após o ajuste do proxy, `cargo check -p warp --bin warp-oss` também passou. O compilador descartou um artefato incremental antigo durante a compilação; nenhum teste foi executado.
