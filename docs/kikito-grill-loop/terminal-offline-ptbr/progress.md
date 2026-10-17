@@ -919,3 +919,8 @@
 
 - Traduzi a mensagem sem resultados, o aviso ao tentar excluir uma conversa em andamento e o título genérico de conversa.
 - Preservei os critérios de exibição e exclusão.
+
+## Tradução — busca e grupos de abas verticais
+
+- Traduzi o estado de busca sem resultados, o contador de abas nos grupos e o nome padrão de grupo sem título.
+- Preservei a lógica de busca, agrupamento e contagem.

@@ -1919,7 +1919,7 @@ fn render_groups(
         } else {
             return Container::new(
                 Text::new_inline(
-                    "No tabs match your search.",
+                    "Nenhuma aba corresponde à sua busca.",
                     appearance.ui_font_family(),
                     12.,
                 )
@@ -2838,9 +2838,9 @@ fn render_grouped_tabs_header(
                 .finish()
         };
     let subtitle_text = if member_count == 1 {
-        "1 tab".to_string()
+        "1 aba".to_string()
     } else {
-        format!("{member_count} tabs")
+        format!("{member_count} abas")
     };
     let subtitle = Text::new_inline(subtitle_text, font_family, 10.)
         .with_clip(ClipConfig::ellipsis())
@@ -4081,7 +4081,7 @@ fn should_show_tab_group_header(
 }
 
 /// Header text for a tab group the user has never named.
-const UNTITLED_GROUP_NAME: &str = "New Group";
+const UNTITLED_GROUP_NAME: &str = "Novo grupo";
 
 /// The group title as displayed in the panel header, including the fallback
 /// used for a group the user has never named. Search matches against this so a
