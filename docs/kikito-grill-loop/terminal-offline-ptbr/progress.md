@@ -794,3 +794,8 @@
 - Traduzi dicas para alterar a branch do Git e o diretório de trabalho, além do rótulo desse
   diretório.
 - Preservei as ações dos chips e os valores exibidos.
+
+## Tradução — estado do comando editado
+
+- Traduzi o aviso de comando editado e o controle para restaurar o estado original.
+- Preservei a ação existente de redefinição do comando.
