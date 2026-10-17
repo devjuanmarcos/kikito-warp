@@ -1233,3 +1233,7 @@
 ## Revisão de Aparência
 
 - Auditei rótulos, descrições, opções e campos da página local de Aparência. Os textos de interface encontrados neste recorte já estão em português; os nomes em inglês restantes são identificadores, nomes técnicos ou conteúdo remoto. Nenhuma alteração de código neste lote.
+
+## Painel local de revisão de código
+
+- Traduzi o fallback `Unknown` para `Desconhecido` no seletor local de repositórios do painel lateral. Os demais controles visíveis revisados já estavam em português; mensagens de diagnóstico e fluxos remotos foram excluídos.

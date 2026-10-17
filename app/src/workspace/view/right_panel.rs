@@ -358,7 +358,7 @@ impl CodeReviewState {
                 .map(|repo_path| {
                     let display_name = self
                         .get_repo_display_name(repo_path, ctx)
-                        .unwrap_or_else(|| "Unknown".to_string());
+                        .unwrap_or_else(|| "Desconhecido".to_string());
                     DropdownItem::new(
                         display_name,
                         RightPanelAction::SelectRepo {
