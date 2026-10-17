@@ -1526,3 +1526,9 @@
 - Workflows, Agent Mode Workflows, notebooks, planos, Warp Drive e variáveis de ambiente são conectados ao Warp Drive e não entram na paleta OSS quando `WarpDriveSettings` está desativado. Mantive seus rótulos. Prompt History é compartilhado com o menu de histórico do modo cloud, então também ficou sem alteração.
 - “Skills” virou “habilidades” na interface; o tipo/filtro técnico e demais identificadores permanecem inalterados.
 - `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.
+
+## Seletor local de habilidades
+
+- Traduzi o estado vazio do seletor inline de habilidades, a dica de fechar com Escape, o selo “Habilidade do projeto”, o rótulo de acessibilidade e o aviso quando uma habilidade local é acionada em uma sessão remota.
+- Mantive o nome da habilidade, os comandos e o atalho Escape intactos.
+- `cargo fmt --all`, `git diff --check`, `cargo check -p warp --bin warp-oss` e `cargo clippy -p warp --bin warp-oss -- -D warnings` passaram. Não executei testes.

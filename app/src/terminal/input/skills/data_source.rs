@@ -42,12 +42,12 @@ impl InlineMenuAction for AcceptSkill {
         // If no item is selected, show "No skills found" message with escape hint
         if args.inline_menu_model.selected_item().is_none() {
             return Some(Message::new(vec![
-                MessageItem::text("No skills found"),
+                MessageItem::text("Nenhuma habilidade encontrada"),
                 MessageItem::keystroke(Keystroke {
                     key: "escape".to_owned(),
                     ..Default::default()
                 }),
-                MessageItem::text(" to dismiss"),
+                MessageItem::text(" para fechar"),
             ]));
         }
 
@@ -300,7 +300,7 @@ impl SearchItem for SkillSearchItem {
             let badge_text_color =
                 inline_styles::disabled_text_color(theme, background_color.into());
             let badge_text = Text::new_inline(
-                "Project Skill".to_string(),
+                "Habilidade do projeto".to_string(),
                 appearance.ui_font_family(),
                 badge_font_size,
             )
@@ -353,6 +353,6 @@ impl SearchItem for SkillSearchItem {
     }
 
     fn accessibility_label(&self) -> String {
-        format!("Skill: {}", self.skill_name)
+        format!("Habilidade: {}", self.skill_name)
     }
 }
