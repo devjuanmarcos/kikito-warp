@@ -768,3 +768,8 @@
 
 - Traduzi rótulos, placeholders e a orientação para preencher argumentos e variáveis de ambiente.
 - Preservei a chave interna do prefixo, as ações e a estrutura do editor.
+
+## Tradução — importação de configurações
+
+- Traduzi os botões de importação e restauração das configurações.
+- Preservei as ações e os limites de largura dos botões.
