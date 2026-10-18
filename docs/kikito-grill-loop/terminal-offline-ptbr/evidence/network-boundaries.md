@@ -40,3 +40,8 @@ Esta evidência reúne a revisão estática dos caminhos de rede do próprio pro
 - Em 2026-10-17, iniciei `target/debug/warp-oss.exe` oculto com o perfil temporário `offline-runtime-audit-20261017h`, aguardei 12 segundos e consultei os sockets TCP de todos os descendentes do processo GUI.
 - A árvore continha o processo GUI, seu processo auxiliar `warp-oss.exe`, `OpenConsole.exe`, `conhost.exe` e processos `powershell.exe` iniciados pelo terminal. O único socket TCP observado foi `LISTEN 127.0.0.1:9282` no processo GUI; não foi observada conexão TCP externa nessa amostra.
 - Encerrei a árvore de processos criada para a auditoria e confirmei que os processos monitorados não continuaram ativos. A amostra não capturou UDP, DNS fora de TCP, tráfego anterior/posterior aos 12 segundos, nem execução de comandos do usuário; não é prova de isolamento total.
+
+## Tentativa de revisão visual
+
+- Em 2026-10-17, tentei capturar a janela iniciada para revisar a tradução da GUI. O handle apontava para um processo `warp-oss.exe`, mas a superfície capturada era de outro aplicativo. Descartei o arquivo e encerrei somente a instância iniciada para essa revisão.
+- Essa tentativa não fornece evidência visual sobre a interface do Kikito Terminal; a revisão visual permanece pendente.

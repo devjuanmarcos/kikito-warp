@@ -26,11 +26,11 @@
 
 ## Pendências
 
-- **Isolamento de rede:** a amostra da confirmação de saída encontrou somente loopback no processo GUI principal; ainda não cobre paleta/configurações, todos os fluxos acionados nem processos filhos.
-- **Tradução:** revisar visualmente a GUI OSS após a ampla auditoria de código de rótulos, diálogos, tooltips, acessibilidade e estados vazios. Saída do shell, conteúdo dinâmico de provedores e termos técnicos não são strings fixas de interface e permanecem como estão.
-- **TUI:** manter `PROTOC` disponível no `PATH` ou configurado em `PROTOC` para builds locais.
+- **Isolamento de rede:** as amostras atuais cobrem a árvore de processos por 12 segundos e o processo principal durante tentativas de abrir a paleta/configurações e fechar. Não cobrem UDP/DNS, todos os fluxos acionados nem uma sessão longa; o app não é um firewall para comandos iniciados pelo usuário.
+- **Tradução:** revisar visualmente a GUI OSS. A tentativa de captura de 2026-10-17 associou o processo a uma janela, mas exibiu a superfície de outro aplicativo; a captura foi descartada e não conta como evidência. A inspeção visual segue bloqueada até haver uma forma confiável de observar a janela correta.
+- **TUI:** `protoc.exe` está instalado e disponível pelo `PATH` desta máquina; builds locais que dependam dele podem usá-lo. O `PROTOC` explícito continua sendo uma alternativa.
 
-**Status: EM ANDAMENTO.** A colagem de imagens está resolvida e confirmada pelo usuário. A localização fixa da GUI OSS passou por uma varredura ampla; falta a revisão visual completa. A captura de rede durante ações da GUI ainda é parcial.
+**Status: EM ANDAMENTO.** A colagem de imagens está resolvida e confirmada pelo usuário. A localização fixa da GUI OSS passou por uma varredura ampla; a revisão visual completa continua sem evidência confiável. A captura de rede é parcial e não comprova isolamento total.
 
 ## Tradução — paleta, busca, abas e worktrees
 
