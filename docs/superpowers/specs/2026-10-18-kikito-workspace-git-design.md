@@ -52,7 +52,9 @@ Uma organização contém zero ou mais projetos. Um projeto contém o caminho lo
 
 ### Identidade e restauração de abas existentes
 
-`tabs.id` (`i32`) é o identificador persistido e estável de cada aba. Cada linha de aba referencia sua janela por `window_id` e pode referenciar um grupo por `tab_group_id`. A árvore de panes e os dados de pane/sessão do terminal são persistidos separadamente; a restauração existente reconstrói janelas, grupos, abas e panes e reconecta o estado das sessões pelos callbacks atuais. A nova associação projeto/aba referencia apenas `tabs.id`: ela não possui nem remove linhas de janela, aba, pane ou sessão e não encerra processos de terminal. Remover metadados locais remove apenas as associações e metadados novos.
+`tabs.id` (`i32`) é o identificador persistido e estável de cada aba. A linha também contém `window_id` e um `tab_group_id` opcional. Na árvore de panes, `pane_nodes.id` é a chave estrutural do nó; `tab_id` liga a raiz à aba e `parent_pane_node_id` liga os nós filhos aos pais. `pane_leaves` usa a chave composta `pane_node_id` + `kind`. Para uma folha de terminal, `terminal_panes.id` é igual ao ID do nó folha; esses inteiros organizam as linhas do banco, enquanto `terminal_panes.uuid` (`Vec<u8>`) é a identidade persistida do pane/sessão de terminal. `cwd`, `shell_launch_data` e demais campos guardam metadados necessários para recriar a sessão, não a memória de um processo shell ativo.
+
+Na leitura, `read_root_node` parte de `tabs.id` e `read_node` percorre os nós, folhas e registros `terminal_panes` por ID estrutural, formando `TerminalPaneSnapshot`. `WorkspaceView::configure_new_workspace` recria as abas a partir desses snapshots. Durante a restauração da `PaneGroup`, o UUID salvo vira `PaneUuid` e é associado a um `TerminalPaneId`; o cwd salvo só é reutilizado quando o caminho ainda existe. A associação nova projeto/aba referencia apenas `tabs.id`: ela não possui nem remove linhas existentes de janela, aba, grupo, pane ou sessão, nem encerra processos de terminal. Remover metadados locais remove apenas associações e metadados novos.
 
 ### Casca de navegação
 
