@@ -1654,6 +1654,21 @@ pub(crate) fn initialize_app(
 
     let referral_theme_status = ctx.add_model(ReferralThemeStatus::new);
     let tips_handle = ctx.add_model(|_| user_defaults_on_startup.tips_data);
+    let local_workspace_data = sqlite_data
+        .as_ref()
+        .map(|data| data.local_workspace.clone())
+        .unwrap_or_default();
+    let local_workspace = ctx.add_model(move |_| {
+        crate::local_workspace::model::WorkspaceModel::from_persisted(&local_workspace_data)
+            .unwrap_or_else(|error| {
+                log::error!("Could not restore local workspace metadata: {error:?}");
+                let mut model = crate::local_workspace::model::WorkspaceModel::default();
+                model.set_status_error(Some(
+                    "Não foi possível restaurar organizações e projetos locais.".to_owned(),
+                ));
+                model
+            })
+    });
     let user_default_shell_unsupported_banner_model_handle =
         ctx.add_model(|_| user_defaults_on_startup.user_default_shell_unsupported_banner_state);
     // Extract the full-file parse error (if any) before the settings_file_error
@@ -1672,6 +1687,7 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(move |_ctx| {
         GlobalResourceHandlesProvider::new(GlobalResourceHandles {
             model_event_sender,
+            local_workspace,
             tips_completed: tips_handle,
             referral_theme_status,
             user_default_shell_unsupported_banner_model_handle,

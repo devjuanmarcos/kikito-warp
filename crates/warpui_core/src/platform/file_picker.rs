@@ -21,6 +21,7 @@ pub type SaveFilePickerCallback =
 
 pub enum FileType {
     Image,
+    ImageWithSvg,
     Yaml,
     Markdown,
 }
@@ -30,6 +31,7 @@ impl FileType {
     pub fn extensions(&self) -> &[&str] {
         match self {
             FileType::Image => &["png", "jpg", "jpeg"],
+            FileType::ImageWithSvg => &["png", "jpg", "jpeg", "svg"],
             FileType::Yaml => &["yaml", "yml"],
             FileType::Markdown => &["md", "markdown"],
         }
@@ -39,6 +41,7 @@ impl FileType {
     pub fn display_name(&self) -> &str {
         match self {
             FileType::Image => "Image",
+            FileType::ImageWithSvg => "Image",
             FileType::Yaml => "Yaml",
             FileType::Markdown => "Markdown",
         }

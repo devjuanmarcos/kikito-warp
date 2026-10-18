@@ -228,6 +228,8 @@ pub enum LocalWorkspaceOperation {
         id: i32,
         name: String,
         sort_order: i32,
+        accent_color: String,
+        image_data: Option<Vec<u8>>,
     },
     CreateProject {
         id: i32,
@@ -239,6 +241,17 @@ pub enum LocalWorkspaceOperation {
     RenameOrganization {
         id: i32,
         name: String,
+    },
+    UpdateOrganization {
+        id: i32,
+        name: String,
+        accent_color: String,
+        image_data: Option<Vec<u8>>,
+    },
+    SetOrganizationVisuals {
+        id: i32,
+        accent_color: String,
+        image_data: Option<Vec<u8>>,
     },
     RenameProject {
         id: i32,

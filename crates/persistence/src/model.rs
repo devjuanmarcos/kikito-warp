@@ -256,6 +256,8 @@ pub struct LocalWorkspaceOrganization {
     pub id: i32,
     pub name: String,
     pub sort_order: i32,
+    pub accent_color: String,
+    pub image_data: Option<Vec<u8>>,
 }
 
 #[derive(Clone, Debug, Insertable)]
@@ -264,6 +266,8 @@ pub struct NewLocalWorkspaceOrganization {
     pub id: i32,
     pub name: String,
     pub sort_order: i32,
+    pub accent_color: String,
+    pub image_data: Option<Vec<u8>>,
 }
 
 #[derive(Clone, Debug, Identifiable, Insertable, Queryable, Selectable, AsChangeset)]
@@ -275,6 +279,7 @@ pub struct LocalWorkspaceProject {
     pub path: String,
     pub path_key: String,
     pub sort_order: i32,
+    pub last_opened_ts: i64,
 }
 
 #[derive(Clone, Debug, Insertable)]
@@ -286,6 +291,7 @@ pub struct NewLocalWorkspaceProject {
     pub path: String,
     pub path_key: String,
     pub sort_order: i32,
+    pub last_opened_ts: i64,
 }
 
 #[derive(Clone, Debug, Identifiable, Insertable, Queryable, Selectable, AsChangeset)]

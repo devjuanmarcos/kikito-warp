@@ -1,7 +1,131 @@
 use super::model::{
-    LocalProject, ModelError, WorkspaceModel, has_windows_drive_prefix, normalize_path_key,
-    normalize_path_key_for_host,
+    LocalProject, ModelError, ProjectPathStatus, WorkspaceModel, has_windows_drive_prefix,
+    normalize_path_key, normalize_path_key_for_host,
 };
+use crate::persistence::{
+    LocalWorkspaceData,
+    model::{
+        LocalWorkspaceOrganization, LocalWorkspaceProject, LocalWorkspaceProjectTab,
+        LocalWorkspaceState,
+    },
+};
+
+#[test]
+fn persisted_workspace_hydrates_database_ids_order_selection_and_tab_identity_ids() {
+    let data = LocalWorkspaceData {
+        organizations: vec![
+            LocalWorkspaceOrganization {
+                id: 7,
+                name: "Equipe B".into(),
+                sort_order: 0,
+                accent_color: "cyan".into(),
+                image_data: Some(vec![1, 2, 3]),
+            },
+            LocalWorkspaceOrganization {
+                id: 3,
+                name: "Equipe A".into(),
+                sort_order: 1,
+                accent_color: "blue".into(),
+                image_data: None,
+            },
+        ],
+        projects: vec![
+            LocalWorkspaceProject {
+                id: 12,
+                organization_id: 7,
+                name: "API".into(),
+                path: "/repos/api".into(),
+                path_key: "/repos/api".into(),
+                sort_order: 0,
+                last_opened_ts: 20,
+            },
+            LocalWorkspaceProject {
+                id: 4,
+                organization_id: 7,
+                name: "Web".into(),
+                path: "/repos/web".into(),
+                path_key: "/repos/web".into(),
+                sort_order: 1,
+                last_opened_ts: 10,
+            },
+        ],
+        tabs: vec![
+            LocalWorkspaceProjectTab {
+                project_id: 12,
+                tab_id: 91,
+                sort_order: 0,
+                is_active: false,
+            },
+            LocalWorkspaceProjectTab {
+                project_id: 12,
+                tab_id: 108,
+                sort_order: 1,
+                is_active: true,
+            },
+        ],
+        state: Some(LocalWorkspaceState {
+            id: 1,
+            selected_organization_id: Some(7),
+            selected_project_id: Some(12),
+        }),
+        ..Default::default()
+    };
+
+    let model = WorkspaceModel::from_persisted(&data).unwrap();
+    assert_eq!(
+        model.organizations().map(|org| org.id).collect::<Vec<_>>(),
+        vec![7, 3]
+    );
+    assert_eq!(model.organization(7).unwrap().projects, vec![12, 4]);
+    assert_eq!(model.project(12).unwrap().tabs, vec![91, 108]);
+    assert_eq!(model.project(12).unwrap().active_tab, Some(108));
+    assert_eq!(model.selected_organization(), Some(7));
+    assert_eq!(model.selected_project(), Some(12));
+    assert_eq!(model.organization(7).unwrap().accent_color, "cyan");
+    assert_eq!(
+        model.organization(7).unwrap().image_data,
+        Some(vec![1, 2, 3])
+    );
+}
+
+#[test]
+fn persisted_workspace_rejects_non_positive_database_ids() {
+    let data = LocalWorkspaceData {
+        organizations: vec![LocalWorkspaceOrganization {
+            id: -1,
+            name: "Inválida".into(),
+            sort_order: 0,
+            accent_color: "blue".into(),
+            image_data: None,
+        }],
+        ..Default::default()
+    };
+    assert!(matches!(
+        WorkspaceModel::from_persisted(&data),
+        Err(ModelError::InvalidId)
+    ));
+}
+
+#[test]
+fn organization_visuals_accept_only_kit_accents_and_persist_image_bytes() {
+    let mut model = WorkspaceModel::new();
+    let organization_id = model.add_organization("Equipe").unwrap();
+    model
+        .set_organization_visuals(organization_id, "cyan".into(), Some(vec![1, 2, 3]))
+        .unwrap();
+    assert_eq!(
+        model.organization(organization_id).unwrap().accent_color,
+        "cyan"
+    );
+    assert_eq!(
+        model.organization(organization_id).unwrap().image_data,
+        Some(vec![1, 2, 3])
+    );
+    assert_eq!(
+        model.set_organization_visuals(organization_id, "purple".into(), None),
+        Err(ModelError::InvalidAccentColor)
+    );
+}
 
 #[test]
 fn windows_paths_deduplicate_case_and_separator_variants_across_organizations() {
@@ -247,9 +371,79 @@ fn removing_organization_removes_workspace_metadata_but_not_external_data() {
     let org = model.add_organization("Org").unwrap();
     let project = model.add_project(org, "A", r"C:\missing").unwrap();
     model.assign_tab(project, 33).unwrap();
+    model.set_context_menu(Some(super::model::ContextMenuTarget::Project(project)));
     model.remove_organization(org).unwrap();
 
     assert!(model.project(project).is_none());
     assert_eq!(model.tab_owner(33), None);
     assert_eq!(model.project_count(), 0);
+    assert_eq!(model.context_menu(), None);
+}
+
+#[test]
+fn removing_selected_organization_selects_a_remaining_organization() {
+    let mut model = WorkspaceModel::new();
+    let first = model.add_organization("First").unwrap();
+    let second = model.add_organization("Second").unwrap();
+    let project = model.add_project(first, "A", r"C:\a").unwrap();
+    model.select_project(project).unwrap();
+
+    model.remove_organization(first).unwrap();
+
+    assert_eq!(model.selected_organization(), Some(second));
+    assert_eq!(model.selected_project(), None);
+    assert!(model.organization(first).is_none());
+}
+
+#[test]
+fn recent_projects_are_ordered_by_last_selection_and_skip_removed_projects() {
+    let mut model = WorkspaceModel::new();
+    let org = model.add_organization("Org").unwrap();
+    let first = model.add_project(org, "A", r"C:\a").unwrap();
+    let second = model.add_project(org, "B", r"C:\b").unwrap();
+
+    model.select_project(first).unwrap();
+    model.select_project(second).unwrap();
+    model.select_project(first).unwrap();
+
+    assert_eq!(
+        model
+            .recent_projects()
+            .map(|project| project.id)
+            .collect::<Vec<_>>(),
+        vec![first, second]
+    );
+    model.remove_project(first).unwrap();
+    assert_eq!(
+        model
+            .recent_projects()
+            .map(|project| project.id)
+            .collect::<Vec<_>>(),
+        vec![second]
+    );
+}
+
+#[test]
+fn project_path_status_is_cached_and_removed_with_project() {
+    let mut model = WorkspaceModel::new();
+    let organization = model.add_organization("Org").unwrap();
+    let project = model
+        .add_project(organization, "API", r"C:\repos\api")
+        .unwrap();
+
+    assert_eq!(
+        model.project_path_status(project),
+        ProjectPathStatus::Checking
+    );
+    model.set_project_path_status(project, ProjectPathStatus::Inaccessible);
+    assert_eq!(
+        model.project_path_status(project),
+        ProjectPathStatus::Inaccessible
+    );
+
+    model.remove_project(project).unwrap();
+    assert_eq!(
+        model.project_path_status(project),
+        ProjectPathStatus::Checking
+    );
 }

@@ -29,6 +29,7 @@ use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentVersion};
 use crate::auth::auth_manager::LoginGatedFeature;
 use crate::drive::CloudObjectTypeAndId;
 use crate::drive::items::WarpDriveItemId;
+use crate::local_workspace::model::{OrganizationId, ProjectId};
 use crate::palette::PaletteMode;
 use crate::pane_group::PaneGroup;
 use crate::prompt::editor_modal::OpenSource as PromptEditorOpenSource;
@@ -127,6 +128,21 @@ pub enum AutoCloudHandoffTrigger {
 
 #[derive(Debug, Clone)]
 pub enum WorkspaceAction {
+    SelectLocalWorkspaceHome,
+    CreateLocalWorkspaceOrganization,
+    OpenLocalWorkspaceOrganizationMenu(OrganizationId),
+    OpenLocalWorkspaceProjectMenu(ProjectId),
+    CreateLocalWorkspaceProject(OrganizationId),
+    EditLocalWorkspaceOrganization(OrganizationId),
+    RemoveLocalWorkspaceOrganization(OrganizationId),
+    EditLocalWorkspaceProject(ProjectId),
+    RemoveLocalWorkspaceProject(ProjectId),
+    DismissLocalWorkspaceContextMenu,
+    MoveLocalWorkspaceContextMenuSelection(i32),
+    ActivateLocalWorkspaceContextMenuSelection,
+    SelectLocalWorkspaceOrganization(OrganizationId),
+    SetLocalWorkspaceHoveredOrganization(Option<OrganizationId>),
+    SelectLocalWorkspaceProject(ProjectId),
     ActivateTab(usize),
     ActivatePrevTab,
     ActivateNextTab,
@@ -1212,7 +1228,22 @@ impl WorkspaceAction {
             | OpenNetworkLogPane
             | OpenNewWindowForTeam { .. }
             | BrowseTeams
-            | ShowTeamSwitcherMenu => false,
+            | ShowTeamSwitcherMenu
+            | SelectLocalWorkspaceHome
+            | CreateLocalWorkspaceOrganization
+            | OpenLocalWorkspaceOrganizationMenu(_)
+            | OpenLocalWorkspaceProjectMenu(_)
+            | CreateLocalWorkspaceProject(_)
+            | EditLocalWorkspaceOrganization(_)
+            | RemoveLocalWorkspaceOrganization(_)
+            | EditLocalWorkspaceProject(_)
+            | RemoveLocalWorkspaceProject(_)
+            | DismissLocalWorkspaceContextMenu
+            | MoveLocalWorkspaceContextMenuSelection(_)
+            | ActivateLocalWorkspaceContextMenuSelection
+            | SelectLocalWorkspaceOrganization(_)
+            | SetLocalWorkspaceHoveredOrganization(_)
+            | SelectLocalWorkspaceProject(_) => false,
             #[cfg(debug_assertions)]
             ShowHoaOnboardingFlow => false,
             #[cfg(target_family = "wasm")]

@@ -12,6 +12,7 @@ pub(crate) mod free_ai_removal_modal;
 pub mod global_search;
 pub(crate) mod launch_modal;
 pub(crate) mod left_panel;
+mod local_workspace;
 pub(crate) mod onboarding;
 pub(crate) mod openwarp_launch_modal;
 pub(crate) mod orchestration_launch_modal;
@@ -1103,6 +1104,11 @@ pub struct Workspace {
     welcome_tips_view_state: WelcomeTipsViewState,
     welcome_tips_view: ViewHandle<TipsView>,
     model_event_sender: Option<mpsc::SyncSender<ModelEvent>>,
+    local_workspace: ModelHandle<crate::local_workspace::model::WorkspaceModel>,
+    local_project_path_check_generation: u64,
+    local_workspace_dialog: Option<ViewHandle<Modal<local_workspace::create_dialog::CreateDialog>>>,
+    local_workspace_search_input: ViewHandle<EditorView>,
+    local_workspace_search_query: String,
     launch_config_save_modal: ModalViewState<LaunchConfigSaveModal>,
     tab_config_params_modal: ModalViewState<Modal<TabConfigParamsModal>>,
     session_config_modal: ModalViewState<Modal<SessionConfigModal>>,
@@ -1249,6 +1255,593 @@ pub struct Workspace {
 }
 
 impl Workspace {
+    fn local_workspace_search_input(ctx: &mut ViewContext<Self>) -> ViewHandle<EditorView> {
+        let editor = ctx.add_typed_action_view(|ctx| {
+            let appearance = Appearance::as_ref(ctx);
+            EditorView::single_line(
+                SingleLineEditorOptions {
+                    text: TextOptions::ui_text(Some(12.), appearance),
+                    ..Default::default()
+                },
+                ctx,
+            )
+        });
+        editor.update(ctx, |editor, ctx| {
+            editor.set_placeholder_text("Buscar projetos...", ctx)
+        });
+        ctx.subscribe_to_view(&editor, |me, editor_view, event, ctx| match event {
+            EditorEvent::Edited(_) => {
+                me.local_workspace_search_query = editor_view.as_ref(ctx).buffer_text(ctx);
+                ctx.notify();
+            }
+            EditorEvent::Escape => {
+                me.local_workspace_search_query.clear();
+                editor_view.update(ctx, |editor, ctx| {
+                    editor.set_buffer_text_ignoring_undo("", ctx)
+                });
+                ctx.notify();
+            }
+            _ => {}
+        });
+        editor
+    }
+
+    fn open_local_workspace_dialog(
+        &mut self,
+        kind: local_workspace::create_dialog::CreateDialogKind,
+        name: Option<String>,
+        path: Option<PathBuf>,
+        accent_color: Option<String>,
+        image_data: Option<Vec<u8>>,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let body = ctx.add_typed_action_view(|ctx| {
+            local_workspace::create_dialog::CreateDialog::new(
+                kind,
+                name,
+                path,
+                accent_color,
+                image_data,
+                ctx,
+            )
+        });
+        ctx.subscribe_to_view(&body, |me, _, event, ctx| match event {
+            local_workspace::create_dialog::CreateDialogEvent::Close => {
+                if let Some(dialog) = me.local_workspace_dialog.clone() {
+                    dialog.update(ctx, |modal, ctx| {
+                        modal.body().update(ctx, |body, ctx| body.deactivate(ctx));
+                    });
+                }
+                me.local_workspace_dialog = None;
+                ctx.notify();
+            }
+            local_workspace::create_dialog::CreateDialogEvent::Submit {
+                kind,
+                name,
+                path,
+                accent_color,
+                image_data,
+                project_validation_generation,
+            } => {
+                if let local_workspace::create_dialog::CreateDialogKind::CreateProject(
+                    organization_id,
+                ) = &kind
+                {
+                    if let (Some(dialog), Some(path)) =
+                        (me.local_workspace_dialog.clone(), path.clone())
+                    {
+                        me.validate_local_project_path_and_submit(
+                            dialog,
+                            *project_validation_generation,
+                            *organization_id,
+                            name.clone(),
+                            path,
+                            accent_color.clone(),
+                            image_data.clone(),
+                            ctx,
+                        );
+                    } else if let Some(dialog) = me.local_workspace_dialog.clone() {
+                        dialog.update(ctx, |modal, ctx| {
+                            modal.body().update(ctx, |body, ctx| {
+                                body.finish_project_path_validation(
+                                    *project_validation_generation,
+                                    Err("Selecione uma pasta para o projeto.".to_owned()),
+                                    ctx,
+                                );
+                            });
+                        });
+                    }
+                    return;
+                }
+                let result = me.submit_local_workspace_change(
+                    kind,
+                    name.clone(),
+                    path.clone(),
+                    accent_color.clone(),
+                    image_data.clone(),
+                    ctx,
+                );
+                match result {
+                    Ok(()) => {
+                        if let Some(dialog) = me.local_workspace_dialog.clone() {
+                            dialog.update(ctx, |modal, ctx| {
+                                modal.body().update(ctx, |body, ctx| body.deactivate(ctx));
+                            });
+                        }
+                        me.local_workspace_dialog = None;
+                        ctx.notify();
+                    }
+                    Err(error) => {
+                        if let Some(dialog) = me.local_workspace_dialog.clone() {
+                            dialog.update(ctx, |modal, ctx| {
+                                modal
+                                    .body()
+                                    .update(ctx, |body, ctx| body.set_error(error, ctx));
+                            });
+                        }
+                    }
+                }
+            }
+            local_workspace::create_dialog::CreateDialogEvent::PickProjectPath
+            | local_workspace::create_dialog::CreateDialogEvent::PickOrganizationImage => {
+                me.open_local_workspace_file_picker(event, ctx);
+            }
+        });
+        let modal = ctx.add_typed_action_view(|ctx| {
+            Modal::new(None, body, ctx)
+                .with_modal_style(UiComponentStyles {
+                    width: Some(460.),
+                    ..Default::default()
+                })
+                .with_body_style(UiComponentStyles {
+                    padding: Some(Coords::uniform(0.)),
+                    ..Default::default()
+                })
+        });
+        ctx.subscribe_to_view(&modal, |me, _, event, ctx| {
+            if matches!(event, ModalEvent::Close) {
+                if let Some(dialog) = me.local_workspace_dialog.clone() {
+                    dialog.update(ctx, |modal, ctx| {
+                        modal.body().update(ctx, |body, ctx| body.deactivate(ctx));
+                    });
+                }
+                me.local_workspace_dialog = None;
+                ctx.notify();
+            }
+        });
+        ctx.focus(&modal);
+        self.local_workspace_dialog = Some(modal);
+        ctx.notify();
+    }
+
+    fn validate_local_project_path_and_submit(
+        &mut self,
+        dialog: ViewHandle<Modal<local_workspace::create_dialog::CreateDialog>>,
+        generation: u64,
+        organization_id: crate::local_workspace::model::OrganizationId,
+        name: String,
+        path: PathBuf,
+        accent_color: String,
+        image_data: Option<Vec<u8>>,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let is_absolute = path.is_absolute();
+        let path_to_validate = path.clone();
+        ctx.spawn(
+            async move {
+                if !is_absolute {
+                    return Err(std::io::ErrorKind::InvalidInput);
+                }
+                async_fs::metadata(path_to_validate)
+                    .await
+                    .map(|metadata| metadata.is_dir())
+                    .map_err(|error| error.kind())
+            },
+            move |workspace, metadata_result, ctx| {
+                if workspace
+                    .local_workspace_dialog
+                    .as_ref()
+                    .is_none_or(|current| current.id() != dialog.id())
+                {
+                    return;
+                }
+                let validation =
+                    local_workspace::create_dialog::validate_project_path_metadata(metadata_result)
+                        .map_err(str::to_owned);
+                let should_submit = dialog.update(ctx, |modal, ctx| {
+                    modal.body().update(ctx, |body, ctx| {
+                        body.finish_project_path_validation(generation, validation, ctx)
+                    })
+                });
+                if !should_submit {
+                    return;
+                }
+                match workspace.submit_local_workspace_change(
+                    &local_workspace::create_dialog::CreateDialogKind::CreateProject(
+                        organization_id,
+                    ),
+                    name,
+                    Some(path),
+                    accent_color,
+                    image_data,
+                    ctx,
+                ) {
+                    Ok(()) => {
+                        dialog.update(ctx, |modal, ctx| {
+                            modal.body().update(ctx, |body, ctx| body.deactivate(ctx));
+                        });
+                        workspace.local_workspace_dialog = None;
+                        ctx.notify();
+                    }
+                    Err(error) => {
+                        dialog.update(ctx, |modal, ctx| {
+                            modal
+                                .body()
+                                .update(ctx, |body, ctx| body.set_error(error, ctx));
+                        });
+                    }
+                }
+            },
+        );
+    }
+
+    fn open_local_workspace_file_picker(
+        &mut self,
+        event: &local_workspace::create_dialog::CreateDialogEvent,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let Some(dialog) = self.local_workspace_dialog.clone() else {
+            return;
+        };
+        match event {
+            local_workspace::create_dialog::CreateDialogEvent::PickProjectPath => {
+                ctx.open_file_picker(
+                    move |result, ctx| {
+                        let paths = match result {
+                            Ok(paths) => paths,
+                            Err(error) => {
+                                dialog.update(ctx, |modal, ctx| {
+                                    modal.body().update(ctx, |body, ctx| {
+                                        body.set_error(
+                                            format!("Não foi possível abrir o seletor: {error}"),
+                                            ctx,
+                                        )
+                                    });
+                                });
+                                return;
+                            }
+                        };
+                        let Some(path) = paths.into_iter().next() else {
+                            dialog.update(ctx, |modal, ctx| {
+                                modal.body().update(ctx, |body, ctx| {
+                                    body.set_status("Seleção de pasta cancelada.".to_owned(), ctx)
+                                });
+                            });
+                            return;
+                        };
+                        let path: PathBuf = path.into();
+                        dialog.update(ctx, |modal, ctx| {
+                            modal
+                                .body()
+                                .update(ctx, |body, ctx| body.set_project_path(path, ctx));
+                        });
+                    },
+                    FilePickerConfiguration::new().folders_only(),
+                );
+            }
+            local_workspace::create_dialog::CreateDialogEvent::PickOrganizationImage => {
+                ctx.open_file_picker(
+                    move |result, ctx| {
+                        let paths = match result {
+                            Ok(paths) => paths,
+                            Err(error) => {
+                                dialog.update(ctx, |modal, ctx| {
+                                    modal.body().update(ctx, |body, ctx| {
+                                        body.set_error(
+                                            format!("Não foi possível abrir o seletor: {error}"),
+                                            ctx,
+                                        )
+                                    });
+                                });
+                                return;
+                            }
+                        };
+                        let Some(path) = paths.into_iter().next() else {
+                            dialog.update(ctx, |modal, ctx| {
+                                modal.body().update(ctx, |body, ctx| {
+                                    body.set_status("Seleção de imagem cancelada.".to_owned(), ctx)
+                                });
+                            });
+                            return;
+                        };
+                        let path = PathBuf::from(path);
+                        dialog.update(ctx, |modal, ctx| {
+                            modal
+                                .body()
+                                .update(ctx, |body, ctx| body.begin_image_load(path, ctx));
+                        });
+                    },
+                    FilePickerConfiguration::new()
+                        .set_allowed_file_types(vec![warpui::platform::FileType::ImageWithSvg]),
+                );
+            }
+            _ => {}
+        }
+    }
+
+    fn persist_local_workspace_organization(
+        &mut self,
+        name: String,
+        accent_color: String,
+        image_data: Option<Vec<u8>>,
+        ctx: &mut ViewContext<Self>,
+    ) -> Result<(), String> {
+        let (id, sort_order) = {
+            let model = self.local_workspace.as_ref(ctx);
+            let id = model
+                .next_organization_id()
+                .map_err(|error| format!("{error:?}"))?;
+            let order = i32::try_from(model.organizations().count())
+                .map_err(|_| "Limite de organizações atingido.".to_owned())?;
+            (
+                i32::try_from(id).map_err(|_| "Limite de organizações atingido.".to_owned())?,
+                order,
+            )
+        };
+        #[cfg(feature = "local_fs")]
+        if let Some(sender) = self.model_event_sender.as_ref() {
+            crate::persistence::apply_local_workspace_operation(
+                sender,
+                crate::persistence::LocalWorkspaceOperation::CreateOrganization {
+                    id,
+                    name: name.clone(),
+                    sort_order,
+                    accent_color: accent_color.clone(),
+                    image_data: image_data.clone(),
+                },
+            )
+            .map_err(|error| error.to_string())?;
+        }
+        self.local_workspace.update(ctx, |model, ctx| {
+            if let Ok(id) = model.add_organization(name) {
+                let _ = model.set_organization_visuals(id, accent_color, image_data);
+                ctx.notify();
+            }
+        });
+        Ok(())
+    }
+
+    fn submit_local_workspace_change(
+        &mut self,
+        kind: &local_workspace::create_dialog::CreateDialogKind,
+        name: String,
+        path: Option<PathBuf>,
+        accent_color: String,
+        image_data: Option<Vec<u8>>,
+        ctx: &mut ViewContext<Self>,
+    ) -> Result<(), String> {
+        use crate::persistence::LocalWorkspaceOperation as Operation;
+        use local_workspace::create_dialog::CreateDialogKind as Kind;
+
+        let send = |operation| {
+            #[cfg(feature = "local_fs")]
+            if let Some(sender) = self.model_event_sender.as_ref() {
+                crate::persistence::apply_local_workspace_operation(sender, operation)
+                    .map_err(|error| error.to_string())?;
+            }
+            #[cfg(not(feature = "local_fs"))]
+            let _ = operation;
+            Ok::<(), String>(())
+        };
+
+        match kind {
+            Kind::CreateOrganization => {
+                self.persist_local_workspace_organization(name, accent_color, image_data, ctx)
+            }
+            Kind::EditOrganization(id) => {
+                let db_id =
+                    i32::try_from(*id).map_err(|_| "ID de organização inválido.".to_owned())?;
+                send(Operation::UpdateOrganization {
+                    id: db_id,
+                    name: name.clone(),
+                    accent_color: accent_color.clone(),
+                    image_data: image_data.clone(),
+                })?;
+                self.local_workspace.update(ctx, |model, ctx| {
+                    if model.rename_organization(*id, name).is_ok()
+                        && model
+                            .set_organization_visuals(*id, accent_color, image_data)
+                            .is_ok()
+                    {
+                        ctx.notify();
+                    }
+                });
+                Ok(())
+            }
+            Kind::RemoveOrganization(id) => {
+                let db_id =
+                    i32::try_from(*id).map_err(|_| "ID de organização inválido.".to_owned())?;
+                send(Operation::DeleteOrganization(db_id))?;
+                self.local_workspace.update(ctx, |model, ctx| {
+                    if model.remove_organization(*id).is_ok() {
+                        ctx.notify();
+                    }
+                });
+                Ok(())
+            }
+            Kind::CreateProject(organization_id) => {
+                let path = path.ok_or_else(|| "Selecione uma pasta para o projeto.".to_owned())?;
+                if !path.is_absolute() {
+                    return Err("Selecione uma pasta válida.".to_owned());
+                }
+                let path = path.to_string_lossy().into_owned();
+                let candidate =
+                    crate::local_workspace::model::LocalProject::new(name.clone(), &path)
+                        .map_err(|error| format!("{error:?}"))?;
+                let (id, sort_order) = {
+                    let model = self.local_workspace.as_ref(ctx);
+                    if model
+                        .projects()
+                        .any(|project| project.path_key == candidate.path_key)
+                    {
+                        return Err("Esta pasta já está cadastrada como projeto.".to_owned());
+                    }
+                    let id = model
+                        .next_project_id()
+                        .map_err(|error| format!("{error:?}"))?;
+                    let order =
+                        i32::try_from(model.projects_for_organization(*organization_id).count())
+                            .map_err(|_| "Limite de projetos atingido.".to_owned())?;
+                    (
+                        i32::try_from(id).map_err(|_| "Limite de projetos atingido.".to_owned())?,
+                        order,
+                    )
+                };
+                let org_id = i32::try_from(*organization_id)
+                    .map_err(|_| "ID de organização inválido.".to_owned())?;
+                send(Operation::CreateProject {
+                    id,
+                    organization_id: org_id,
+                    name: name.clone(),
+                    path: path.clone(),
+                    sort_order,
+                })?;
+                self.local_workspace.update(ctx, |model, ctx| {
+                    if model.add_project(*organization_id, name, path).is_ok() {
+                        ctx.notify();
+                    }
+                });
+                self.refresh_local_project_paths(ctx);
+                Ok(())
+            }
+            Kind::EditProject(id) => {
+                let db_id = i32::try_from(*id).map_err(|_| "ID de projeto inválido.".to_owned())?;
+                send(Operation::RenameProject {
+                    id: db_id,
+                    name: name.clone(),
+                })?;
+                self.local_workspace.update(ctx, |model, ctx| {
+                    if model.rename_project(*id, name).is_ok() {
+                        ctx.notify();
+                    }
+                });
+                Ok(())
+            }
+            Kind::RemoveProject(id) => {
+                let db_id = i32::try_from(*id).map_err(|_| "ID de projeto inválido.".to_owned())?;
+                send(Operation::DeleteProject(db_id))?;
+                self.local_workspace.update(ctx, |model, ctx| {
+                    if model.remove_project(*id).is_ok() {
+                        ctx.notify();
+                    }
+                });
+                Ok(())
+            }
+        }
+    }
+
+    fn select_local_workspace(
+        &mut self,
+        organization_id: Option<crate::local_workspace::model::OrganizationId>,
+        project_id: Option<crate::local_workspace::model::ProjectId>,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let organization_id = match organization_id {
+            Some(id) => match i32::try_from(id) {
+                Ok(id) => Some(id),
+                Err(_) => return,
+            },
+            None => None,
+        };
+        let project_id = match project_id {
+            Some(id) => match i32::try_from(id) {
+                Ok(id) => Some(id),
+                Err(_) => return,
+            },
+            None => None,
+        };
+
+        #[cfg(feature = "local_fs")]
+        if let Some(sender) = self.model_event_sender.as_ref()
+            && let Err(error) = crate::persistence::apply_local_workspace_operation(
+                sender,
+                crate::persistence::LocalWorkspaceOperation::Select {
+                    organization_id,
+                    project_id,
+                },
+            )
+        {
+            log::error!("Could not persist local workspace selection: {error}");
+            self.local_workspace.update(ctx, |model, ctx| {
+                model.set_status_error(Some(
+                    "Não foi possível salvar a seleção do workspace. Tente novamente.".to_owned(),
+                ));
+                ctx.notify();
+            });
+            return;
+        }
+
+        self.local_workspace.update(ctx, |model, ctx| {
+            model.set_status_error(None);
+            model.set_context_menu(None);
+            let result = match (organization_id, project_id) {
+                (Some(_), Some(project_id)) => model.select_project(project_id as u64),
+                (Some(organization_id), None) => model.select_organization(organization_id as u64),
+                (None, None) => {
+                    model.select_home();
+                    Ok(())
+                }
+                (None, Some(_)) => unreachable!(),
+            };
+            if let Err(error) = result {
+                log::error!("Could not update local workspace selection: {error:?}");
+            }
+            ctx.notify();
+        });
+    }
+
+    fn refresh_local_project_paths(&mut self, ctx: &mut ViewContext<Self>) {
+        use futures::StreamExt;
+
+        self.local_project_path_check_generation =
+            self.local_project_path_check_generation.wrapping_add(1);
+        let generation = self.local_project_path_check_generation;
+        let paths = self.local_workspace.as_ref(ctx).all_project_paths();
+        if paths.is_empty() {
+            return;
+        }
+        let checks = futures::stream::iter(paths)
+            .map(|(project_id, path)| async move {
+                let status = match async_fs::metadata(path).await {
+                    Ok(metadata) if metadata.is_dir() => {
+                        crate::local_workspace::model::ProjectPathStatus::Available
+                    }
+                    Ok(_) => crate::local_workspace::model::ProjectPathStatus::NotDirectory,
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                        crate::local_workspace::model::ProjectPathStatus::Missing
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::NotADirectory => {
+                        crate::local_workspace::model::ProjectPathStatus::NotDirectory
+                    }
+                    Err(_) => crate::local_workspace::model::ProjectPathStatus::Inaccessible,
+                };
+                (project_id, status)
+            })
+            .buffer_unordered(8)
+            .collect::<Vec<_>>();
+        ctx.spawn(checks, move |workspace, statuses, ctx| {
+            if workspace.local_project_path_check_generation != generation {
+                return;
+            }
+            workspace.local_workspace.update(ctx, |model, ctx| {
+                for (project_id, status) in statuses {
+                    model.set_project_path_status(project_id, status);
+                }
+                ctx.notify();
+            });
+        });
+    }
+
     /// Whether this workspace was opened directly against a shared session, cloud
     /// conversation, or similar deep-linked content.
     pub(crate) fn opened_from_content_deep_link(&self) -> bool {
@@ -2898,6 +3491,7 @@ impl Workspace {
     ) -> Self {
         let GlobalResourceHandles {
             model_event_sender,
+            local_workspace,
             tips_completed,
             user_default_shell_unsupported_banner_model_handle,
             referral_theme_status,
@@ -3494,6 +4088,11 @@ impl Workspace {
             current_workspace_state: Default::default(),
             previous_workspace_state: None,
             model_event_sender,
+            local_workspace,
+            local_project_path_check_generation: 0,
+            local_workspace_dialog: None,
+            local_workspace_search_input: Self::local_workspace_search_input(ctx),
+            local_workspace_search_query: String::new(),
             launch_config_save_modal,
             tab_config_params_modal,
             session_config_modal,
@@ -3609,6 +4208,7 @@ impl Workspace {
             create_auth_secret_modal: None,
         };
 
+        ws.refresh_local_project_paths(ctx);
         ws.configure_new_workspace(workspace_setting, ctx);
         ws.sync_panel_positions_from_config(ctx);
         ws.sync_window_button_visibility(ctx);
@@ -24219,6 +24819,142 @@ impl TypedActionView for Workspace {
         }
 
         match action {
+            SelectLocalWorkspaceHome => self.select_local_workspace(None, None, ctx),
+            CreateLocalWorkspaceOrganization => self.open_local_workspace_dialog(
+                local_workspace::create_dialog::CreateDialogKind::CreateOrganization,
+                None,
+                None,
+                None,
+                None,
+                ctx,
+            ),
+            OpenLocalWorkspaceOrganizationMenu(id) => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.set_context_menu(Some(
+                        crate::local_workspace::model::ContextMenuTarget::Organization(*id),
+                    ));
+                    ctx.notify();
+                });
+                ctx.focus_self();
+            }
+            OpenLocalWorkspaceProjectMenu(id) => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.set_context_menu(Some(
+                        crate::local_workspace::model::ContextMenuTarget::Project(*id),
+                    ));
+                    ctx.notify();
+                });
+                ctx.focus_self();
+            }
+            DismissLocalWorkspaceContextMenu => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.set_context_menu(None);
+                    ctx.notify();
+                });
+            }
+            MoveLocalWorkspaceContextMenuSelection(delta) => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.move_context_menu_selection(*delta);
+                    ctx.notify();
+                });
+            }
+            ActivateLocalWorkspaceContextMenuSelection => {
+                let model = self.local_workspace.as_ref(ctx);
+                let Some(target) = model.context_menu() else {
+                    return;
+                };
+                let index = model.context_menu_index();
+                let action = local_workspace_context_actions(target).get(index).cloned();
+                if let Some(action) = action {
+                    ctx.dispatch_typed_action(&action);
+                }
+            }
+            CreateLocalWorkspaceProject(organization_id) => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.set_context_menu(None);
+                    ctx.notify();
+                });
+                self.open_local_workspace_dialog(
+                    local_workspace::create_dialog::CreateDialogKind::CreateProject(
+                        *organization_id,
+                    ),
+                    None,
+                    None,
+                    None,
+                    None,
+                    ctx,
+                );
+            }
+            EditLocalWorkspaceOrganization(id) | RemoveLocalWorkspaceOrganization(id) => {
+                let data = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .organization(*id)
+                    .map(|org| {
+                        (
+                            org.name.clone(),
+                            org.accent_color.clone(),
+                            org.image_data.clone(),
+                        )
+                    });
+                if let Some((name, accent_color, image_data)) = data {
+                    self.local_workspace.update(ctx, |model, ctx| {
+                        model.set_context_menu(None);
+                        ctx.notify();
+                    });
+                    let kind = if matches!(action, EditLocalWorkspaceOrganization(_)) {
+                        local_workspace::create_dialog::CreateDialogKind::EditOrganization(*id)
+                    } else {
+                        local_workspace::create_dialog::CreateDialogKind::RemoveOrganization(*id)
+                    };
+                    self.open_local_workspace_dialog(
+                        kind,
+                        Some(name),
+                        None,
+                        Some(accent_color),
+                        image_data,
+                        ctx,
+                    );
+                }
+            }
+            EditLocalWorkspaceProject(id) | RemoveLocalWorkspaceProject(id) => {
+                let data = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(*id)
+                    .map(|project| (project.name.clone(), PathBuf::from(&project.path)));
+                if let Some((name, path)) = data {
+                    self.local_workspace.update(ctx, |model, ctx| {
+                        model.set_context_menu(None);
+                        ctx.notify();
+                    });
+                    let kind = if matches!(action, EditLocalWorkspaceProject(_)) {
+                        local_workspace::create_dialog::CreateDialogKind::EditProject(*id)
+                    } else {
+                        local_workspace::create_dialog::CreateDialogKind::RemoveProject(*id)
+                    };
+                    self.open_local_workspace_dialog(kind, Some(name), Some(path), None, None, ctx);
+                }
+            }
+            SelectLocalWorkspaceOrganization(id) => {
+                self.select_local_workspace(Some(*id), None, ctx)
+            }
+            SetLocalWorkspaceHoveredOrganization(id) => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.set_hovered_organization(*id);
+                    ctx.notify();
+                });
+            }
+            SelectLocalWorkspaceProject(id) => {
+                let organization_id = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(*id)
+                    .map(|project| project.organization_id);
+                if let Some(organization_id) = organization_id {
+                    self.select_local_workspace(Some(organization_id), Some(*id), ctx);
+                }
+            }
             ActivateTab(index) => self.activate_tab(*index, ctx),
             ActivateTabByNumber(num) => self.activate_tab(num.saturating_sub(1), ctx),
             SetTabShortcutModifierKey { key_code, pressed } => {
@@ -27031,6 +27767,17 @@ impl View for Workspace {
                 .with_background(util::get_terminal_background_fill(self.window_id, app))
                 .finish()
         };
+        let panels = if use_simplified_wasm_tab_bar {
+            panels
+        } else {
+            local_workspace::render(
+                self.local_workspace.as_ref(app),
+                appearance,
+                panels,
+                self.local_workspace_search_input.clone(),
+                &self.local_workspace_search_query,
+            )
+        };
         let mut stack = Stack::new();
 
         #[cfg(target_family = "wasm")]
@@ -27709,6 +28456,10 @@ impl View for Workspace {
             }
         }
 
+        if let Some(dialog) = &self.local_workspace_dialog {
+            stack.add_child(ChildView::new(dialog).finish());
+        }
+
         if self.new_worktree_modal.is_open() {
             stack.add_child(self.new_worktree_modal.render());
         }
@@ -28266,6 +29017,36 @@ impl View for Workspace {
         #[cfg_attr(not(any(windows, target_os = "linux")), allow(unused_mut))]
         let mut event_handler = EventHandler::new(stack);
 
+        if self.local_workspace.as_ref(app).context_menu().is_some() {
+            event_handler = event_handler
+                .with_always_handle()
+                .on_left_mouse_up(|ctx, _, _| {
+                    ctx.dispatch_typed_action(WorkspaceAction::DismissLocalWorkspaceContextMenu);
+                    DispatchEventResult::StopPropagation
+                })
+                .on_keydown(|ctx, _, keystroke| {
+                    let action = match keystroke.key.as_str() {
+                        "Escape" => Some(WorkspaceAction::DismissLocalWorkspaceContextMenu),
+                        "ArrowDown" | "Down" => {
+                            Some(WorkspaceAction::MoveLocalWorkspaceContextMenuSelection(1))
+                        }
+                        "ArrowUp" | "Up" => {
+                            Some(WorkspaceAction::MoveLocalWorkspaceContextMenuSelection(-1))
+                        }
+                        "Enter" | "Space" => {
+                            Some(WorkspaceAction::ActivateLocalWorkspaceContextMenuSelection)
+                        }
+                        _ => None,
+                    };
+                    if let Some(action) = action {
+                        ctx.dispatch_typed_action(action);
+                        DispatchEventResult::StopPropagation
+                    } else {
+                        DispatchEventResult::PropagateToParent
+                    }
+                });
+        }
+
         #[cfg(any(windows, target_os = "linux"))]
         {
             event_handler =
@@ -28303,7 +29084,8 @@ impl View for Workspace {
     }
 
     fn on_focus(&mut self, focus_ctx: &FocusContext, ctx: &mut ViewContext<Self>) {
-        if focus_ctx.is_self_focused() {
+        if focus_ctx.is_self_focused() && self.local_workspace.as_ref(ctx).context_menu().is_none()
+        {
             self.focus_active_tab(ctx);
         }
     }
@@ -29932,6 +30714,26 @@ fn group_container_rect(
 /// `cursor_in_window - cursor_offset_in_element` by the caller so the cursor
 /// sits at the same relative position inside the chip as it did in the
 /// original tab when the drag was initiated.
+fn local_workspace_context_actions(
+    target: crate::local_workspace::model::ContextMenuTarget,
+) -> Vec<WorkspaceAction> {
+    use crate::local_workspace::model::ContextMenuTarget;
+
+    match target {
+        ContextMenuTarget::Organization(id) => vec![
+            WorkspaceAction::CreateLocalWorkspaceProject(id),
+            WorkspaceAction::EditLocalWorkspaceOrganization(id),
+            WorkspaceAction::RemoveLocalWorkspaceOrganization(id),
+            WorkspaceAction::DismissLocalWorkspaceContextMenu,
+        ],
+        ContextMenuTarget::Project(id) => vec![
+            WorkspaceAction::EditLocalWorkspaceProject(id),
+            WorkspaceAction::RemoveLocalWorkspaceProject(id),
+            WorkspaceAction::DismissLocalWorkspaceContextMenu,
+        ],
+    }
+}
+
 fn render_cross_window_ghost_chip(
     ghost: &GhostState,
     appearance: &Appearance,

@@ -24,12 +24,28 @@ pub(super) fn apply(
             id,
             name,
             sort_order,
+            accent_color,
+            image_data,
         } => connection.transaction(|connection| {
+            validate_organization_visuals(&accent_color, image_data.as_deref())?;
+            let next_sort_order = local_workspace_organizations::table
+                .select(diesel::dsl::max(local_workspace_organizations::sort_order))
+                .first::<Option<i32>>(connection)?
+                .map(|last_order| {
+                    last_order
+                        .checked_add(1)
+                        .ok_or_else(|| anyhow::anyhow!("organization order is exhausted"))
+                })
+                .transpose()?
+                .unwrap_or(sort_order)
+                .max(sort_order);
             diesel::insert_into(local_workspace_organizations::table)
                 .values(NewLocalWorkspaceOrganization {
                     id,
                     name,
-                    sort_order,
+                    sort_order: next_sort_order,
+                    accent_color,
+                    image_data,
                 })
                 .execute(connection)?;
             let selected = local_workspace_state::table
@@ -53,6 +69,18 @@ pub(super) fn apply(
             let path_key = crate::local_workspace::model::normalize_path_key(&path)
                 .map_err(|error| anyhow::anyhow!("invalid local project path: {error:?}"))?;
             connection.transaction(|connection| {
+                let next_sort_order = local_workspace_projects::table
+                    .filter(local_workspace_projects::organization_id.eq(organization_id))
+                    .select(diesel::dsl::max(local_workspace_projects::sort_order))
+                    .first::<Option<i32>>(connection)?
+                    .map(|last_order| {
+                        last_order
+                            .checked_add(1)
+                            .ok_or_else(|| anyhow::anyhow!("project order is exhausted"))
+                    })
+                    .transpose()?
+                    .unwrap_or(sort_order)
+                    .max(sort_order);
                 diesel::insert_into(local_workspace_projects::table)
                     .values(NewLocalWorkspaceProject {
                         id,
@@ -60,7 +88,8 @@ pub(super) fn apply(
                         name,
                         path,
                         path_key,
-                        sort_order,
+                        sort_order: next_sort_order,
+                        last_opened_ts: 0,
                     })
                     .execute(connection)?;
                 diesel::update(
@@ -77,6 +106,36 @@ pub(super) fn apply(
         LocalWorkspaceOperation::RenameOrganization { id, name } => {
             let updated = diesel::update(local_workspace_organizations::table.find(id))
                 .set(local_workspace_organizations::name.eq(name))
+                .execute(connection)?;
+            require_one_row(updated, "organization", id)
+        }
+        LocalWorkspaceOperation::UpdateOrganization {
+            id,
+            name,
+            accent_color,
+            image_data,
+        } => {
+            validate_organization_visuals(&accent_color, image_data.as_deref())?;
+            let updated = diesel::update(local_workspace_organizations::table.find(id))
+                .set((
+                    local_workspace_organizations::name.eq(name),
+                    local_workspace_organizations::accent_color.eq(accent_color),
+                    local_workspace_organizations::image_data.eq(image_data),
+                ))
+                .execute(connection)?;
+            require_one_row(updated, "organization", id)
+        }
+        LocalWorkspaceOperation::SetOrganizationVisuals {
+            id,
+            accent_color,
+            image_data,
+        } => {
+            validate_organization_visuals(&accent_color, image_data.as_deref())?;
+            let updated = diesel::update(local_workspace_organizations::table.find(id))
+                .set((
+                    local_workspace_organizations::accent_color.eq(accent_color),
+                    local_workspace_organizations::image_data.eq(image_data),
+                ))
                 .execute(connection)?;
             require_one_row(updated, "organization", id)
         }
@@ -234,9 +293,49 @@ pub(super) fn apply(
                     local_workspace_state::selected_project_id.eq(project_id),
                 ))
                 .execute(connection)?;
+            if let Some(project_id) = project_id {
+                let last_timestamp = local_workspace_projects::table
+                    .select(diesel::dsl::max(local_workspace_projects::last_opened_ts))
+                    .first::<Option<i64>>(connection)?
+                    .unwrap_or_default();
+                let timestamp = chrono::Utc::now()
+                    .timestamp_millis()
+                    .max(last_timestamp.saturating_add(1));
+                diesel::update(local_workspace_projects::table.find(project_id))
+                    .set(local_workspace_projects::last_opened_ts.eq(timestamp))
+                    .execute(connection)?;
+            }
             Ok(())
         }),
         LocalWorkspaceOperation::DeleteOrganization(id) => connection.transaction(|connection| {
+            let selected_organization = local_workspace_state::table
+                .find(1)
+                .select(local_workspace_state::selected_organization_id)
+                .first::<Option<i32>>(connection)?;
+            if selected_organization == Some(id) {
+                let fallback_organization = local_workspace_organizations::table
+                    .filter(local_workspace_organizations::id.ne(id))
+                    .order(local_workspace_organizations::sort_order.asc())
+                    .select(local_workspace_organizations::id)
+                    .first::<i32>(connection)
+                    .optional()?;
+                let fallback_project = if let Some(organization_id) = fallback_organization {
+                    local_workspace_projects::table
+                        .filter(local_workspace_projects::organization_id.eq(organization_id))
+                        .order(local_workspace_projects::sort_order.asc())
+                        .select(local_workspace_projects::id)
+                        .first::<i32>(connection)
+                        .optional()?
+                } else {
+                    None
+                };
+                diesel::update(local_workspace_state::table.find(1))
+                    .set((
+                        local_workspace_state::selected_organization_id.eq(fallback_organization),
+                        local_workspace_state::selected_project_id.eq(fallback_project),
+                    ))
+                    .execute(connection)?;
+            }
             let deleted = diesel::delete(local_workspace_organizations::table.find(id))
                 .execute(connection)?;
             if deleted != 1 {
@@ -253,6 +352,19 @@ pub(super) fn apply(
             Ok(())
         }),
     }
+}
+
+fn validate_organization_visuals(accent_color: &str, image_data: Option<&[u8]>) -> Result<()> {
+    if !matches!(
+        accent_color,
+        "blue" | "green" | "magenta" | "yellow" | "cyan" | "red"
+    ) {
+        bail!("invalid organization accent color");
+    }
+    if image_data.is_some_and(|bytes| bytes.len() > 128 * 1024) {
+        bail!("organization image exceeds the storage limit");
+    }
+    Ok(())
 }
 
 pub(super) fn read(connection: &mut SqliteConnection) -> diesel::QueryResult<LocalWorkspaceData> {

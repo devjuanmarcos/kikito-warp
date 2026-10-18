@@ -201,6 +201,8 @@ diesel::table! {
         id -> Integer,
         name -> Text,
         sort_order -> Integer,
+        accent_color -> Text,
+        image_data -> Nullable<Binary>,
     }
 }
 
@@ -229,6 +231,7 @@ diesel::table! {
         path -> Text,
         path_key -> Text,
         sort_order -> Integer,
+        last_opened_ts -> BigInt,
     }
 }
 

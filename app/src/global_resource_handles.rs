@@ -3,6 +3,7 @@ use std::sync::mpsc::SyncSender;
 use warpui::{Entity, ModelHandle, SingletonEntity};
 
 use crate::banner::BannerState;
+use crate::local_workspace::model::WorkspaceModel;
 use crate::persistence::ModelEvent;
 use crate::referral_theme_status::ReferralThemeStatus;
 use crate::resource_center::TipsCompleted;
@@ -51,6 +52,7 @@ use crate::settings::SettingsFileError;
 #[derive(Clone)]
 pub struct GlobalResourceHandles {
     pub model_event_sender: Option<SyncSender<ModelEvent>>,
+    pub local_workspace: ModelHandle<WorkspaceModel>,
     pub tips_completed: ModelHandle<TipsCompleted>,
     pub referral_theme_status: ModelHandle<ReferralThemeStatus>,
     pub user_default_shell_unsupported_banner_model_handle: ModelHandle<BannerState>,
@@ -64,9 +66,11 @@ impl GlobalResourceHandles {
         let user_default_shell_unsupported_banner_model_handle =
             app.add_model(|_| BannerState::default());
         let tips_completed = app.add_model(|_| TipsCompleted::default());
+        let local_workspace = app.add_model(|_| WorkspaceModel::default());
 
         GlobalResourceHandles {
             model_event_sender: None,
+            local_workspace,
             tips_completed,
             referral_theme_status,
             user_default_shell_unsupported_banner_model_handle,

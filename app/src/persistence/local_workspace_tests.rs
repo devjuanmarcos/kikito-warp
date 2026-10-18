@@ -28,9 +28,47 @@ fn create_organization(connection: &mut SqliteConnection, id: i32, name: &str) {
             id,
             name: name.to_string(),
             sort_order: id - 1,
+            accent_color: "blue".to_string(),
+            image_data: None,
         },
     )
     .unwrap();
+}
+
+#[test]
+fn organization_visual_metadata_survives_reopening_the_database() {
+    let root = tempfile::tempdir().unwrap();
+    let database_path = root.path().join("workspace.sqlite");
+    let mut connection = SqliteConnection::establish(database_path.to_str().unwrap()).unwrap();
+    connection
+        .batch_execute("PRAGMA foreign_keys = ON;")
+        .unwrap();
+    connection
+        .run_pending_migrations(persistence::MIGRATIONS)
+        .unwrap();
+    create_organization(&mut connection, 1, "Equipe");
+    local_workspace::apply(
+        &mut connection,
+        Operation::SetOrganizationVisuals {
+            id: 1,
+            accent_color: "cyan".to_string(),
+            image_data: Some(vec![1, 2, 3, 4]),
+        },
+    )
+    .unwrap();
+    drop(connection);
+
+    let mut reopened = SqliteConnection::establish(database_path.to_str().unwrap()).unwrap();
+    reopened.batch_execute("PRAGMA foreign_keys = ON;").unwrap();
+    reopened
+        .run_pending_migrations(persistence::MIGRATIONS)
+        .unwrap();
+    let organization = local_workspace::read(&mut reopened)
+        .unwrap()
+        .organizations
+        .remove(0);
+    assert_eq!(organization.accent_color, "cyan");
+    assert_eq!(organization.image_data, Some(vec![1, 2, 3, 4]));
 }
 
 fn create_project(connection: &mut SqliteConnection, id: i32, organization_id: i32, path: &str) {
@@ -161,6 +199,15 @@ fn local_workspace_selection_order_and_tab_membership_restore_from_sqlite() {
     let workspace_tab_id = seed_session_tab(&mut connection, 72);
     local_workspace::apply(
         &mut connection,
+        Operation::SetOrganizationVisuals {
+            id: 1,
+            accent_color: "magenta".to_string(),
+            image_data: Some(vec![137, 80, 78, 71]),
+        },
+    )
+    .unwrap();
+    local_workspace::apply(
+        &mut connection,
         Operation::AssignTab {
             project_id: 2,
             tab_id: workspace_tab_id,
@@ -197,6 +244,73 @@ fn local_workspace_selection_order_and_tab_membership_restore_from_sqlite() {
     let state = restored.state.unwrap();
     assert_eq!(state.selected_organization_id, Some(2));
     assert_eq!(state.selected_project_id, Some(2));
+}
+
+#[test]
+fn deleting_selected_organization_persists_remaining_selection() {
+    let mut connection = connection();
+    create_organization(&mut connection, 1, "Equipe A");
+    create_organization(&mut connection, 2, "Equipe B");
+    let root = tempfile::tempdir().unwrap();
+    create_project(
+        &mut connection,
+        1,
+        1,
+        &root.path().join("Projeto A").display().to_string(),
+    );
+    create_project(
+        &mut connection,
+        2,
+        2,
+        &root.path().join("Projeto B").display().to_string(),
+    );
+    local_workspace::apply(
+        &mut connection,
+        Operation::Select {
+            organization_id: Some(1),
+            project_id: Some(1),
+        },
+    )
+    .unwrap();
+
+    local_workspace::apply(&mut connection, Operation::DeleteOrganization(1)).unwrap();
+
+    let restored = local_workspace::read(&mut connection).unwrap();
+    let state = restored.state.unwrap();
+    assert_eq!(state.selected_organization_id, Some(2));
+    assert_eq!(state.selected_project_id, Some(2));
+}
+
+#[test]
+fn project_recency_is_persisted_and_monotonically_advanced() {
+    let mut connection = connection();
+    create_organization(&mut connection, 1, "Equipe");
+    let root = tempfile::tempdir().unwrap();
+    create_project(
+        &mut connection,
+        1,
+        1,
+        &root.path().join("A").display().to_string(),
+    );
+    create_project(
+        &mut connection,
+        2,
+        1,
+        &root.path().join("B").display().to_string(),
+    );
+    for project_id in [2, 1] {
+        local_workspace::apply(
+            &mut connection,
+            Operation::Select {
+                organization_id: Some(1),
+                project_id: Some(project_id),
+            },
+        )
+        .unwrap();
+    }
+
+    let projects = local_workspace::read(&mut connection).unwrap().projects;
+    assert!(projects[0].last_opened_ts > projects[1].last_opened_ts);
 }
 
 #[test]
@@ -268,6 +382,17 @@ fn failed_selection_rolls_back_and_metadata_delete_preserves_session_tab() {
             .unwrap()
             .selected_project_id,
         Some(1)
+    );
+    let restored_organization = local_workspace::read(&mut connection)
+        .unwrap()
+        .organizations
+        .into_iter()
+        .next()
+        .unwrap();
+    assert_eq!(restored_organization.accent_color, "magenta");
+    assert_eq!(
+        restored_organization.image_data,
+        Some(vec![137, 80, 78, 71])
     );
 
     local_workspace::apply(&mut connection, Operation::DeleteOrganization(1)).unwrap();
