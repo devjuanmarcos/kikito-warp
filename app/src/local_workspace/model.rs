@@ -238,6 +238,9 @@ pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
     }
 
     if path.starts_with('/') && !path.starts_with("//") {
+        #[cfg(windows)]
+        return Err(ModelError::RelativePath);
+        #[cfg(not(windows))]
         return Ok(normalize_posix_absolute_path(path));
     }
 
@@ -299,6 +302,7 @@ pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
     Ok(key)
 }
 
+#[cfg(not(windows))]
 fn normalize_posix_absolute_path(path: &str) -> String {
     let mut parts = Vec::new();
     for component in path.split('/') {

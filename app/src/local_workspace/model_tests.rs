@@ -40,9 +40,16 @@ fn lexical_normalization_handles_absolute_drive_and_unc_paths() {
         normalize_path_key(r"\\server\share\..\folder"),
         Ok(r"\\server\share\folder".to_owned())
     );
+    #[cfg(not(windows))]
     assert_eq!(normalize_path_key("/tmp/a/../b"), Ok("/tmp/b".to_owned()));
+    #[cfg(windows)]
+    assert_eq!(
+        normalize_path_key("/tmp/a/../b"),
+        Err(ModelError::RelativePath)
+    );
 }
 
+#[cfg(not(windows))]
 #[test]
 fn unix_absolute_paths_keep_posix_separators_and_case() {
     assert_eq!(
@@ -57,6 +64,20 @@ fn unix_absolute_paths_keep_posix_separators_and_case() {
         normalize_path_key("/Home/Repo"),
         normalize_path_key("/home/repo")
     );
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_root_relative_paths_are_rejected() {
+    for path in [r"\foo", "/foo"] {
+        assert_eq!(normalize_path_key(path), Err(ModelError::RelativePath));
+    }
+}
+
+#[cfg(not(windows))]
+#[test]
+fn posix_single_leading_slash_is_an_absolute_path() {
+    assert_eq!(normalize_path_key("/foo"), Ok("/foo".to_owned()));
 }
 
 #[test]
