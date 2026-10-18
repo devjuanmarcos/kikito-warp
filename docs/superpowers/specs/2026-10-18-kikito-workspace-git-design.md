@@ -50,6 +50,10 @@ Introduzir um domínio persistido próprio para organizações, projetos locais,
 
 Uma organização contém zero ou mais projetos. Um projeto contém o caminho local e metadados de apresentação. O repositório Git, quando existe, é descoberto a partir do caminho; branch é estado derivado do Git e nunca é persistido como fonte de verdade. Abas/sessões continuam usando o ciclo de vida existente, com uma relação persistida que restaura sua pertença ao projeto.
 
+### Identidade e restauração de abas existentes
+
+`tabs.id` (`i32`) é o identificador persistido e estável de cada aba. Cada linha de aba referencia sua janela por `window_id` e pode referenciar um grupo por `tab_group_id`. A árvore de panes e os dados de pane/sessão do terminal são persistidos separadamente; a restauração existente reconstrói janelas, grupos, abas e panes e reconecta o estado das sessões pelos callbacks atuais. A nova associação projeto/aba referencia apenas `tabs.id`: ela não possui nem remove linhas de janela, aba, pane ou sessão e não encerra processos de terminal. Remover metadados locais remove apenas as associações e metadados novos.
+
 ### Casca de navegação
 
 Compor a janela em quatro superfícies: trilho de organizações, sidebar de projetos, barra de abas do projeto e conteúdo de terminal/painel. A Home continua acessível e apresenta itens recentes. Manter dimensões, hierarquia, tipografia, cores, ícones, densidade e estados de interação do kit, adaptados aos tokens e componentes nativos do app. O protótipo menciona variantes de apresentação; a implementação inicial usa a composição padrão documentada no kit, sem transformar o painel de ajustes do protótipo em configuração de produto.

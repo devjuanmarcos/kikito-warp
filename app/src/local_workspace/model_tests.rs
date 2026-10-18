@@ -1,4 +1,6 @@
-use super::model::{LocalProject, ModelError, WorkspaceModel, normalize_path_key};
+use super::model::{
+    LocalProject, ModelError, WorkspaceModel, has_windows_drive_prefix, normalize_path_key,
+};
 
 #[test]
 fn windows_paths_deduplicate_case_and_separator_variants_across_organizations() {
@@ -41,7 +43,39 @@ fn lexical_normalization_handles_roots_and_drive_relative_paths() {
         normalize_path_key(r"\\server\share\..\folder"),
         Ok(r"\\server\share\folder".to_owned())
     );
-    assert_eq!(normalize_path_key("/tmp/a/../b"), Ok(r"\tmp\b".to_owned()));
+    assert_eq!(normalize_path_key("/tmp/a/../b"), Ok("/tmp/b".to_owned()));
+}
+
+#[test]
+fn unix_absolute_paths_keep_posix_separators_and_case() {
+    assert_eq!(
+        normalize_path_key("/Home/Team/../Repo/"),
+        Ok("/Home/Repo".to_owned())
+    );
+    assert_eq!(
+        normalize_path_key("/home/repo/./"),
+        Ok("/home/repo".to_owned())
+    );
+    assert_ne!(
+        normalize_path_key("/Home/Repo"),
+        normalize_path_key("/home/repo")
+    );
+}
+
+#[test]
+fn unicode_leading_relative_paths_do_not_use_windows_drive_parsing() {
+    assert_eq!(
+        normalize_path_key("\u{00e9}:/Repo/../Source"),
+        Ok("\u{00e9}:\\Source".to_owned())
+    );
+}
+
+#[test]
+fn drive_prefix_detection_accepts_only_ascii_letters_before_colon() {
+    assert!(has_windows_drive_prefix("C:\\Repo"));
+    assert!(has_windows_drive_prefix("c:Repo"));
+    assert!(!has_windows_drive_prefix("\u{00e9}:Repo"));
+    assert!(!has_windows_drive_prefix("/Repo"));
 }
 
 #[test]

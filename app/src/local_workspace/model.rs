@@ -207,10 +207,15 @@ pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
         return Err(ModelError::EmptyPath);
     }
 
+    if path.starts_with('/') && !path.starts_with("//") {
+        return Ok(normalize_posix_absolute_path(path));
+    }
+
     let input = path.replace('/', "\\");
+    let has_drive_prefix = has_windows_drive_prefix(&input);
     let (prefix, rest, rooted, unc) = if let Some(rest) = input.strip_prefix("\\\\") {
         ("\\\\".to_owned(), rest, true, true)
-    } else if input.as_bytes().get(1) == Some(&b':') {
+    } else if has_drive_prefix {
         let drive = input.get(..2).expect("ASCII drive prefix");
         let rest = &input[2..];
         if let Some(rest) = rest.strip_prefix('\\') {
@@ -254,8 +259,30 @@ pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
         key.pop();
     }
 
-    if input.as_bytes().get(1) == Some(&b':') || unc {
+    if has_drive_prefix || unc {
         key = key.to_lowercase();
     }
     Ok(key)
+}
+
+fn normalize_posix_absolute_path(path: &str) -> String {
+    let mut parts = Vec::new();
+    for component in path.split('/') {
+        match component {
+            "" | "." => {}
+            ".." => {
+                parts.pop();
+            }
+            _ => parts.push(component),
+        }
+    }
+    format!("/{}", parts.join("/"))
+}
+
+pub(super) fn has_windows_drive_prefix(path: &str) -> bool {
+    let bytes = path.as_bytes();
+    bytes
+        .first()
+        .is_some_and(|first| first.is_ascii_alphabetic())
+        && bytes.get(1) == Some(&b':')
 }
