@@ -233,15 +233,25 @@ impl WorkspaceModel {
 }
 
 pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
+    normalize_path_key_for_host(path, cfg!(windows))
+}
+
+pub(super) fn normalize_path_key_for_host(
+    path: &str,
+    is_windows_host: bool,
+) -> Result<String, ModelError> {
     if path.trim().is_empty() {
         return Err(ModelError::EmptyPath);
     }
 
-    if path.starts_with('/') && !path.starts_with("//") {
-        #[cfg(windows)]
-        return Err(ModelError::RelativePath);
-        #[cfg(not(windows))]
-        return Ok(normalize_posix_absolute_path(path));
+    if path.starts_with('/') {
+        if is_windows_host {
+            if !path.starts_with("//") {
+                return Err(ModelError::RelativePath);
+            }
+        } else {
+            return Ok(normalize_posix_absolute_path(path));
+        }
     }
 
     let input = path.replace('/', "\\");
@@ -302,7 +312,6 @@ pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
     Ok(key)
 }
 
-#[cfg(not(windows))]
 fn normalize_posix_absolute_path(path: &str) -> String {
     let mut parts = Vec::new();
     for component in path.split('/') {

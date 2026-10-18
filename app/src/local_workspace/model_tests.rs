@@ -1,5 +1,6 @@
 use super::model::{
     LocalProject, ModelError, WorkspaceModel, has_windows_drive_prefix, normalize_path_key,
+    normalize_path_key_for_host,
 };
 
 #[test]
@@ -21,6 +22,7 @@ fn windows_paths_deduplicate_case_and_separator_variants_across_organizations() 
     );
 }
 
+#[cfg(windows)]
 #[test]
 fn unc_paths_and_unicode_are_preserved_and_normalized() {
     let a = LocalProject::new("A", r"\\server\share\Équipe\repo").unwrap();
@@ -29,6 +31,13 @@ fn unc_paths_and_unicode_are_preserved_and_normalized() {
     assert_eq!(a.path, r"\\server\share\Équipe\repo");
     assert_eq!(a.path_key, b.path_key);
     assert_eq!(a.path_key, r"\\server\share\équipe\repo");
+}
+
+#[cfg(not(windows))]
+#[test]
+fn backslash_unc_paths_remain_windows_unc_paths() {
+    let project = LocalProject::new("UNC", r"\\server\share\repo").unwrap();
+    assert_eq!(project.path_key, r"\\server\share\repo");
 }
 
 #[test]
@@ -94,6 +103,40 @@ fn drive_prefix_detection_accepts_only_ascii_letters_before_colon() {
     assert!(has_windows_drive_prefix("c:Repo"));
     assert!(!has_windows_drive_prefix("\u{00e9}:Repo"));
     assert!(!has_windows_drive_prefix("/Repo"));
+}
+
+#[test]
+fn forward_slash_unc_interpretation_matches_the_host_path_flavor() {
+    assert_eq!(
+        normalize_path_key_for_host("//Foo/Repo", true),
+        Ok(r"\\foo\repo".to_owned())
+    );
+    assert_eq!(
+        normalize_path_key_for_host("//Foo/Repo", false),
+        Ok("/Foo/Repo".to_owned())
+    );
+    assert_eq!(
+        normalize_path_key_for_host("//Foo/Repo", false),
+        normalize_path_key_for_host("/Foo/Repo", false)
+    );
+    assert_ne!(
+        normalize_path_key_for_host("//Foo/Repo", false),
+        normalize_path_key_for_host("/foo/repo", false)
+    );
+}
+
+#[cfg(not(windows))]
+#[test]
+fn posix_double_slash_paths_collapse_without_case_folding() {
+    assert_eq!(normalize_path_key("//Foo/Repo"), Ok("/Foo/Repo".to_owned()));
+    assert_eq!(
+        normalize_path_key("//Foo/Repo"),
+        normalize_path_key("/Foo/Repo")
+    );
+    assert_ne!(
+        normalize_path_key("//Foo/Repo"),
+        normalize_path_key("/foo/repo")
+    );
 }
 
 #[test]
