@@ -633,6 +633,15 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         | ModelEvent::Terminate => {
             panic!("Unhandled control-flow event {event:?}");
         }
+        ModelEvent::LocalWorkspace {
+            operation,
+            response,
+        } => {
+            let result = super::local_workspace::apply(connection, operation)
+                .map_err(|error| format!("{error:#}"));
+            let _ = response.send(result);
+            Ok(())
+        }
         ModelEvent::SaveBlock(BlockCompleted {
             pane_id,
             block,
@@ -1073,6 +1082,16 @@ fn save_app_state(conn: &mut SqliteConnection, app_state: &AppState) -> Result<(
             // Since we retrieved the tab ids in descending order, we need to reverse them when we
             // iterate to restore the correct order.
             for (tab_id, tab) in tab_ids.iter().rev().zip(window.tabs.iter()) {
+                diesel::insert_into(schema::local_workspace_tab_identities::table)
+                    .values(model::NewLocalWorkspaceTabIdentity {
+                        workspace_tab_id: tab.workspace_tab_id.clone(),
+                        session_tab_id: Some(*tab_id),
+                    })
+                    .on_conflict(schema::local_workspace_tab_identities::workspace_tab_id)
+                    .do_update()
+                    .set(schema::local_workspace_tab_identities::session_tab_id.eq(*tab_id))
+                    .execute(conn)?;
+
                 let mut pane_nodes = VecDeque::new();
                 pane_nodes.push_back(SaveAppStateNodeTraversal {
                     node: &tab.root,
@@ -1158,6 +1177,18 @@ fn save_app_state(conn: &mut SqliteConnection, app_state: &AppState) -> Result<(
                     }
                 }
             }
+        }
+
+        let detached_workspace_tab_ids = schema::local_workspace_tab_identities::table
+            .filter(schema::local_workspace_tab_identities::session_tab_id.is_null())
+            .select(schema::local_workspace_tab_identities::id)
+            .load::<i32>(conn)?;
+        if !detached_workspace_tab_ids.is_empty() {
+            diesel::delete(schema::local_workspace_project_tabs::table)
+                .filter(
+                    schema::local_workspace_project_tabs::tab_id.eq_any(detached_workspace_tab_ids),
+                )
+                .execute(conn)?;
         }
 
         let new_app = NewApp { active_window_id };
@@ -2506,6 +2537,7 @@ fn read_sqlite_data(
             workspace_language_servers: Default::default(),
             multi_agent_conversations: Default::default(),
             projects: Default::default(),
+            local_workspace: Default::default(),
             project_rules: Default::default(),
             ignored_suggestions: Default::default(),
             mcp_server_installations: Default::default(),
@@ -2530,6 +2562,19 @@ fn read_sqlite_data(
             .order_by(schema::tabs::columns::id.asc())
             .load::<Tab>(conn)?
             .grouped_by(&db_windows);
+
+        let workspace_tab_ids_by_session_id = schema::local_workspace_tab_identities::table
+            .filter(schema::local_workspace_tab_identities::session_tab_id.is_not_null())
+            .select((
+                schema::local_workspace_tab_identities::session_tab_id,
+                schema::local_workspace_tab_identities::workspace_tab_id,
+            ))
+            .load::<(Option<i32>, String)>(conn)?
+            .into_iter()
+            .filter_map(|(session_tab_id, workspace_tab_id)| {
+                session_tab_id.map(|session_tab_id| (session_tab_id, workspace_tab_id))
+            })
+            .collect::<HashMap<_, _>>();
 
         let db_panels = schema::panels::dsl::panels
             .load::<model::Panel>(conn)?
@@ -2589,6 +2634,10 @@ fn read_sqlite_data(
                                 .tab_group_id
                                 .and_then(|row_id| tab_group_id_by_row_id.get(&row_id).copied());
                             Some(TabSnapshot {
+                                workspace_tab_id: workspace_tab_ids_by_session_id
+                                    .get(&tab.id)
+                                    .cloned()
+                                    .unwrap_or_else(|| format!("legacy-tab-{}", tab.id)),
                                 root,
                                 custom_title: tab.custom_title,
                                 default_directory_color: None,
@@ -2911,6 +2960,7 @@ fn read_sqlite_data(
     let (multi_agent_conversations, conversation_summary_backfills) =
         read_agent_conversation_metadata(conn)?;
     let projects = get_all_projects(conn)?;
+    let local_workspace = super::local_workspace::read(conn)?;
     let project_rules = get_all_project_rules(conn)?;
     let ignored_suggestions = get_all_ignored_suggestions(conn)?;
     let mcp_server_installations = get_all_mcp_server_installations(conn)?;
@@ -2932,6 +2982,7 @@ fn read_sqlite_data(
         workspace_language_servers,
         multi_agent_conversations,
         projects,
+        local_workspace,
         project_rules,
         ignored_suggestions,
         mcp_server_installations,

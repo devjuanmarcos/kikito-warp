@@ -4140,6 +4140,7 @@ impl Workspace {
                             custom_title,
                             ctx,
                         );
+                        self.tabs[tab_index].workspace_tab_id = saved_tab.workspace_tab_id.clone();
                         self.tabs[tab_index].default_directory_color =
                             saved_tab.default_directory_color;
                         self.tabs[tab_index].selected_color = saved_tab.selected_color;
@@ -11949,6 +11950,7 @@ impl Workspace {
                 let right_panel =
                     self.compute_right_panel_snapshot(pane_group_view, right_panel_width, app);
                 TabSnapshot {
+                    workspace_tab_id: self.tabs[tab_index].workspace_tab_id.clone(),
                     root,
                     custom_title: pane_group.custom_title(app),
                     default_directory_color: self

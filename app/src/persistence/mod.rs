@@ -4,6 +4,10 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "local_fs")] {
         pub mod agent;
         mod block_list;
+        mod local_workspace;
+        #[cfg(test)]
+        #[path = "local_workspace_tests.rs"]
+        mod local_workspace_tests;
         mod sqlite;
         pub mod commands;
     }
@@ -218,10 +222,78 @@ pub struct WriterHandles {
     pub sender: SyncSender<ModelEvent>,
 }
 
+#[derive(Clone, Debug)]
+pub enum LocalWorkspaceOperation {
+    CreateOrganization {
+        id: i32,
+        name: String,
+        sort_order: i32,
+    },
+    CreateProject {
+        id: i32,
+        organization_id: i32,
+        name: String,
+        path: String,
+        sort_order: i32,
+    },
+    RenameOrganization {
+        id: i32,
+        name: String,
+    },
+    RenameProject {
+        id: i32,
+        name: String,
+    },
+    ReorderOrganizations(Vec<i32>),
+    ReorderProjects {
+        organization_id: i32,
+        project_ids: Vec<i32>,
+    },
+    AssignTab {
+        project_id: i32,
+        tab_id: i32,
+        sort_order: i32,
+    },
+    SetActiveTab {
+        project_id: i32,
+        tab_id: Option<i32>,
+    },
+    Select {
+        organization_id: Option<i32>,
+        project_id: Option<i32>,
+    },
+    DeleteOrganization(i32),
+    DeleteProject(i32),
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct LocalWorkspaceData {
+    pub organizations: Vec<model::LocalWorkspaceOrganization>,
+    pub projects: Vec<model::LocalWorkspaceProject>,
+    pub tabs: Vec<model::LocalWorkspaceProjectTab>,
+    pub tab_identities: Vec<model::LocalWorkspaceTabIdentity>,
+    pub state: Option<model::LocalWorkspaceState>,
+}
+
 /// Model for interacting with the writer thread.
 pub struct PersistenceWriter {
     thread_handle: Option<JoinHandle<()>>,
     model_event_sender: Option<SyncSender<ModelEvent>>,
+}
+
+#[cfg(feature = "local_fs")]
+pub fn apply_local_workspace_operation(
+    sender: &SyncSender<ModelEvent>,
+    operation: LocalWorkspaceOperation,
+) -> Result<(), String> {
+    let (response_tx, response_rx) = std::sync::mpsc::sync_channel(0);
+    sender
+        .send(ModelEvent::LocalWorkspace {
+            operation,
+            response: response_tx,
+        })
+        .map_err(|error| error.to_string())?;
+    response_rx.recv().map_err(|error| error.to_string())?
 }
 
 impl PersistenceWriter {
@@ -301,6 +373,7 @@ pub struct PersistedData {
     pub workspace_language_servers: HashMap<PathBuf, HashMap<LSPServerType, EnablementState>>,
     pub multi_agent_conversations: Vec<AgentConversation>,
     pub projects: Vec<Project>,
+    pub local_workspace: LocalWorkspaceData,
     pub project_rules: Vec<ProjectRulePath>,
     pub ignored_suggestions: Vec<(String, SuggestionType)>,
     pub mcp_server_installations: HashMap<Uuid, TemplatableMCPServerInstallation>,
@@ -344,6 +417,10 @@ pub struct FinishedCommandMetadata {
 
 #[derive(Debug)]
 pub enum ModelEvent {
+    LocalWorkspace {
+        operation: LocalWorkspaceOperation,
+        response: SyncSender<Result<(), String>>,
+    },
     SaveBlock(BlockCompleted),
     DeleteBlocks(Vec<u8>),
     Snapshot(AppState),

@@ -197,6 +197,50 @@ diesel::table! {
 }
 
 diesel::table! {
+    local_workspace_organizations (id) {
+        id -> Integer,
+        name -> Text,
+        sort_order -> Integer,
+    }
+}
+
+diesel::table! {
+    local_workspace_tab_identities (id) {
+        id -> Integer,
+        workspace_tab_id -> Text,
+        session_tab_id -> Nullable<Integer>,
+    }
+}
+
+diesel::table! {
+    local_workspace_project_tabs (project_id, tab_id) {
+        project_id -> Integer,
+        tab_id -> Integer,
+        sort_order -> Integer,
+        is_active -> Bool,
+    }
+}
+
+diesel::table! {
+    local_workspace_projects (id) {
+        id -> Integer,
+        organization_id -> Integer,
+        name -> Text,
+        path -> Text,
+        path_key -> Text,
+        sort_order -> Integer,
+    }
+}
+
+diesel::table! {
+    local_workspace_state (id) {
+        id -> Integer,
+        selected_organization_id -> Nullable<Integer>,
+        selected_project_id -> Nullable<Integer>,
+    }
+}
+
+diesel::table! {
     mcp_environment_variables (mcp_server_uuid) {
         mcp_server_uuid -> Binary,
         environment_variables -> Text,
@@ -514,6 +558,10 @@ diesel::table! {
 diesel::joinable!(ambient_agent_panes -> pane_nodes (id));
 diesel::joinable!(app -> windows (active_window_id));
 diesel::joinable!(code_pane_tabs -> code_panes (code_pane_id));
+diesel::joinable!(local_workspace_project_tabs -> local_workspace_projects (project_id));
+diesel::joinable!(local_workspace_project_tabs -> local_workspace_tab_identities (tab_id));
+diesel::joinable!(local_workspace_projects -> local_workspace_organizations (organization_id));
+diesel::joinable!(local_workspace_tab_identities -> tabs (session_tab_id));
 diesel::joinable!(object_permissions -> object_metadata (object_metadata_id));
 diesel::joinable!(pane_branches -> pane_nodes (pane_node_id));
 diesel::joinable!(pane_leaves -> pane_nodes (pane_node_id));
@@ -538,6 +586,13 @@ diesel::allow_tables_to_appear_in_same_query!(
     windows,
 );
 diesel::allow_tables_to_appear_in_same_query!(code_pane_tabs, code_panes,);
+diesel::allow_tables_to_appear_in_same_query!(
+    local_workspace_organizations,
+    local_workspace_project_tabs,
+    local_workspace_projects,
+    local_workspace_state,
+    tabs,
+);
 diesel::allow_tables_to_appear_in_same_query!(object_metadata, object_permissions,);
 diesel::allow_tables_to_appear_in_same_query!(team_members, team_settings, teams,);
 diesel::allow_tables_to_appear_in_same_query!(workspace_language_server, workspace_metadata,);

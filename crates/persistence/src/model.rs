@@ -12,12 +12,14 @@ use super::schema::{
     active_mcp_servers, agent_conversations, agent_tasks, ai_document_panes, ai_memory_panes,
     ambient_agent_panes, app, blocks, cloud_objects_refreshes, code_pane_tabs, code_panes,
     code_review_panes, commands, current_user_information, env_var_collection_panes, folders,
-    generic_string_objects, ignored_suggestions, mcp_environment_variables,
-    mcp_server_installations, mcp_server_panes, notebook_panes, notebooks, object_actions,
-    object_metadata, object_permissions, pane_branches, pane_leaves, pane_nodes, panels,
-    project_rules, projects, server_experiments, settings_panes, tab_groups, tabs, team_members,
-    team_settings, teams, terminal_panes, user_profiles, windows, workflow_panes, workflows,
-    workspace_language_server, workspace_metadata, workspace_teams, workspaces,
+    generic_string_objects, ignored_suggestions, local_workspace_organizations,
+    local_workspace_project_tabs, local_workspace_projects, local_workspace_state,
+    local_workspace_tab_identities, mcp_environment_variables, mcp_server_installations,
+    mcp_server_panes, notebook_panes, notebooks, object_actions, object_metadata,
+    object_permissions, pane_branches, pane_leaves, pane_nodes, panels, project_rules, projects,
+    server_experiments, settings_panes, tab_groups, tabs, team_members, team_settings, teams,
+    terminal_panes, user_profiles, windows, workflow_panes, workflows, workspace_language_server,
+    workspace_metadata, workspace_teams, workspaces,
 };
 
 #[derive(Insertable)]
@@ -247,6 +249,87 @@ impl PartialEq for Project {
 }
 
 impl Eq for Project {}
+
+#[derive(Clone, Debug, Identifiable, Insertable, Queryable, Selectable, AsChangeset)]
+#[diesel(table_name = local_workspace_organizations)]
+pub struct LocalWorkspaceOrganization {
+    pub id: i32,
+    pub name: String,
+    pub sort_order: i32,
+}
+
+#[derive(Clone, Debug, Insertable)]
+#[diesel(table_name = local_workspace_organizations)]
+pub struct NewLocalWorkspaceOrganization {
+    pub id: i32,
+    pub name: String,
+    pub sort_order: i32,
+}
+
+#[derive(Clone, Debug, Identifiable, Insertable, Queryable, Selectable, AsChangeset)]
+#[diesel(table_name = local_workspace_projects)]
+pub struct LocalWorkspaceProject {
+    pub id: i32,
+    pub organization_id: i32,
+    pub name: String,
+    pub path: String,
+    pub path_key: String,
+    pub sort_order: i32,
+}
+
+#[derive(Clone, Debug, Insertable)]
+#[diesel(table_name = local_workspace_projects)]
+pub struct NewLocalWorkspaceProject {
+    pub id: i32,
+    pub organization_id: i32,
+    pub name: String,
+    pub path: String,
+    pub path_key: String,
+    pub sort_order: i32,
+}
+
+#[derive(Clone, Debug, Identifiable, Insertable, Queryable, Selectable, AsChangeset)]
+#[diesel(table_name = local_workspace_project_tabs)]
+#[diesel(primary_key(project_id, tab_id))]
+pub struct LocalWorkspaceProjectTab {
+    pub project_id: i32,
+    pub tab_id: i32,
+    pub sort_order: i32,
+    pub is_active: bool,
+}
+
+#[derive(Clone, Debug, Insertable)]
+#[diesel(table_name = local_workspace_project_tabs)]
+pub struct NewLocalWorkspaceProjectTab {
+    pub project_id: i32,
+    pub tab_id: i32,
+    pub sort_order: i32,
+    pub is_active: bool,
+}
+
+#[derive(Clone, Debug, Identifiable, Insertable, Queryable, Selectable, AsChangeset)]
+#[diesel(table_name = local_workspace_tab_identities)]
+#[diesel(primary_key(workspace_tab_id))]
+pub struct LocalWorkspaceTabIdentity {
+    pub id: i32,
+    pub workspace_tab_id: String,
+    pub session_tab_id: Option<i32>,
+}
+
+#[derive(Clone, Debug, Insertable)]
+#[diesel(table_name = local_workspace_tab_identities)]
+pub struct NewLocalWorkspaceTabIdentity {
+    pub workspace_tab_id: String,
+    pub session_tab_id: Option<i32>,
+}
+
+#[derive(Clone, Debug, Identifiable, Insertable, Queryable, Selectable, AsChangeset)]
+#[diesel(table_name = local_workspace_state)]
+pub struct LocalWorkspaceState {
+    pub id: i32,
+    pub selected_organization_id: Option<i32>,
+    pub selected_project_id: Option<i32>,
+}
 
 #[derive(Identifiable, Insertable, Queryable)]
 pub struct WorkspaceTeam {

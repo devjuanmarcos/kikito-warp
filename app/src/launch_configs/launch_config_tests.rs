@@ -15,6 +15,7 @@ fn single_tab_snapshot(root: PaneNodeSnapshot) -> AppState {
     AppState {
         windows: vec![WindowSnapshot {
             tabs: vec![TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 default_directory_color: None,
                 selected_color: SelectedTabColor::default(),
@@ -362,6 +363,7 @@ fn test_config_with_active_tab_index() {
         1,
         vec![
             TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 default_directory_color: None,
                 selected_color: SelectedTabColor::default(),
@@ -406,6 +408,7 @@ fn test_config_with_active_tab_index_and_filtered_tabs() {
         1,
         vec![
             TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 default_directory_color: None,
                 selected_color: SelectedTabColor::default(),
@@ -429,6 +432,7 @@ fn test_config_with_active_tab_index_and_filtered_tabs() {
                 pinned: false,
             },
             TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 default_directory_color: None,
                 selected_color: SelectedTabColor::default(),
@@ -472,6 +476,7 @@ fn test_config_with_active_tab_being_filtered() {
         1,
         vec![
             TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 default_directory_color: None,
                 selected_color: SelectedTabColor::default(),
@@ -503,6 +508,7 @@ fn test_config_with_active_tab_being_filtered() {
                 pinned: false,
             },
             TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 default_directory_color: None,
                 selected_color: SelectedTabColor::default(),
@@ -538,6 +544,7 @@ fn test_config_with_active_tab_being_filtered() {
 
 fn terminal_tab(cwd: &str, group_id: Option<TabGroupId>) -> TabSnapshot {
     TabSnapshot {
+        workspace_tab_id: uuid::Uuid::new_v4().to_string(),
         custom_title: None,
         default_directory_color: None,
         selected_color: SelectedTabColor::default(),
@@ -568,6 +575,7 @@ fn terminal_tab(cwd: &str, group_id: Option<TabGroupId>) -> TabSnapshot {
 /// template and shifts every later tab's index.
 fn unsaveable_tab(group_id: Option<TabGroupId>) -> TabSnapshot {
     TabSnapshot {
+        workspace_tab_id: uuid::Uuid::new_v4().to_string(),
         custom_title: None,
         default_directory_color: None,
         selected_color: SelectedTabColor::default(),

@@ -14,7 +14,8 @@ use warp_graphql::scalars::time::ServerTimestamp;
 use super::{
     app_database_file_path, database_file_path_for_current_scope, database_file_path_for_scope,
     decode_path, deduplicate_events, encode_path, get_all_codebase_index_metadata,
-    read_sqlite_data, save_app_state, save_codebase_index_metadata, setup_database, start_writer,
+    read_sqlite_data, save_app_state, save_codebase_index_metadata, schema, setup_database,
+    start_writer,
 };
 use crate::app_state::{
     AppState, CodePaneSnapShot, CodePaneTabSnapshot, LeafContents, LeafSnapshot, PaneNodeSnapshot,
@@ -376,6 +377,7 @@ fn test_deduplicate_no_snapshots() {
 fn test_terminal_window_snapshot(vertical_tabs_panel_open: bool) -> WindowSnapshot {
     WindowSnapshot {
         tabs: vec![TabSnapshot {
+            workspace_tab_id: uuid::Uuid::new_v4().to_string(),
             custom_title: None,
             root: PaneNodeSnapshot::Leaf(LeafSnapshot {
                 is_focused: true,
@@ -456,6 +458,130 @@ fn test_sqlite_round_trips_vertical_tabs_panel_open() {
 }
 
 #[test]
+fn local_workspace_tab_identity_survives_snapshot_replacement_and_close() {
+    use diesel::prelude::*;
+
+    let tempdir = tempfile::tempdir().expect("tempdir should be created");
+    let database_path = tempdir.path().join("warp.sqlite");
+    let mut conn = setup_database(&database_path).expect("database should initialize");
+    let workspace_tab_id = "stable-workspace-tab";
+    let mut window = test_terminal_window_snapshot(false);
+    window.tabs[0].workspace_tab_id = workspace_tab_id.to_string();
+    let app_state = AppState {
+        windows: vec![window],
+        active_window_index: Some(0),
+        block_lists: Default::default(),
+        running_mcp_servers: Default::default(),
+    };
+
+    save_app_state(&mut conn, &app_state).expect("initial app state should save");
+    let first_session_tab_id: i32 = schema::local_workspace_tab_identities::table
+        .filter(schema::local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id))
+        .select(schema::local_workspace_tab_identities::session_tab_id.assume_not_null())
+        .first(&mut conn)
+        .expect("workspace tab should map to a session row");
+    assert_eq!(
+        schema::tabs::table
+            .filter(schema::tabs::id.eq(first_session_tab_id))
+            .select(diesel::dsl::count_star())
+            .first::<i64>(&mut conn)
+            .unwrap(),
+        1
+    );
+    let identity_id: i32 = schema::local_workspace_tab_identities::table
+        .filter(schema::local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id))
+        .select(schema::local_workspace_tab_identities::id)
+        .first(&mut conn)
+        .expect("workspace tab identity should be persisted");
+    diesel::sql_query(
+        "INSERT INTO local_workspace_organizations (id, name, sort_order) VALUES (1, 'Org', 0)",
+    )
+    .execute(&mut conn)
+    .unwrap();
+    diesel::sql_query(
+        "INSERT INTO local_workspace_projects (id, organization_id, name, path, path_key, sort_order) VALUES (1, 1, 'Projeto', '/tmp/projeto', '/tmp/projeto', 0)",
+    )
+    .execute(&mut conn)
+    .unwrap();
+    diesel::sql_query(
+        "INSERT INTO local_workspace_project_tabs (project_id, tab_id, sort_order, is_active) VALUES (1, ?, 0, 1)",
+    )
+    .bind::<diesel::sql_types::Integer, _>(identity_id)
+    .execute(&mut conn)
+    .unwrap();
+
+    save_app_state(&mut conn, &app_state).expect("second app state snapshot should save");
+    let second_session_tab_id: i32 = schema::local_workspace_tab_identities::table
+        .filter(schema::local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id))
+        .select(schema::local_workspace_tab_identities::session_tab_id.assume_not_null())
+        .first(&mut conn)
+        .expect("workspace tab should remap to a session row");
+    assert_eq!(
+        schema::tabs::table
+            .filter(schema::tabs::id.eq(second_session_tab_id))
+            .select(diesel::dsl::count_star())
+            .first::<i64>(&mut conn)
+            .unwrap(),
+        1
+    );
+    assert_eq!(
+        schema::local_workspace_tab_identities::table
+            .filter(schema::local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id))
+            .select(schema::local_workspace_tab_identities::id)
+            .first::<i32>(&mut conn)
+            .unwrap(),
+        identity_id
+    );
+    assert_eq!(
+        schema::local_workspace_project_tabs::table
+            .filter(schema::local_workspace_project_tabs::tab_id.eq(identity_id))
+            .select(diesel::dsl::count_star())
+            .first::<i64>(&mut conn)
+            .unwrap(),
+        1
+    );
+    assert_eq!(
+        schema::tabs::table
+            .select(diesel::dsl::count_star())
+            .first::<i64>(&mut conn)
+            .unwrap(),
+        1
+    );
+    assert_eq!(
+        schema::terminal_panes::table
+            .select(diesel::dsl::count_star())
+            .first::<i64>(&mut conn)
+            .unwrap(),
+        1
+    );
+
+    save_app_state(
+        &mut conn,
+        &AppState {
+            windows: vec![],
+            active_window_index: None,
+            block_lists: Default::default(),
+            running_mcp_servers: Default::default(),
+        },
+    )
+    .expect("closing the tab should save");
+    assert_eq!(
+        schema::local_workspace_project_tabs::table
+            .select(diesel::dsl::count_star())
+            .first::<i64>(&mut conn)
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        schema::terminal_panes::table
+            .select(diesel::dsl::count_star())
+            .first::<i64>(&mut conn)
+            .unwrap(),
+        0
+    );
+}
+
+#[test]
 fn test_sqlite_round_trips_window_team_uid() {
     let tempdir = tempfile::tempdir().expect("tempdir should be created");
     let database_path = tempdir.path().join("warp.sqlite");
@@ -491,6 +617,7 @@ fn test_sqlite_round_trips_custom_vertical_tabs_title() {
     let app_state = AppState {
         windows: vec![WindowSnapshot {
             tabs: vec![TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 root: PaneNodeSnapshot::Leaf(LeafSnapshot {
                     is_focused: true,
@@ -568,6 +695,7 @@ fn test_sqlite_round_trips_code_pane_with_multiple_tabs() {
     let app_state = AppState {
         windows: vec![WindowSnapshot {
             tabs: vec![TabSnapshot {
+                workspace_tab_id: uuid::Uuid::new_v4().to_string(),
                 custom_title: None,
                 root: PaneNodeSnapshot::Leaf(LeafSnapshot {
                     is_focused: true,
@@ -657,6 +785,7 @@ fn test_sqlite_round_trips_tab_groups() {
 
     let group_id = TabGroupId::new();
     let tab_in_group = TabSnapshot {
+        workspace_tab_id: uuid::Uuid::new_v4().to_string(),
         custom_title: None,
         root: PaneNodeSnapshot::Leaf(LeafSnapshot {
             is_focused: true,
@@ -685,6 +814,7 @@ fn test_sqlite_round_trips_tab_groups() {
         pinned: false,
     };
     let tab_outside_group = TabSnapshot {
+        workspace_tab_id: uuid::Uuid::new_v4().to_string(),
         custom_title: None,
         root: PaneNodeSnapshot::Leaf(LeafSnapshot {
             is_focused: false,
@@ -781,6 +911,7 @@ fn test_sqlite_round_trips_pinned_state() {
     let unpinned_group_id = TabGroupId::new();
 
     let pinned_tab = TabSnapshot {
+        workspace_tab_id: uuid::Uuid::new_v4().to_string(),
         custom_title: None,
         root: PaneNodeSnapshot::Leaf(LeafSnapshot {
             is_focused: true,
@@ -809,6 +940,7 @@ fn test_sqlite_round_trips_pinned_state() {
         pinned: true,
     };
     let unpinned_tab = TabSnapshot {
+        workspace_tab_id: uuid::Uuid::new_v4().to_string(),
         custom_title: None,
         root: PaneNodeSnapshot::Leaf(LeafSnapshot {
             is_focused: false,
@@ -837,6 +969,7 @@ fn test_sqlite_round_trips_pinned_state() {
         pinned: false,
     };
     let tab_in_pinned_group = TabSnapshot {
+        workspace_tab_id: uuid::Uuid::new_v4().to_string(),
         custom_title: None,
         root: PaneNodeSnapshot::Leaf(LeafSnapshot {
             is_focused: false,
