@@ -5,8 +5,8 @@ use super::model::{
 #[test]
 fn windows_paths_deduplicate_case_and_separator_variants_across_organizations() {
     let mut model = WorkspaceModel::new();
-    let first_org = model.add_organization("First");
-    let second_org = model.add_organization("Second");
+    let first_org = model.add_organization("First").unwrap();
+    let second_org = model.add_organization("Second").unwrap();
     let project = model
         .add_project(first_org, "Repo", r"C:\Users\Marcos\Repo")
         .unwrap();
@@ -32,13 +32,10 @@ fn unc_paths_and_unicode_are_preserved_and_normalized() {
 }
 
 #[test]
-fn lexical_normalization_handles_roots_and_drive_relative_paths() {
+fn lexical_normalization_handles_absolute_drive_and_unc_paths() {
     assert_eq!(normalize_path_key(r"C:\\a\..\"), Ok(r"c:\".to_owned()));
-    assert_eq!(
-        normalize_path_key("C:folder\\child\\.."),
-        Ok("c:folder".to_owned())
-    );
-    assert_eq!(normalize_path_key(r"\a\..\..\b"), Ok(r"\b".to_owned()));
+    assert_eq!(normalize_path_key("C:/"), Ok(r"c:\".to_owned()));
+    assert_eq!(normalize_path_key("D:/folder"), Ok(r"d:\folder".to_owned()));
     assert_eq!(
         normalize_path_key(r"\\server\share\..\folder"),
         Ok(r"\\server\share\folder".to_owned())
@@ -66,7 +63,7 @@ fn unix_absolute_paths_keep_posix_separators_and_case() {
 fn unicode_leading_relative_paths_do_not_use_windows_drive_parsing() {
     assert_eq!(
         normalize_path_key("\u{00e9}:/Repo/../Source"),
-        Ok("\u{00e9}:\\Source".to_owned())
+        Err(ModelError::RelativePath)
     );
 }
 
@@ -79,13 +76,41 @@ fn drive_prefix_detection_accepts_only_ascii_letters_before_colon() {
 }
 
 #[test]
-fn relative_and_non_windows_paths_keep_case_and_original_spelling() {
-    let upper = LocalProject::new("Upper", "./Café/Repo/").unwrap();
-    let lower = LocalProject::new("Lower", "café/repo").unwrap();
+fn cwd_dependent_paths_are_rejected() {
+    for path in ["foo", "./foo", "C:foo", r"\foo"] {
+        assert_eq!(
+            normalize_path_key(path),
+            Err(ModelError::RelativePath),
+            "{path}"
+        );
+        assert_eq!(
+            LocalProject::new("Relative", path),
+            Err(ModelError::RelativePath),
+            "{path}"
+        );
+    }
+}
 
-    assert_eq!(upper.path, "./Café/Repo/");
-    assert_eq!(upper.path_key, r"Café\Repo");
-    assert_ne!(upper.path_key, lower.path_key);
+#[test]
+fn organization_and_project_id_exhaustion_returns_an_error_without_partial_state() {
+    let mut model = WorkspaceModel::new();
+    model.seed_next_ids_for_test(u64::MAX, 0);
+    assert_eq!(
+        model.add_organization("Exhausted"),
+        Err(ModelError::IdExhausted)
+    );
+    assert_eq!(model.selected_organization(), None);
+    assert!(model.organization(0).is_none());
+
+    let mut model = WorkspaceModel::new();
+    let org = model.add_organization("Org").unwrap();
+    model.seed_next_ids_for_test(1, u64::MAX);
+    assert_eq!(
+        model.add_project(org, "Exhausted", r"C:\repo"),
+        Err(ModelError::IdExhausted)
+    );
+    assert!(model.organization(org).unwrap().projects.is_empty());
+    assert_eq!(model.project_count(), 0);
 }
 
 #[test]
@@ -102,8 +127,8 @@ fn empty_paths_are_rejected() {
 #[test]
 fn projects_keep_insertion_order_and_selection_stays_with_its_organization() {
     let mut model = WorkspaceModel::new();
-    let first_org = model.add_organization("First");
-    let second_org = model.add_organization("Second");
+    let first_org = model.add_organization("First").unwrap();
+    let second_org = model.add_organization("Second").unwrap();
     let first = model.add_project(first_org, "One", r"C:\one").unwrap();
     let other = model.add_project(second_org, "Other", r"C:\other").unwrap();
     let second = model.add_project(first_org, "Two", r"C:\two").unwrap();
@@ -112,17 +137,17 @@ fn projects_keep_insertion_order_and_selection_stays_with_its_organization() {
         model.organization(first_org).unwrap().projects,
         vec![first, second]
     );
-    assert_eq!(model.selected_organization, Some(first_org));
-    assert_eq!(model.selected_project, Some(first));
+    assert_eq!(model.selected_organization(), Some(first_org));
+    assert_eq!(model.selected_project(), Some(first));
     model.select_project(other).unwrap();
-    assert_eq!(model.selected_organization, Some(second_org));
-    assert_eq!(model.selected_project, Some(other));
+    assert_eq!(model.selected_organization(), Some(second_org));
+    assert_eq!(model.selected_project(), Some(other));
 }
 
 #[test]
 fn a_tab_can_belong_to_only_one_project() {
     let mut model = WorkspaceModel::new();
-    let org = model.add_organization("Org");
+    let org = model.add_organization("Org").unwrap();
     let first = model.add_project(org, "A", r"C:\a").unwrap();
     let second = model.add_project(org, "B", r"C:\b").unwrap();
     model.assign_tab(first, 10).unwrap();
@@ -137,7 +162,7 @@ fn a_tab_can_belong_to_only_one_project() {
 #[test]
 fn selecting_a_project_does_not_change_another_projects_active_tab() {
     let mut model = WorkspaceModel::new();
-    let org = model.add_organization("Org");
+    let org = model.add_organization("Org").unwrap();
     let first = model.add_project(org, "A", r"C:\a").unwrap();
     let second = model.add_project(org, "B", r"C:\b").unwrap();
     model.assign_tab(first, 10).unwrap();
@@ -155,7 +180,7 @@ fn selecting_a_project_does_not_change_another_projects_active_tab() {
 #[test]
 fn removing_organization_removes_workspace_metadata_but_not_external_data() {
     let mut model = WorkspaceModel::new();
-    let org = model.add_organization("Org");
+    let org = model.add_organization("Org").unwrap();
     let project = model.add_project(org, "A", r"C:\missing").unwrap();
     model.assign_tab(project, 33).unwrap();
     model.remove_organization(org).unwrap();

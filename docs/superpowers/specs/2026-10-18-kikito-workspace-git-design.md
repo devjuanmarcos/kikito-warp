@@ -48,7 +48,7 @@ O protótipo usa React, scripts carregados por CDN e `localStorage`; o estado in
 
 Introduzir um domínio persistido próprio para organizações, projetos locais, preferências de navegação e associação entre projeto e abas existentes. Manter os registros históricos da tabela `projects` para os recursos que já os usam. Chaves estrangeiras, unicidade de caminhos normalizados e ordenação explícita devem proteger a integridade. A migração não apaga nem move diretórios e preserva sessões, abas e preferências existentes.
 
-Uma organização contém zero ou mais projetos. Um projeto contém o caminho local e metadados de apresentação. O repositório Git, quando existe, é descoberto a partir do caminho; branch é estado derivado do Git e nunca é persistido como fonte de verdade. Abas/sessões continuam usando o ciclo de vida existente, com uma relação persistida que restaura sua pertença ao projeto.
+Uma organização contém zero ou mais projetos. Um projeto contém um caminho absoluto local e metadados de apresentação; caminhos relativos são rejeitados porque sua resolução dependeria do diretório de trabalho ou da unidade atual. São aceitos caminhos POSIX absolutos, caminhos Windows com unidade e raiz e caminhos UNC. O diretório pode ainda não existir; validar o caminho não consulta o sistema de arquivos. O repositório Git, quando existe, é descoberto a partir do caminho; branch é estado derivado do Git e nunca é persistido como fonte de verdade. Abas/sessões continuam usando o ciclo de vida existente, com uma relação persistida que restaura sua pertença ao projeto.
 
 ### Identidade e restauração de abas existentes
 

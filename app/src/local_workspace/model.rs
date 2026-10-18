@@ -41,7 +41,10 @@ impl LocalProject {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ModelError {
     EmptyPath,
+    RelativePath,
+    InvalidPath,
     DuplicatePath,
+    IdExhausted,
     MissingOrganization,
     MissingProject,
     TabAlreadyAssigned,
@@ -54,8 +57,8 @@ pub struct WorkspaceModel {
     projects: BTreeMap<ProjectId, LocalProject>,
     path_index: HashMap<String, ProjectId>,
     tab_index: HashMap<TabId, ProjectId>,
-    pub selected_organization: Option<OrganizationId>,
-    pub selected_project: Option<ProjectId>,
+    selected_organization: Option<OrganizationId>,
+    selected_project: Option<ProjectId>,
     next_organization_id: OrganizationId,
     next_project_id: ProjectId,
 }
@@ -65,9 +68,15 @@ impl WorkspaceModel {
         Self::default()
     }
 
-    pub fn add_organization(&mut self, name: impl Into<String>) -> OrganizationId {
-        self.next_organization_id += 1;
-        let id = self.next_organization_id;
+    pub fn add_organization(
+        &mut self,
+        name: impl Into<String>,
+    ) -> Result<OrganizationId, ModelError> {
+        let id = self
+            .next_organization_id
+            .checked_add(1)
+            .ok_or(ModelError::IdExhausted)?;
+        self.next_organization_id = id;
         self.organizations.insert(
             id,
             Organization {
@@ -77,7 +86,7 @@ impl WorkspaceModel {
             },
         );
         self.selected_organization.get_or_insert(id);
-        id
+        Ok(id)
     }
 
     pub fn add_project(
@@ -94,8 +103,11 @@ impl WorkspaceModel {
             return Err(ModelError::DuplicatePath);
         }
 
-        self.next_project_id += 1;
-        let id = self.next_project_id;
+        let id = self
+            .next_project_id
+            .checked_add(1)
+            .ok_or(ModelError::IdExhausted)?;
+        self.next_project_id = id;
         project.id = id;
         project.organization_id = organization_id;
         self.organizations
@@ -121,6 +133,14 @@ impl WorkspaceModel {
 
     pub fn project_count(&self) -> usize {
         self.projects.len()
+    }
+
+    pub fn selected_organization(&self) -> Option<OrganizationId> {
+        self.selected_organization
+    }
+
+    pub fn selected_project(&self) -> Option<ProjectId> {
+        self.selected_project
     }
 
     pub fn assign_tab(&mut self, project_id: ProjectId, tab_id: TabId) -> Result<(), ModelError> {
@@ -200,6 +220,16 @@ impl WorkspaceModel {
     pub fn tab_owner(&self, tab_id: TabId) -> Option<ProjectId> {
         self.tab_index.get(&tab_id).copied()
     }
+
+    #[cfg(test)]
+    pub(super) fn seed_next_ids_for_test(
+        &mut self,
+        organization_id: OrganizationId,
+        project_id: ProjectId,
+    ) {
+        self.next_organization_id = organization_id;
+        self.next_project_id = project_id;
+    }
 }
 
 pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
@@ -213,20 +243,25 @@ pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
 
     let input = path.replace('/', "\\");
     let has_drive_prefix = has_windows_drive_prefix(&input);
-    let (prefix, rest, rooted, unc) = if let Some(rest) = input.strip_prefix("\\\\") {
-        ("\\\\".to_owned(), rest, true, true)
+    let (prefix, rest, unc) = if let Some(rest) = input.strip_prefix("\\\\") {
+        let mut components = rest.split('\\').filter(|part| !part.is_empty());
+        let has_server = components
+            .next()
+            .is_some_and(|part| part != "." && part != "..");
+        let has_share = components
+            .next()
+            .is_some_and(|part| part != "." && part != "..");
+        if !has_server || !has_share {
+            return Err(ModelError::InvalidPath);
+        }
+        ("\\\\".to_owned(), rest, true)
     } else if has_drive_prefix {
         let drive = input.get(..2).expect("ASCII drive prefix");
         let rest = &input[2..];
-        if let Some(rest) = rest.strip_prefix('\\') {
-            (format!("{}\\", drive), rest, true, false)
-        } else {
-            (drive.to_owned(), rest, false, false)
-        }
-    } else if let Some(rest) = input.strip_prefix('\\') {
-        ("\\".to_owned(), rest, true, false)
+        let rest = rest.strip_prefix('\\').ok_or(ModelError::RelativePath)?;
+        (format!("{}\\", drive), rest, false)
     } else {
-        (String::new(), input.as_str(), false, false)
+        return Err(ModelError::RelativePath);
     };
 
     let mut parts = Vec::new();
@@ -240,7 +275,6 @@ pub fn normalize_path_key(path: &str) -> Result<String, ModelError> {
             ".." if !parts.is_empty() => {
                 parts.pop();
             }
-            ".." if !rooted => parts.push(".."),
             ".." => {}
             _ => parts.push(component),
         }
