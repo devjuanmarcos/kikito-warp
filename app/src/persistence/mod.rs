@@ -267,6 +267,12 @@ pub enum LocalWorkspaceOperation {
         tab_id: i32,
         sort_order: i32,
     },
+    ReplaceProjectTabs {
+        project_id: i32,
+        tabs: Vec<(i32, i32)>,
+        active_tab_id: Option<i32>,
+        new_tab_identities: Vec<(i32, String)>,
+    },
     SetActiveTab {
         project_id: i32,
         tab_id: Option<i32>,

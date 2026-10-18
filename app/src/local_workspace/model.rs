@@ -1,7 +1,8 @@
 use std::collections::{BTreeMap, HashMap};
 
-use crate::persistence::LocalWorkspaceData;
 use warpui::{Entity, SingletonEntity};
+
+use crate::persistence::LocalWorkspaceData;
 
 pub type OrganizationId = u64;
 pub type ProjectId = u64;
@@ -74,6 +75,7 @@ pub enum ModelError {
     MissingProject,
     TabAlreadyAssigned,
     TabNotAssigned,
+    InvalidTabOrder,
 }
 
 #[derive(Default)]
@@ -83,6 +85,8 @@ pub struct WorkspaceModel {
     projects: BTreeMap<ProjectId, LocalProject>,
     path_index: HashMap<String, ProjectId>,
     tab_index: HashMap<TabId, ProjectId>,
+    tab_identity_by_id: HashMap<TabId, String>,
+    unpersisted_tab_identities: HashMap<TabId, String>,
     selected_organization: Option<OrganizationId>,
     selected_project: Option<ProjectId>,
     context_menu: Option<ContextMenuTarget>,
@@ -171,6 +175,15 @@ impl WorkspaceModel {
             }
         }
 
+        for identity in &data.tab_identities {
+            if identity.id <= 0 || model.tab_identity_by_id.contains_key(&identity.id) {
+                return Err(ModelError::InvalidId);
+            }
+            model
+                .tab_identity_by_id
+                .insert(identity.id, identity.workspace_tab_id.clone());
+        }
+
         if let Some(state) = &data.state {
             let organization_id = state
                 .selected_organization_id
@@ -246,11 +259,7 @@ impl WorkspaceModel {
             .collect()
     }
 
-    pub fn set_project_path_status(
-        &mut self,
-        project_id: ProjectId,
-        status: ProjectPathStatus,
-    ) {
+    pub fn set_project_path_status(&mut self, project_id: ProjectId, status: ProjectPathStatus) {
         if self.projects.contains_key(&project_id) {
             self.project_path_statuses.insert(project_id, status);
         }
@@ -499,6 +508,90 @@ impl WorkspaceModel {
         Ok(())
     }
 
+    pub fn reorder_project_tabs(
+        &mut self,
+        project_id: ProjectId,
+        tab_ids: &[TabId],
+    ) -> Result<(), ModelError> {
+        let project = self
+            .projects
+            .get_mut(&project_id)
+            .ok_or(ModelError::MissingProject)?;
+        if tab_ids.len() != project.tabs.len()
+            || tab_ids
+                .iter()
+                .copied()
+                .collect::<std::collections::HashSet<_>>()
+                != project.tabs.iter().copied().collect()
+        {
+            return Err(ModelError::InvalidTabOrder);
+        }
+        project.tabs = tab_ids.to_vec();
+        Ok(())
+    }
+
+    pub fn replace_project_tabs(
+        &mut self,
+        project_id: ProjectId,
+        tab_ids: &[TabId],
+        active_tab_id: Option<TabId>,
+    ) -> Result<(), ModelError> {
+        if tab_ids
+            .iter()
+            .copied()
+            .collect::<std::collections::HashSet<_>>()
+            .len()
+            != tab_ids.len()
+            || active_tab_id.is_some_and(|active| !tab_ids.contains(&active))
+        {
+            return Err(ModelError::InvalidTabOrder);
+        }
+        if tab_ids.iter().any(|tab_id| {
+            self.tab_index
+                .get(tab_id)
+                .is_some_and(|owner| *owner != project_id)
+        }) {
+            return Err(ModelError::TabAlreadyAssigned);
+        }
+        let project = self
+            .projects
+            .get_mut(&project_id)
+            .ok_or(ModelError::MissingProject)?;
+        for tab_id in &project.tabs {
+            self.tab_index.remove(tab_id);
+        }
+        project.tabs = tab_ids.to_vec();
+        project.active_tab = active_tab_id;
+        self.tab_index
+            .extend(tab_ids.iter().map(|tab_id| (*tab_id, project_id)));
+        Ok(())
+    }
+
+    pub fn remove_tab_from_project(
+        &mut self,
+        project_id: ProjectId,
+        tab_id: TabId,
+    ) -> Result<Option<TabId>, ModelError> {
+        let project = self
+            .projects
+            .get_mut(&project_id)
+            .ok_or(ModelError::MissingProject)?;
+        let index = project
+            .tabs
+            .iter()
+            .position(|candidate| *candidate == tab_id)
+            .ok_or(ModelError::TabNotAssigned)?;
+        project.tabs.remove(index);
+        if project.active_tab == Some(tab_id) {
+            project.active_tab = project
+                .tabs
+                .get(index.min(project.tabs.len().saturating_sub(1)))
+                .copied();
+        }
+        self.tab_index.remove(&tab_id);
+        Ok(project.active_tab)
+    }
+
     pub fn select_project(&mut self, project_id: ProjectId) -> Result<(), ModelError> {
         let project = self
             .projects
@@ -570,6 +663,48 @@ impl WorkspaceModel {
 
     pub fn tab_owner(&self, tab_id: TabId) -> Option<ProjectId> {
         self.tab_index.get(&tab_id).copied()
+    }
+
+    pub fn workspace_tab_id(&self, tab_id: TabId) -> Option<&str> {
+        self.tab_identity_by_id.get(&tab_id).map(String::as_str)
+    }
+
+    pub fn tab_identity_id(&self, workspace_tab_id: &str) -> Option<TabId> {
+        self.tab_identity_by_id
+            .iter()
+            .find_map(|(id, identity)| (identity == workspace_tab_id).then_some(*id))
+    }
+
+    pub fn ensure_tab_identity(&mut self, workspace_tab_id: &str) -> Result<TabId, ModelError> {
+        if let Some(id) = self.tab_identity_id(workspace_tab_id) {
+            return Ok(id);
+        }
+        let id = self
+            .tab_identity_by_id
+            .keys()
+            .copied()
+            .max()
+            .unwrap_or_default()
+            .checked_add(1)
+            .ok_or(ModelError::IdExhausted)?;
+        self.tab_identity_by_id
+            .insert(id, workspace_tab_id.to_owned());
+        self.unpersisted_tab_identities
+            .insert(id, workspace_tab_id.to_owned());
+        Ok(id)
+    }
+
+    pub fn pending_tab_identities(&self) -> Vec<(TabId, String)> {
+        self.unpersisted_tab_identities
+            .iter()
+            .map(|(id, identity)| (*id, identity.clone()))
+            .collect()
+    }
+
+    pub fn mark_tab_identities_persisted(&mut self, identities: &[TabId]) {
+        for id in identities {
+            self.unpersisted_tab_identities.remove(id);
+        }
     }
 
     #[cfg(test)]

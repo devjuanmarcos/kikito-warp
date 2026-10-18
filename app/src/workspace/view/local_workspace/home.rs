@@ -1,13 +1,17 @@
-use crate::appearance::Appearance;
-use crate::local_workspace::model::{ProjectPathStatus, WorkspaceModel};
-use crate::workspace::action::WorkspaceAction;
-use warpui::elements::Element;
 use warpui::elements::{
-    Container, CrossAxisAlignment, DispatchEventResult, EventHandler, Flex, MainAxisSize,
+    Container, CrossAxisAlignment, DispatchEventResult, Element, EventHandler, Flex, MainAxisSize,
     ParentElement, Shrinkable, Text,
 };
 
-pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn Element> {
+use crate::appearance::Appearance;
+use crate::local_workspace::model::{ProjectPathStatus, WorkspaceModel};
+use crate::workspace::action::WorkspaceAction;
+
+pub(super) fn render(
+    model: &WorkspaceModel,
+    appearance: &Appearance,
+    unassigned_tabs: &[(usize, String)],
+) -> Box<dyn Element> {
     let theme = appearance.theme();
     let mut content = Flex::column()
         .with_main_axis_size(MainAxisSize::Max)
@@ -33,6 +37,37 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
                 .with_color(theme.ui_error_color().into())
                 .finish(),
         );
+    }
+    if !unassigned_tabs.is_empty() {
+        content.add_child(
+            Text::new_inline(
+                "Terminais sem projeto".to_owned(),
+                appearance.ui_font_family(),
+                12.,
+            )
+            .with_color(theme.sub_text_color(theme.background()).into())
+            .finish(),
+        );
+        for (index, title) in unassigned_tabs {
+            let action = WorkspaceAction::ActivateTab(*index);
+            content.add_child(
+                EventHandler::new(
+                    Container::new(
+                        Text::new_inline(title.clone(), appearance.ui_font_family(), 13.)
+                            .with_color(theme.font_color(theme.background()).into())
+                            .finish(),
+                    )
+                    .with_uniform_padding(8.)
+                    .with_background(theme.surface_1())
+                    .finish(),
+                )
+                .on_left_mouse_up(move |ctx, _, _| {
+                    ctx.dispatch_typed_action(action.clone());
+                    DispatchEventResult::StopPropagation
+                })
+                .finish(),
+            );
+        }
     }
     for project in model.recent_projects() {
         let action = WorkspaceAction::SelectLocalWorkspaceProject(project.id);

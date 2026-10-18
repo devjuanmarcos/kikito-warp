@@ -1620,8 +1620,9 @@ impl Workspace {
         image_data: Option<Vec<u8>>,
         ctx: &mut ViewContext<Self>,
     ) -> Result<(), String> {
-        use crate::persistence::LocalWorkspaceOperation as Operation;
         use local_workspace::create_dialog::CreateDialogKind as Kind;
+
+        use crate::persistence::LocalWorkspaceOperation as Operation;
 
         let send = |operation| {
             #[cfg(feature = "local_fs")]
@@ -1761,6 +1762,23 @@ impl Workspace {
             None => None,
         };
 
+        let selection_is_valid = {
+            let model = self.local_workspace.as_ref(ctx);
+            match (organization_id, project_id) {
+                (Some(organization_id), Some(project_id)) => model
+                    .project(project_id as u64)
+                    .is_some_and(|project| project.organization_id == organization_id as u64),
+                (Some(organization_id), None) => {
+                    model.organization(organization_id as u64).is_some()
+                }
+                (None, None) => true,
+                (None, Some(_)) => false,
+            }
+        };
+        if !selection_is_valid {
+            return;
+        }
+
         #[cfg(feature = "local_fs")]
         if let Some(sender) = self.model_event_sender.as_ref()
             && let Err(error) = crate::persistence::apply_local_workspace_operation(
@@ -1798,6 +1816,309 @@ impl Workspace {
             }
             ctx.notify();
         });
+
+        self.restore_selected_local_workspace_tab(ctx);
+    }
+
+    fn restore_selected_local_workspace_tab(&mut self, ctx: &mut ViewContext<Self>) {
+        let Some(project_id) = self.local_workspace.as_ref(ctx).selected_project() else {
+            return;
+        };
+        let Some(project) = self
+            .local_workspace
+            .as_ref(ctx)
+            .project(project_id)
+            .cloned()
+        else {
+            return;
+        };
+        let open_tabs: Vec<i32> = project
+            .tabs
+            .iter()
+            .copied()
+            .filter(|tab_id| {
+                self.local_workspace
+                    .as_ref(ctx)
+                    .workspace_tab_id(*tab_id)
+                    .is_some_and(|identity| {
+                        self.tabs.iter().any(|tab| tab.workspace_tab_id == identity)
+                    })
+            })
+            .collect();
+        let available_workspace_tabs: Vec<String> = self
+            .tabs
+            .iter()
+            .map(|tab| tab.workspace_tab_id.clone())
+            .collect();
+        let active_tab_id = local_workspace::preferred_open_project_tab(
+            self.local_workspace.as_ref(ctx),
+            project_id,
+            &available_workspace_tabs,
+        );
+        if open_tabs != project.tabs || active_tab_id != project.active_tab {
+            self.local_workspace.update(ctx, |model, ctx| {
+                if let Err(error) =
+                    model.replace_project_tabs(project_id, &open_tabs, active_tab_id)
+                {
+                    log::error!("Could not reconcile local project tabs: {error:?}");
+                }
+                ctx.notify();
+            });
+            if !self.persist_local_project_tabs(project_id, active_tab_id, ctx) {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    let _ =
+                        model.replace_project_tabs(project_id, &project.tabs, project.active_tab);
+                    ctx.notify();
+                });
+                return;
+            }
+        }
+        let active_identity = active_tab_id
+            .and_then(|tab_id| self.local_workspace.as_ref(ctx).workspace_tab_id(tab_id))
+            .map(str::to_owned);
+        if let Some(index) = active_identity.and_then(|identity| {
+            self.tabs
+                .iter()
+                .position(|tab| tab.workspace_tab_id == identity)
+        }) {
+            self.activate_tab(index, ctx);
+        }
+    }
+
+    fn persist_local_project_tabs(
+        &mut self,
+        project_id: crate::local_workspace::model::ProjectId,
+        active_tab_id: Option<i32>,
+        ctx: &mut ViewContext<Self>,
+    ) -> bool {
+        let Some(project) = self
+            .local_workspace
+            .as_ref(ctx)
+            .project(project_id)
+            .cloned()
+        else {
+            return false;
+        };
+        let Ok(project_id) = i32::try_from(project_id) else {
+            return false;
+        };
+        let tabs = project
+            .tabs
+            .iter()
+            .enumerate()
+            .map(|(order, tab_id)| (*tab_id, order as i32))
+            .collect();
+        let new_tab_identities = self.local_workspace.as_ref(ctx).pending_tab_identities();
+        let persisted_identity_ids: Vec<i32> =
+            new_tab_identities.iter().map(|(id, _)| *id).collect();
+        let operation = crate::persistence::LocalWorkspaceOperation::ReplaceProjectTabs {
+            project_id,
+            tabs,
+            active_tab_id,
+            new_tab_identities,
+        };
+        #[cfg(feature = "local_fs")]
+        if let Some(sender) = self.model_event_sender.as_ref()
+            && let Err(error) =
+                crate::persistence::apply_local_workspace_operation(sender, operation)
+        {
+            log::error!("Could not persist local project tabs: {error}");
+            self.local_workspace.update(ctx, |model, ctx| {
+                model.set_status_error(Some(
+                    "Falha ao salvar as abas do projeto. Tente novamente.".to_owned(),
+                ));
+                ctx.notify();
+            });
+            return false;
+        }
+        #[cfg(feature = "local_fs")]
+        if self.model_event_sender.is_some() {
+            self.local_workspace.update(ctx, |model, ctx| {
+                model.mark_tab_identities_persisted(&persisted_identity_ids);
+                ctx.notify();
+            });
+        }
+        #[cfg(not(feature = "local_fs"))]
+        let _ = operation;
+        true
+    }
+
+    fn select_local_workspace_tab(&mut self, tab_id: i32, ctx: &mut ViewContext<Self>) {
+        let Some(identity) = self.local_workspace.as_ref(ctx).workspace_tab_id(tab_id) else {
+            return;
+        };
+        let Some(index) = self
+            .tabs
+            .iter()
+            .position(|tab| tab.workspace_tab_id == identity)
+        else {
+            let project_id = self.local_workspace.as_ref(ctx).tab_owner(tab_id);
+            let original = project_id.and_then(|project_id| {
+                self.local_workspace
+                    .as_ref(ctx)
+                    .project(project_id)
+                    .map(|project| (project.tabs.clone(), project.active_tab))
+            });
+            self.local_workspace.update(ctx, |model, ctx| {
+                if let Some(project_id) = project_id {
+                    let _ = model.remove_tab_from_project(project_id, tab_id);
+                    model.set_status_error(Some(
+                        "Um terminal foi fechado e saiu deste projeto.".to_owned(),
+                    ));
+                }
+                ctx.notify();
+            });
+            if let Some(project_id) = project_id {
+                let active_tab_id = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(project_id)
+                    .and_then(|project| project.active_tab);
+                if !self.persist_local_project_tabs(project_id, active_tab_id, ctx)
+                    && let Some((tabs, active_tab_id)) = original
+                {
+                    self.local_workspace.update(ctx, |model, ctx| {
+                        let _ = model.replace_project_tabs(project_id, &tabs, active_tab_id);
+                        ctx.notify();
+                    });
+                } else {
+                    self.restore_selected_local_workspace_tab(ctx);
+                }
+            }
+            return;
+        };
+        let Some(project_id) = self.local_workspace.as_ref(ctx).tab_owner(tab_id) else {
+            return;
+        };
+        if !self.persist_local_project_tabs(project_id, Some(tab_id), ctx) {
+            return;
+        }
+        self.local_workspace.update(ctx, |model, ctx| {
+            if let Err(error) = model.set_active_tab(project_id, Some(tab_id)) {
+                log::error!("Could not update active local project tab: {error:?}");
+            }
+            ctx.notify();
+        });
+        self.activate_tab(index, ctx);
+    }
+
+    fn move_local_workspace_tab(&mut self, tab_id: i32, delta: i32, ctx: &mut ViewContext<Self>) {
+        let Some(project_id) = self.local_workspace.as_ref(ctx).tab_owner(tab_id) else {
+            return;
+        };
+        let original = self
+            .local_workspace
+            .as_ref(ctx)
+            .project(project_id)
+            .map(|project| project.tabs.clone());
+        let Some(mut reordered) = original.clone() else {
+            return;
+        };
+        let Some(index) = reordered.iter().position(|candidate| *candidate == tab_id) else {
+            return;
+        };
+        let target = index as i32 + delta;
+        if !(0..reordered.len() as i32).contains(&target) {
+            return;
+        }
+        reordered.swap(index, target as usize);
+        self.local_workspace.update(ctx, |model, ctx| {
+            let _ = model.reorder_project_tabs(project_id, &reordered);
+            ctx.notify();
+        });
+        let active_tab_id = self
+            .local_workspace
+            .as_ref(ctx)
+            .project(project_id)
+            .and_then(|project| project.active_tab);
+        if !self.persist_local_project_tabs(project_id, active_tab_id, ctx)
+            && let Some(original) = original
+        {
+            self.local_workspace.update(ctx, |model, ctx| {
+                let _ = model.reorder_project_tabs(project_id, &original);
+                ctx.notify();
+            });
+        }
+    }
+
+    fn assign_active_tab_to_local_workspace_project(&mut self, ctx: &mut ViewContext<Self>) {
+        let Some(project_id) = self.local_workspace.as_ref(ctx).selected_project() else {
+            return;
+        };
+        let Some(tab) = self.tabs.get(self.active_tab_index) else {
+            return;
+        };
+        let workspace_tab_id = tab.workspace_tab_id.clone();
+        let mut identity_id = None;
+        self.local_workspace.update(ctx, |model, ctx| {
+            let result = model
+                .ensure_tab_identity(&workspace_tab_id)
+                .and_then(|tab_id| {
+                    model.assign_tab(project_id, tab_id)?;
+                    model.set_active_tab(project_id, Some(tab_id))?;
+                    Ok(tab_id)
+                });
+            match result {
+                Ok(tab_id) => identity_id = Some(tab_id),
+                Err(error) => model.set_status_error(Some(format!(
+                    "Não foi possível vincular este terminal: {error:?}."
+                ))),
+            }
+            ctx.notify();
+        });
+        let Some(identity_id) = identity_id else {
+            return;
+        };
+        if !self.persist_local_project_tabs(project_id, Some(identity_id), ctx) {
+            self.local_workspace.update(ctx, |model, ctx| {
+                let _ = model.remove_tab_from_project(project_id, identity_id);
+                ctx.notify();
+            });
+        }
+    }
+
+    fn remove_closed_local_workspace_tab(
+        &mut self,
+        workspace_tab_id: &str,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let (project_id, tab_id) = {
+            let model = self.local_workspace.as_ref(ctx);
+            let tab_id = model.tab_identity_id(workspace_tab_id);
+            (tab_id.and_then(|id| model.tab_owner(id)), tab_id)
+        };
+        let (Some(project_id), Some(tab_id)) = (project_id, tab_id) else {
+            return;
+        };
+        let was_active = self
+            .local_workspace
+            .as_ref(ctx)
+            .project(project_id)
+            .is_some_and(|project| project.active_tab == Some(tab_id));
+        self.local_workspace.update(ctx, |model, ctx| {
+            if let Err(error) = model.remove_tab_from_project(project_id, tab_id) {
+                log::error!("Could not unassign closed local project tab: {error:?}");
+            }
+            ctx.notify();
+        });
+        let active_tab_id = self
+            .local_workspace
+            .as_ref(ctx)
+            .project(project_id)
+            .and_then(|project| project.active_tab);
+        self.persist_local_project_tabs(project_id, active_tab_id, ctx);
+        if was_active && self.local_workspace.as_ref(ctx).selected_project() == Some(project_id) {
+            let active_identity = active_tab_id
+                .and_then(|id| self.local_workspace.as_ref(ctx).workspace_tab_id(id))
+                .map(str::to_owned);
+            if let Some(index) = active_identity.and_then(|identity| {
+                self.tabs
+                    .iter()
+                    .position(|tab| tab.workspace_tab_id == identity)
+            }) {
+                self.activate_tab(index, ctx);
+            }
+        }
     }
 
     fn refresh_local_project_paths(&mut self, ctx: &mut ViewContext<Self>) {
@@ -4700,7 +5021,7 @@ impl Workspace {
                 window_snapshot,
                 block_lists,
             } => {
-                let active_tab_index = window_snapshot.active_tab_index;
+                let mut active_tab_index = window_snapshot.active_tab_index;
                 let restored_left_panel_open = window_snapshot.left_panel_open;
 
                 // Restore groups first so per-tab `group_id` assignments
@@ -4788,6 +5109,32 @@ impl Workspace {
                     self.left_panel_open = restored_left_panel_open;
                 }
 
+                self.restore_selected_local_workspace_tab(ctx);
+
+                let selected_project_tab = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .selected_project()
+                    .and_then(|project_id| {
+                        self.local_workspace
+                            .as_ref(ctx)
+                            .project(project_id)
+                            .and_then(|project| project.active_tab)
+                    })
+                    .and_then(|tab_id| {
+                        self.local_workspace
+                            .as_ref(ctx)
+                            .workspace_tab_id(tab_id)
+                            .map(str::to_owned)
+                    })
+                    .and_then(|identity| {
+                        self.tabs
+                            .iter()
+                            .position(|tab| tab.workspace_tab_id == identity)
+                    });
+                if let Some(project_tab_index) = selected_project_tab {
+                    active_tab_index = project_tab_index;
+                }
                 self.activate_tab_internal(active_tab_index, ctx);
                 self.check_and_trigger_onboarding(ctx);
             }
@@ -5521,6 +5868,7 @@ impl Workspace {
             None,
             false,
             DefaultSessionModeBehavior::Ignore,
+            None,
             ctx,
         );
         self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
@@ -5554,6 +5902,7 @@ impl Workspace {
             None,
             false,
             DefaultSessionModeBehavior::Ignore,
+            None,
             ctx,
         );
         self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
@@ -6207,6 +6556,107 @@ impl Workspace {
             index
         };
 
+        let Some(target_workspace_tab_id) = self
+            .tabs
+            .get(index)
+            .map(|tab| tab.workspace_tab_id.clone())
+        else {
+            return;
+        };
+        let route = local_workspace::tab_activation_route(
+            self.local_workspace.as_ref(ctx),
+            &target_workspace_tab_id,
+        );
+        match route {
+            local_workspace::TabActivationRoute::KeepSelection => {}
+            local_workspace::TabActivationRoute::Home => {
+                self.select_local_workspace(None, None, ctx);
+                if self.local_workspace.as_ref(ctx).selected_project().is_some() {
+                    return;
+                }
+            }
+            local_workspace::TabActivationRoute::Project {
+                organization_id,
+                project_id,
+            } => {
+                self.select_local_workspace(Some(organization_id), Some(project_id), ctx);
+                if self.local_workspace.as_ref(ctx).selected_project() != Some(project_id) {
+                    return;
+                }
+            }
+        }
+        let Some(mut index) = self
+            .tabs
+            .iter()
+            .position(|tab| tab.workspace_tab_id == target_workspace_tab_id)
+        else {
+            return;
+        };
+
+        if let (Some(project_id), Some(tab)) = (
+            self.local_workspace.as_ref(ctx).selected_project(),
+            self.tabs.get(index),
+        ) && !local_workspace::can_activate_tab_in_selected_project(
+            self.local_workspace.as_ref(ctx),
+            Some(project_id),
+            &tab.workspace_tab_id,
+        ) {
+            let available_workspace_tabs: Vec<String> = self
+                .tabs
+                .iter()
+                .map(|tab| tab.workspace_tab_id.clone())
+                .collect();
+            let fallback_tab = local_workspace::preferred_open_project_tab(
+                self.local_workspace.as_ref(ctx),
+                project_id,
+                &available_workspace_tabs,
+            );
+            if let Some(fallback_index) = fallback_tab.and_then(|tab_id| {
+                self.local_workspace
+                    .as_ref(ctx)
+                    .workspace_tab_id(tab_id)
+                    .and_then(|identity| {
+                        self.tabs
+                            .iter()
+                            .position(|tab| tab.workspace_tab_id == identity)
+                    })
+            }) {
+                index = fallback_index;
+            }
+        }
+
+        if let Some(tab) = self.tabs.get(index) {
+            let workspace_tab_id = tab.workspace_tab_id.clone();
+            let (project_id, identity_id) = {
+                let model = self.local_workspace.as_ref(ctx);
+                let project_id = model.selected_project();
+                let identity_id = model.tab_identity_id(&workspace_tab_id);
+                (project_id, identity_id)
+            };
+            if let (Some(project_id), Some(identity_id)) = (project_id, identity_id)
+                && self.local_workspace.as_ref(ctx).tab_owner(identity_id) == Some(project_id)
+            {
+                if self.persist_local_project_tabs(project_id, Some(identity_id), ctx) {
+                    self.local_workspace.update(ctx, |model, ctx| {
+                        let _ = model.set_active_tab(project_id, Some(identity_id));
+                        ctx.notify();
+                    });
+                } else if let Some(previous_identity) = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(project_id)
+                    .and_then(|project| project.active_tab)
+                    .and_then(|id| self.local_workspace.as_ref(ctx).workspace_tab_id(id))
+                    .map(str::to_owned)
+                    && let Some(previous_index) = self
+                        .tabs
+                        .iter()
+                        .position(|tab| tab.workspace_tab_id == previous_identity)
+                {
+                    index = previous_index;
+                }
+            }
+        }
         self.active_tab_index = index;
 
         // The range selection's anchor is the active tab, so any change to
@@ -11418,7 +11868,8 @@ impl Workspace {
                 default_mode: DefaultSessionMode::CloudAgent,
                 shell: None,
             },
-            Some(WorkspaceAction::AddTerminalTab { .. }) => SidecarItemKind::BuiltIn {
+            Some(WorkspaceAction::AddTerminalTab { .. })
+            | Some(WorkspaceAction::AddLocalWorkspaceTerminal) => SidecarItemKind::BuiltIn {
                 name: label.to_string(),
                 default_mode: DefaultSessionMode::Terminal,
                 shell: None,
@@ -12961,6 +13412,7 @@ impl Workspace {
         }
 
         let tab_data = self.tabs.remove(index);
+        let removed_workspace_tab_id = tab_data.workspace_tab_id.clone();
 
         let removed_pane_group_id = tab_data.pane_group.id();
         self.tab_mru_order.retain(|id| *id != removed_pane_group_id);
@@ -12998,6 +13450,8 @@ impl Workspace {
             }
             _ => {}
         }
+
+        self.remove_closed_local_workspace_tab(&removed_workspace_tab_id, ctx);
 
         ctx.dispatch_global_action("workspace:save_app", ());
         ctx.notify();
@@ -13581,6 +14035,7 @@ impl Workspace {
             conversation_restoration,
             hide_homepage,
             DefaultSessionModeBehavior::Apply,
+            None,
             ctx,
         );
     }
@@ -13594,6 +14049,7 @@ impl Workspace {
         conversation_restoration: Option<ConversationRestorationInNewPaneType>,
         hide_homepage: bool,
         default_session_mode_behavior: DefaultSessionModeBehavior,
+        startup_directory_override: Option<PathBuf>,
         ctx: &mut ViewContext<Self>,
     ) {
         // Check if we should default to agent mode (only for new sessions, not restorations)
@@ -13621,14 +14077,16 @@ impl Workspace {
             .map(PathBuf::from)
             .filter(|path| path.is_dir());
 
-        let startup_directory = startup_directory_from_conversation.or_else(|| {
-            self.get_new_tab_startup_directory(
-                new_session_source,
-                previous_session_window_id,
-                chosen_shell.as_ref(),
-                ctx,
-            )
-        });
+        let startup_directory = startup_directory_from_conversation
+            .or(startup_directory_override)
+            .or_else(|| {
+                self.get_new_tab_startup_directory(
+                    new_session_source,
+                    previous_session_window_id,
+                    chosen_shell.as_ref(),
+                    ctx,
+                )
+            });
 
         self.add_tab_with_pane_layout(
             PanesLayout::SingleTerminal(Box::new(NewTerminalOptions {
@@ -13774,6 +14232,32 @@ impl Workspace {
         self.tabs.insert(insert_idx, TabData::new(new_pane_group));
         self.tab_mru_order
             .push(self.tabs[insert_idx].pane_group.id());
+
+        if is_new_terminal && !is_restoration {
+            let selected_project = self.local_workspace.as_ref(ctx).selected_project();
+            if let Some(project_id) = selected_project {
+                let workspace_tab_id = self.tabs[insert_idx].workspace_tab_id.clone();
+                let mut identity_id = None;
+                self.local_workspace.update(ctx, |model, ctx| {
+                    if let Ok(tab_id) = model.ensure_tab_identity(&workspace_tab_id)
+                        && model.assign_tab(project_id, tab_id).is_ok()
+                    {
+                        let _ = model.set_active_tab(project_id, Some(tab_id));
+                        identity_id = Some(tab_id);
+                    }
+                    ctx.notify();
+                });
+                if let Some(identity_id) = identity_id
+                    && !self.persist_local_project_tabs(project_id, Some(identity_id), ctx)
+                {
+                    self.local_workspace.update(ctx, |model, ctx| {
+                        let _ = model.remove_tab_from_project(project_id, identity_id);
+                        ctx.notify();
+                    });
+                }
+            }
+        }
+
         self.activate_tab_internal(insert_idx, ctx);
 
         // Inherit the active tab's group membership (skipped for top-level tabs).
@@ -20234,6 +20718,7 @@ impl Workspace {
                     None,
                     false,
                     DefaultSessionModeBehavior::Ignore,
+                    None,
                     ctx,
                 );
                 ctx.notify();
@@ -20386,6 +20871,7 @@ impl Workspace {
             None,  // Conversation restoration
             false, // Hide the agent view homepage
             DefaultSessionModeBehavior::Ignore,
+            None,
             ctx,
         );
 
@@ -24955,6 +25441,27 @@ impl TypedActionView for Workspace {
                     self.select_local_workspace(Some(organization_id), Some(*id), ctx);
                 }
             }
+            SelectLocalWorkspaceTab(tab_id) => self.select_local_workspace_tab(*tab_id, ctx),
+            CloseLocalWorkspaceTab(tab_id) => {
+                let identity = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .workspace_tab_id(*tab_id)
+                    .map(str::to_owned);
+                if let Some(index) = identity.and_then(|identity| {
+                    self.tabs
+                        .iter()
+                        .position(|tab| tab.workspace_tab_id == identity)
+                }) {
+                    self.close_tab(index, false, true, ctx);
+                }
+            }
+            MoveLocalWorkspaceTab { tab_id, delta } => {
+                self.move_local_workspace_tab(*tab_id, *delta, ctx)
+            }
+            AssignActiveTabToLocalWorkspaceProject => {
+                self.assign_active_tab_to_local_workspace_project(ctx)
+            }
             ActivateTab(index) => self.activate_tab(*index, ctx),
             ActivateTabByNumber(num) => self.activate_tab(num.saturating_sub(1), ctx),
             SetTabShortcutModifierKey { key_code, pressed } => {
@@ -25166,6 +25673,27 @@ impl TypedActionView for Workspace {
                     None,
                     *hide_homepage,
                     DefaultSessionModeBehavior::Ignore,
+                    None,
+                    ctx,
+                );
+                ctx.notify();
+            }
+            AddLocalWorkspaceTerminal => {
+                let project_directory = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .selected_project()
+                    .and_then(|project_id| self.local_workspace.as_ref(ctx).project(project_id))
+                    .map(|project| PathBuf::from(&project.path))
+                    .and_then(startup_directory::existing_project_startup_directory);
+                self.add_new_session_tab_internal_with_default_session_mode_behavior(
+                    NewSessionSource::Tab,
+                    Some(window_id),
+                    None,
+                    None,
+                    false,
+                    DefaultSessionModeBehavior::Ignore,
+                    project_directory,
                     ctx,
                 );
                 ctx.notify();
@@ -27770,12 +28298,32 @@ impl View for Workspace {
         let panels = if use_simplified_wasm_tab_bar {
             panels
         } else {
+            let local_workspace_model = self.local_workspace.as_ref(app);
+            let available_workspace_tabs: Vec<String> = self
+                .tabs
+                .iter()
+                .map(|tab| tab.workspace_tab_id.clone())
+                .collect();
+            let unassigned_tabs: Vec<(usize, String)> = self
+                .tabs
+                .iter()
+                .enumerate()
+                .filter_map(|(index, tab)| {
+                    let assigned = local_workspace_model
+                        .tab_identity_id(&tab.workspace_tab_id)
+                        .and_then(|tab_id| local_workspace_model.tab_owner(tab_id))
+                        .is_some();
+                    (!assigned).then(|| (index, tab.pane_group.as_ref(app).display_title(app)))
+                })
+                .collect();
             local_workspace::render(
-                self.local_workspace.as_ref(app),
+                local_workspace_model,
                 appearance,
                 panels,
                 self.local_workspace_search_input.clone(),
                 &self.local_workspace_search_query,
+                &unassigned_tabs,
+                &available_workspace_tabs,
             )
         };
         let mut stack = Stack::new();

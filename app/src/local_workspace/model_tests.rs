@@ -2,12 +2,10 @@ use super::model::{
     LocalProject, ModelError, ProjectPathStatus, WorkspaceModel, has_windows_drive_prefix,
     normalize_path_key, normalize_path_key_for_host,
 };
-use crate::persistence::{
-    LocalWorkspaceData,
-    model::{
-        LocalWorkspaceOrganization, LocalWorkspaceProject, LocalWorkspaceProjectTab,
-        LocalWorkspaceState,
-    },
+use crate::persistence::LocalWorkspaceData;
+use crate::persistence::model::{
+    LocalWorkspaceOrganization, LocalWorkspaceProject, LocalWorkspaceProjectTab,
+    LocalWorkspaceState,
 };
 
 #[test]
@@ -348,21 +346,46 @@ fn a_tab_can_belong_to_only_one_project() {
 }
 
 #[test]
-fn selecting_a_project_does_not_change_another_projects_active_tab() {
+fn selecting_projects_restores_each_projects_active_tab() {
     let mut model = WorkspaceModel::new();
     let org = model.add_organization("Org").unwrap();
     let first = model.add_project(org, "A", r"C:\a").unwrap();
     let second = model.add_project(org, "B", r"C:\b").unwrap();
-    model.assign_tab(first, 10).unwrap();
-    model.assign_tab(first, 11).unwrap();
-    model.assign_tab(second, 20).unwrap();
-    model.assign_tab(second, 21).unwrap();
-    model.set_active_tab(first, Some(11)).unwrap();
-    model.set_active_tab(second, Some(21)).unwrap();
+    let first_tab = model.ensure_tab_identity("workspace-tab-a").unwrap();
+    let first_active = model.ensure_tab_identity("workspace-tab-a-active").unwrap();
+    let second_tab = model.ensure_tab_identity("workspace-tab-b").unwrap();
+    let second_active = model.ensure_tab_identity("workspace-tab-b-active").unwrap();
+    model.assign_tab(first, first_tab).unwrap();
+    model.assign_tab(first, first_active).unwrap();
+    model.assign_tab(second, second_tab).unwrap();
+    model.assign_tab(second, second_active).unwrap();
+    model.set_active_tab(first, Some(first_active)).unwrap();
+    model.set_active_tab(second, Some(second_active)).unwrap();
     model.select_project(first).unwrap();
 
-    assert_eq!(model.project(first).unwrap().active_tab, Some(11));
-    assert_eq!(model.project(second).unwrap().active_tab, Some(21));
+    assert_eq!(model.selected_project(), Some(first));
+    assert_eq!(model.project(first).unwrap().active_tab, Some(first_active));
+    assert_eq!(
+        model.project(second).unwrap().active_tab,
+        Some(second_active)
+    );
+    assert_eq!(
+        model.workspace_tab_id(first_active),
+        Some("workspace-tab-a-active")
+    );
+
+    model.select_project(second).unwrap();
+
+    assert_eq!(model.selected_project(), Some(second));
+    assert_eq!(model.project(first).unwrap().active_tab, Some(first_active));
+    assert_eq!(
+        model.project(second).unwrap().active_tab,
+        Some(second_active)
+    );
+    assert_eq!(
+        model.workspace_tab_id(second_active),
+        Some("workspace-tab-b-active")
+    );
 }
 
 #[test]
@@ -446,4 +469,45 @@ fn project_path_status_is_cached_and_removed_with_project() {
         model.project_path_status(project),
         ProjectPathStatus::Checking
     );
+}
+
+#[test]
+fn project_tab_reorder_and_active_removal_are_isolated() {
+    let mut model = WorkspaceModel::new();
+    let organization = model.add_organization("Equipe").unwrap();
+    let first = model.add_project(organization, "A", r"C:\a").unwrap();
+    let second = model.add_project(organization, "B", r"C:\b").unwrap();
+    for tab_id in [10, 11, 12] {
+        model.assign_tab(first, tab_id).unwrap();
+    }
+    model.assign_tab(second, 20).unwrap();
+    model.set_active_tab(first, Some(11)).unwrap();
+
+    model.reorder_project_tabs(first, &[12, 11, 10]).unwrap();
+    assert_eq!(model.project(first).unwrap().tabs, vec![12, 11, 10]);
+    assert_eq!(model.project(second).unwrap().tabs, vec![20]);
+    assert_eq!(model.project(first).unwrap().active_tab, Some(11));
+
+    model.remove_tab_from_project(first, 11).unwrap();
+    assert_eq!(model.project(first).unwrap().active_tab, Some(10));
+    model.remove_tab_from_project(first, 10).unwrap();
+    model.remove_tab_from_project(first, 12).unwrap();
+    assert!(model.project(first).unwrap().tabs.is_empty());
+    assert_eq!(model.project(first).unwrap().active_tab, None);
+}
+
+#[test]
+fn persisted_tab_identity_resolves_workspace_tab_uuid() {
+    let data = LocalWorkspaceData {
+        tab_identities: vec![crate::persistence::model::LocalWorkspaceTabIdentity {
+            id: 74,
+            workspace_tab_id: "stable-tab".to_owned(),
+            session_tab_id: Some(7),
+        }],
+        ..Default::default()
+    };
+    let model = WorkspaceModel::from_persisted(&data).unwrap();
+
+    assert_eq!(model.workspace_tab_id(74), Some("stable-tab"));
+    assert_eq!(model.tab_identity_id("stable-tab"), Some(74));
 }

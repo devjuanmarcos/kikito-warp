@@ -11,6 +11,10 @@ use crate::terminal::available_shells::AvailableShell;
 use crate::terminal::available_shells::AvailableShells;
 use crate::terminal::session_settings::{NewSessionSource, SessionSettings};
 
+pub(super) fn existing_project_startup_directory(path: PathBuf) -> Option<PathBuf> {
+    path.is_dir().then_some(path)
+}
+
 impl Workspace {
     /// Helper function to compute the initial directory for a new session
     /// that is inheriting its initial directory from the active session in
@@ -105,6 +109,10 @@ impl Workspace {
         )
     }
 }
+
+#[cfg(test)]
+#[path = "startup_directory_tests.rs"]
+mod tests;
 
 /// The shell to be used in the new session,
 /// based on the shell explicitly chosen by the user or

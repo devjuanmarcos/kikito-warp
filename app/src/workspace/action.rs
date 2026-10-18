@@ -143,6 +143,14 @@ pub enum WorkspaceAction {
     SelectLocalWorkspaceOrganization(OrganizationId),
     SetLocalWorkspaceHoveredOrganization(Option<OrganizationId>),
     SelectLocalWorkspaceProject(ProjectId),
+    SelectLocalWorkspaceTab(i32),
+    CloseLocalWorkspaceTab(i32),
+    MoveLocalWorkspaceTab {
+        tab_id: i32,
+        delta: i32,
+    },
+    AssignActiveTabToLocalWorkspaceProject,
+    AddLocalWorkspaceTerminal,
     ActivateTab(usize),
     ActivatePrevTab,
     ActivateNextTab,
@@ -1002,6 +1010,7 @@ impl WorkspaceAction {
             | ToggleTabGroupColor { .. }
             | AddDefaultTab
             | AddTerminalTab { .. }
+            | AddLocalWorkspaceTerminal
             | AddTabWithShell { .. }
             | AddGetStartedTab
             | AddAgentTab
@@ -1243,7 +1252,11 @@ impl WorkspaceAction {
             | ActivateLocalWorkspaceContextMenuSelection
             | SelectLocalWorkspaceOrganization(_)
             | SetLocalWorkspaceHoveredOrganization(_)
-            | SelectLocalWorkspaceProject(_) => false,
+            | SelectLocalWorkspaceProject(_)
+            | SelectLocalWorkspaceTab(_)
+            | CloseLocalWorkspaceTab(_)
+            | MoveLocalWorkspaceTab { .. }
+            | AssignActiveTabToLocalWorkspaceProject => false,
             #[cfg(debug_assertions)]
             ShowHoaOnboardingFlow => false,
             #[cfg(target_family = "wasm")]

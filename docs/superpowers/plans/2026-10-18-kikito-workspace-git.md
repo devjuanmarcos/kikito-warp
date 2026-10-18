@@ -91,13 +91,13 @@ The exact module boundaries must be confirmed against current patterns before co
 - Modify: `app/src/workspace/view.rs`, `app/src/workspace/tab_group.rs`, `app/src/workspace/registry.rs`, existing session restore/persistence modules as identified in Task 1.
 - Create: focused project-tab model tests and GUI integration flows in `crates/integration/`.
 
-- [ ] Add a test that creates two projects, associates separate existing terminal tabs, switches projects, and verifies selected tab and cwd are isolated.
-- [ ] Add a restart/restore test that persists organizations, projects, tab membership and active tab, recreates app models, and verifies the same project/tab is selected.
-- [ ] Implement project-scoped tab creation from the project's root path while allowing the user to choose a different cwd for the new terminal when the current product supports it.
-- [ ] Implement switching project without closing or recreating sessions; project switch only selects its stored tab group and restores its active tab.
-- [ ] Implement closing/unassigning a tab with the existing terminal close confirmation/lifecycle. Removing project metadata must not silently close sessions; present an explicit choice to keep sessions available or close them if current product semantics allow.
-- [ ] Integrate tab-bar new/close/reorder/selection actions with existing terminal session models and persist updates atomically with project membership.
-- [ ] Run focused persistence and GUI integration tests for two-project isolation, empty project, last tab, app restart and closed/missing cwd.
+- [ ] Add an end-to-end test that creates two projects, associates separate existing terminal tabs, switches projects, and verifies selected tab, session reuse, and cwd isolation. Model tests now cover per-project active-tab selection and UUID ownership, but not the WorkspaceView session/cwd flow.
+- [x] Add a restart/restore persistence test that stores organizations, projects, tab membership, active tab and UUID identity, then reopens SQLite and reconstructs the local workspace model.
+- [x] Implement project-scoped tab creation from the project's root path. The current terminal UI has no per-tab cwd picker, so project creation uses the validated root; a missing root falls back to the existing startup-directory behavior.
+- [x] Implement project switching without closing or recreating sessions; switching resolves the stored UUID to the existing terminal tab and restores its active selection.
+- [x] Implement tab close through the existing terminal close lifecycle. Removing project metadata leaves terminal sessions available from Home without closing them.
+- [x] Integrate project tab creation, close, reorder, selection and active-tab updates with existing terminal sessions and persist membership/active selection in one transaction.
+- [ ] Run focused persistence and GUI integration tests for two-project isolation, empty project, last tab, app restart and closed/missing cwd. `cargo check -p warp --lib` passes; the app test harness was interrupted when free RAM fell to about 1.6 GB, and Windows GUI integration is unavailable in this environment.
 
 ## Task 5: Establish the local Git service and remove implicit network reads
 

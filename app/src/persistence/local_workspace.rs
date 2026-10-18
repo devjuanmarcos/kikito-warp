@@ -231,6 +231,68 @@ pub(super) fn apply(
                 .execute(connection)?;
             Ok(())
         }),
+        LocalWorkspaceOperation::ReplaceProjectTabs {
+            project_id,
+            tabs,
+            active_tab_id,
+            new_tab_identities,
+        } => connection.transaction(|connection| {
+            ensure_project_exists(connection, project_id)?;
+            let new_identity_ids: HashSet<i32> =
+                new_tab_identities.iter().map(|(id, _)| *id).collect();
+            for (id, workspace_tab_id) in new_tab_identities {
+                diesel::insert_into(local_workspace_tab_identities::table)
+                    .values((
+                        local_workspace_tab_identities::id.eq(id),
+                        local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id),
+                        local_workspace_tab_identities::session_tab_id.eq(None::<i32>),
+                    ))
+                    .on_conflict(local_workspace_tab_identities::workspace_tab_id)
+                    .do_nothing()
+                    .execute(connection)?;
+            }
+            let mut seen = HashSet::new();
+            for (tab_id, _) in &tabs {
+                if !seen.insert(*tab_id) {
+                    bail!("tab {tab_id} appears more than once in project membership");
+                }
+                let session_tab_id = local_workspace_tab_identities::table
+                    .find(tab_id)
+                    .select(local_workspace_tab_identities::session_tab_id)
+                    .first::<Option<i32>>(connection)?;
+                if session_tab_id.is_none() && !new_identity_ids.contains(tab_id) {
+                    bail!("tab identity {tab_id} is not attached to a persisted session tab");
+                }
+                let other_project = local_workspace_project_tabs::table
+                    .filter(local_workspace_project_tabs::tab_id.eq(tab_id))
+                    .select(local_workspace_project_tabs::project_id)
+                    .first::<i32>(connection)
+                    .optional()?;
+                if other_project.is_some_and(|owner| owner != project_id) {
+                    bail!("tab {tab_id} is already assigned to project {other_project:?}");
+                }
+            }
+            if active_tab_id.is_some_and(|active| !seen.contains(&active)) {
+                bail!("active tab must belong to project {project_id}");
+            }
+
+            diesel::delete(
+                local_workspace_project_tabs::table
+                    .filter(local_workspace_project_tabs::project_id.eq(project_id)),
+            )
+            .execute(connection)?;
+            for (tab_id, sort_order) in tabs {
+                diesel::insert_into(local_workspace_project_tabs::table)
+                    .values(NewLocalWorkspaceProjectTab {
+                        project_id,
+                        tab_id,
+                        sort_order,
+                        is_active: active_tab_id == Some(tab_id),
+                    })
+                    .execute(connection)?;
+            }
+            Ok(())
+        }),
         LocalWorkspaceOperation::SetActiveTab { project_id, tab_id } => {
             connection.transaction(|connection| {
                 if let Some(tab_id) = tab_id {

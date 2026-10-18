@@ -365,11 +365,13 @@ pub fn initialize_app(app: &mut App) {
     // Add GlobalResourceHandlesProvider for persistence
     let tips_handle = app.add_model(|_| TipsCompleted::default());
     let referral_theme_status = app.add_model(ReferralThemeStatus::new);
+    let local_workspace = app.add_model(|_| crate::local_workspace::model::WorkspaceModel::new());
     let user_default_shell_unsupported_banner_model_handle =
         app.add_model(|_| UserDefaultShellUnsupportedBannerState::default_value());
     app.add_singleton_model(move |_ctx| {
         GlobalResourceHandlesProvider::new(GlobalResourceHandles {
             model_event_sender: None, // No persistence in tests
+            local_workspace,
             tips_completed: tips_handle,
             referral_theme_status,
             user_default_shell_unsupported_banner_model_handle,

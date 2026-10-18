@@ -517,7 +517,7 @@ impl View for CreateDialog {
                     "Os projetos, pastas e sessões continuarão no disco. Apenas a organização será removida deste terminal."
                 }
                 CreateDialogKind::RemoveProject(_) => {
-                    "A pasta e as sessões continuarão no disco. Apenas o projeto será removido deste terminal."
+                    "A pasta continuará no disco. Os terminais ficarão acessíveis em Início, sem projeto."
                 }
                 _ => "",
             };

@@ -247,6 +247,119 @@ fn local_workspace_selection_order_and_tab_membership_restore_from_sqlite() {
 }
 
 #[test]
+fn project_tab_membership_and_active_tab_update_atomically() {
+    let mut connection = connection();
+    create_organization(&mut connection, 1, "Equipe");
+    let root = tempfile::tempdir().unwrap();
+    create_project(
+        &mut connection,
+        1,
+        1,
+        &root.path().join("Projeto").display().to_string(),
+    );
+    let first_tab = seed_session_tab(&mut connection, 91);
+    let second_tab = seed_session_tab(&mut connection, 92);
+
+    local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(first_tab, 0), (second_tab, 1)],
+            active_tab_id: Some(second_tab),
+            new_tab_identities: Vec::new(),
+        },
+    )
+    .unwrap();
+
+    let restored = local_workspace::read(&mut connection).unwrap();
+    assert_eq!(
+        restored
+            .tabs
+            .iter()
+            .map(|tab| (tab.tab_id, tab.is_active))
+            .collect::<Vec<_>>(),
+        vec![(first_tab, false), (second_tab, true)]
+    );
+
+    local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(first_tab, 0)],
+            active_tab_id: Some(first_tab),
+            new_tab_identities: Vec::new(),
+        },
+    )
+    .unwrap();
+
+    let restored = local_workspace::read(&mut connection).unwrap();
+    assert_eq!(restored.tabs.len(), 1);
+    assert_eq!(restored.tabs[0].tab_id, first_tab);
+    assert!(restored.tabs[0].is_active);
+
+    let invalid_update = local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(first_tab, 0)],
+            active_tab_id: Some(second_tab),
+            new_tab_identities: Vec::new(),
+        },
+    );
+    assert!(invalid_update.is_err());
+    let restored = local_workspace::read(&mut connection).unwrap();
+    assert_eq!(restored.tabs.len(), 1);
+    assert_eq!(restored.tabs[0].tab_id, first_tab);
+    assert!(restored.tabs[0].is_active);
+}
+
+#[test]
+fn restarted_workspace_restores_selected_project_active_tab_and_identity() {
+    let root = tempfile::tempdir().unwrap();
+    let database_path = root.path().join("workspace.sqlite");
+    let mut connection = SqliteConnection::establish(database_path.to_str().unwrap()).unwrap();
+    connection
+        .batch_execute("PRAGMA foreign_keys = ON;")
+        .unwrap();
+    connection
+        .run_pending_migrations(persistence::MIGRATIONS)
+        .unwrap();
+    create_organization(&mut connection, 1, "Equipe");
+    create_project(&mut connection, 1, 1, &root.path().display().to_string());
+    let first_tab = seed_session_tab(&mut connection, 121);
+    let second_tab = seed_session_tab(&mut connection, 122);
+    local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(first_tab, 0), (second_tab, 1)],
+            active_tab_id: Some(second_tab),
+            new_tab_identities: Vec::new(),
+        },
+    )
+    .unwrap();
+    local_workspace::apply(
+        &mut connection,
+        Operation::Select {
+            organization_id: Some(1),
+            project_id: Some(1),
+        },
+    )
+    .unwrap();
+    drop(connection);
+
+    let mut reopened = SqliteConnection::establish(database_path.to_str().unwrap()).unwrap();
+    reopened.batch_execute("PRAGMA foreign_keys = ON;").unwrap();
+    let model = crate::local_workspace::model::WorkspaceModel::from_persisted(
+        &local_workspace::read(&mut reopened).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(model.selected_project(), Some(1));
+    assert_eq!(model.project(1).unwrap().active_tab, Some(second_tab));
+    assert_eq!(model.workspace_tab_id(second_tab), Some("stable-tab-122"));
+}
+
+#[test]
 fn deleting_selected_organization_persists_remaining_selection() {
     let mut connection = connection();
     create_organization(&mut connection, 1, "Equipe A");
