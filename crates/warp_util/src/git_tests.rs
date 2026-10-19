@@ -32,6 +32,60 @@ fn translates_git_in_unc_cwd() {
 }
 
 #[test]
+fn preserves_argument_boundaries_for_local_git_status_in_wsl() {
+    let translated = translate(
+        &[
+            "-c",
+            "diff.autoRefreshIndex=false",
+            "add",
+            "--",
+            "file with spaces.png",
+        ],
+        r"\\wsl$\Ubuntu\home\user\repo",
+        &[("GIT_OPTIONAL_LOCKS", "0")],
+    );
+
+    assert_eq!(
+        translated.args,
+        [
+            "--distribution",
+            "Ubuntu",
+            "--cd",
+            "/home/user/repo",
+            "--exec",
+            "/bin/sh",
+            "-lc",
+            r#"exec git "$@""#,
+            "git",
+            "-c",
+            "diff.autoRefreshIndex=false",
+            "add",
+            "--",
+            "file with spaces.png",
+        ]
+    );
+    assert_eq!(translated.wslenv, "GIT_OPTIONAL_LOCKS/u");
+}
+
+#[test]
+fn git_command_accepts_supplied_stdin() {
+    let directory = tempfile::tempdir().unwrap();
+    let output = futures_lite::future::block_on(super::run_git_command_with_input(
+        directory.path(),
+        &["hash-object", "--stdin"],
+        &[],
+        b"sample\n",
+    ))
+    .unwrap();
+
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        "d64a3d962e787834f9b43312cdcdb96ef357709a"
+    );
+}
+
+#[test]
 fn does_not_translate_non_unc_cwd() {
     assert_eq!(
         translate_for_wsl_unc_cwd(&["status"], Path::new(r"C:\Users\user\repo"), &[]),

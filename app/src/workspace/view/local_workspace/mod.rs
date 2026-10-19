@@ -4,12 +4,14 @@ mod home;
 pub(super) mod image_cropper;
 mod org_rail;
 mod project_sidebar;
+mod source_control;
+pub(crate) use source_control::DiffPreview;
 
 use warp_core::ui::Icon;
 use warpui::ViewHandle;
 use warpui::elements::{
-    ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult, Element, EventHandler,
-    Flex, MainAxisSize, ParentElement, Shrinkable, Text,
+    ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult,
+    Element, EventHandler, Flex, MainAxisSize, ParentElement, Shrinkable, Text,
 };
 
 pub(super) fn preferred_open_project_tab(
@@ -39,6 +41,7 @@ fn project_has_open_terminal(
 
 use crate::appearance::Appearance;
 use crate::editor::EditorView;
+use crate::local_git::{LocalBranch, RepositoryStatus};
 use crate::local_workspace::model::WorkspaceModel;
 
 pub(super) fn can_activate_tab_in_selected_project(
@@ -97,9 +100,23 @@ pub(crate) fn render(
     appearance: &Appearance,
     content: Box<dyn Element>,
     search_input: ViewHandle<EditorView>,
+    commit_input: ViewHandle<EditorView>,
     search_query: &str,
     unassigned_tabs: &[(usize, String)],
     available_workspace_tabs: &[String],
+    git_status_summary: Option<&str>,
+    git_status_error: Option<&str>,
+    git_status: Option<&RepositoryStatus>,
+    git_branches: &[LocalBranch],
+    git_branch_menu: Option<&str>,
+    git_diff_preview: Option<&DiffPreview>,
+    git_amend_confirmation: bool,
+    git_undo_confirmation: bool,
+    git_revert_confirmation: bool,
+    git_discard_confirmation: Option<(&str, bool)>,
+    git_operation_pending: bool,
+    source_control_scroll: ClippedScrollStateHandle,
+    source_control_open: bool,
 ) -> Box<dyn Element> {
     let mut workspace = Flex::row()
         .with_main_axis_size(MainAxisSize::Max)
@@ -110,6 +127,8 @@ pub(crate) fn render(
         appearance,
         search_input,
         search_query,
+        git_status_summary,
+        git_status_error,
     ));
     let main_content = if let Some(project_id) = model.selected_project() {
         if let Some(project) = model.project(project_id) {
@@ -288,6 +307,32 @@ pub(crate) fn render(
                 Shrinkable::new(1., Container::new(search).with_uniform_padding(6.).finish())
                     .finish(),
             );
+            let source_control_action =
+                crate::workspace::action::WorkspaceAction::ToggleLocalWorkspaceSourceControl;
+            tab_title.add_child(
+                EventHandler::new(
+                    Container::new(
+                        Text::new_inline(
+                            if source_control_open {
+                                "Fechar Git"
+                            } else {
+                                "Controle de Código-Fonte"
+                            },
+                            appearance.ui_font_family(),
+                            11.,
+                        )
+                        .with_color(theme.font_color(theme.surface_1()).into())
+                        .finish(),
+                    )
+                    .with_uniform_padding(6.)
+                    .finish(),
+                )
+                .on_left_mouse_up(move |ctx, _, _| {
+                    ctx.dispatch_typed_action(source_control_action.clone());
+                    DispatchEventResult::StopPropagation
+                })
+                .finish(),
+            );
             let project_bar = ConstrainedBox::new(
                 Container::new(tab_title.finish())
                     .with_background(theme.surface_1())
@@ -326,11 +371,35 @@ pub(crate) fn render(
             } else {
                 content
             };
-            Flex::column()
+            let project_view = Flex::column()
                 .with_main_axis_size(MainAxisSize::Max)
                 .with_child(project_bar)
                 .with_child(Shrinkable::new(1., project_content).finish())
-                .finish()
+                .finish();
+            if source_control_open {
+                Flex::row()
+                    .with_main_axis_size(MainAxisSize::Max)
+                    .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
+                    .with_child(Shrinkable::new(1., project_view).finish())
+                    .with_child(source_control::render(
+                        git_status,
+                        git_branches,
+                        git_branch_menu,
+                        git_status_error,
+                        commit_input,
+                        git_diff_preview,
+                        git_amend_confirmation,
+                        git_undo_confirmation,
+                        git_revert_confirmation,
+                        git_discard_confirmation,
+                        git_operation_pending,
+                        source_control_scroll,
+                        appearance,
+                    ))
+                    .finish()
+            } else {
+                project_view
+            }
         } else {
             home::render(model, appearance, unassigned_tabs)
         }

@@ -65,7 +65,7 @@ use pathfinder_geometry::rect::RectF;
 #[cfg(feature = "local_fs")]
 use repo_metadata::RemoteRepositoryIdentifier;
 #[cfg(feature = "local_fs")]
-use repo_metadata::repositories::DetectedRepositories;
+use repo_metadata::repositories::{DetectedRepositories, RepoDetectionSource};
 #[cfg(all(target_os = "macos", feature = "crash_reporting"))]
 use sentry::protocol::{Attachment, AttachmentType};
 use serde_json;
@@ -90,17 +90,20 @@ use warp_util::path::{LineAndColumnArg, user_friendly_path};
 use warpui::accessibility::{
     AccessibilityContent, AccessibilityVerbosity, ActionAccessibilityContent, WarpA11yRole,
 };
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+use warpui::r#async::SpawnedFutureHandle;
 use warpui::clipboard::ClipboardContent;
 #[cfg(target_family = "wasm")]
 use warpui::elements::Percentage;
 use warpui::elements::{
-    Align, Border, CacheOption, ChildAnchor, ChildView, Clipped, ConstrainedBox, Container,
-    CornerRadius, CrossAxisAlignment, Dismiss, DispatchEventResult, DragAxis, Draggable,
-    DraggableState, DropTarget, Element, Empty, EventHandler, Expanded, Fill as ElementFill, Flex,
-    Highlight, Hoverable, Icon as WarpUiIcon, Image, MainAxisAlignment, MainAxisSize,
-    MouseInBehavior, MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement,
-    ParentOffsetBounds, PositionedElementAnchor, PositionedElementOffsetBounds, Radius, Rect,
-    SavePosition, Shrinkable, SizeConstraintCondition, SizeConstraintSwitch, Stack, Text,
+    Align, Border, CacheOption, ChildAnchor, ChildView, Clipped, ClippedScrollStateHandle,
+    ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Dismiss, DispatchEventResult,
+    DragAxis, Draggable, DraggableState, DropTarget, Element, Empty, EventHandler, Expanded,
+    Fill as ElementFill, Flex, Highlight, Hoverable, Icon as WarpUiIcon, Image, MainAxisAlignment,
+    MainAxisSize, MouseInBehavior, MouseStateHandle, OffsetPositioning, ParentAnchor,
+    ParentElement, ParentOffsetBounds, PositionedElementAnchor, PositionedElementOffsetBounds,
+    Radius, Rect, SavePosition, Shrinkable, SizeConstraintCondition, SizeConstraintSwitch, Stack,
+    Text,
 };
 use warpui::event::KeyState;
 use warpui::fonts::{Properties, Weight};
@@ -266,6 +269,10 @@ use crate::code::editor_management::CodeSource;
 use crate::code_review::CodeReviewTelemetryEvent;
 use crate::code_review::GlobalCodeReviewModel;
 use crate::code_review::diff_state::DiffStateModel;
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+use crate::code_review::git_repo_model::GitRepoStatusModel;
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+use crate::code_review::git_repo_models::GitRepoModels;
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::coding_panel_enablement_state::CodingPanelEnablementState;
 use crate::context_chips::ChipRuntimeCapabilities;
@@ -288,6 +295,8 @@ use crate::env_vars::manager::{EnvVarCollectionManager, EnvVarCollectionSource};
 use crate::experiments::{BlockOnboarding, Experiment};
 use crate::launch_configs::launch_config::WindowTemplate;
 use crate::launch_configs::save_modal::{LaunchConfigModalEvent, LaunchConfigSaveModal};
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+use crate::local_git::{HeadState, LocalBranch, RepositoryStatus};
 use crate::menu::{
     Event as MenuEvent, MENU_VERTICAL_PADDING, Menu, MenuItem, MenuItemFields, MenuSelectionSource,
     MenuVariant,
@@ -1106,9 +1115,42 @@ pub struct Workspace {
     model_event_sender: Option<mpsc::SyncSender<ModelEvent>>,
     local_workspace: ModelHandle<crate::local_workspace::model::WorkspaceModel>,
     local_project_path_check_generation: u64,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_path: Option<String>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_generation: u64,
+    local_workspace_source_control_open: bool,
+    local_workspace_git_amend_confirmation: bool,
+    local_workspace_git_undo_confirmation: bool,
+    local_workspace_git_revert_confirmation: bool,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_detection: Option<SpawnedFutureHandle>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_watcher: Option<ModelHandle<GitRepoStatusModel>>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_status: Option<RepositoryStatus>,
+    local_workspace_git_branches: Vec<LocalBranch>,
+    local_workspace_git_branch_menu: Option<String>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_diff_generation: u64,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_diff_task: Option<SpawnedFutureHandle>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_diff_preview: Option<local_workspace::DiffPreview>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_error: Option<String>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_refresh: Option<SpawnedFutureHandle>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_operation: Option<SpawnedFutureHandle>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_operation_pending: bool,
+    local_workspace_git_discard_confirmation: Option<(String, bool)>,
     local_workspace_dialog: Option<ViewHandle<Modal<local_workspace::create_dialog::CreateDialog>>>,
     local_workspace_search_input: ViewHandle<EditorView>,
     local_workspace_search_query: String,
+    local_workspace_commit_input: ViewHandle<EditorView>,
+    local_workspace_source_control_scroll: ClippedScrollStateHandle,
     launch_config_save_modal: ModalViewState<LaunchConfigSaveModal>,
     tab_config_params_modal: ModalViewState<Modal<TabConfigParamsModal>>,
     session_config_modal: ModalViewState<Modal<SessionConfigModal>>,
@@ -1282,6 +1324,23 @@ impl Workspace {
                 ctx.notify();
             }
             _ => {}
+        });
+        editor
+    }
+
+    fn local_workspace_commit_input(ctx: &mut ViewContext<Self>) -> ViewHandle<EditorView> {
+        let editor = ctx.add_typed_action_view(|ctx| {
+            let appearance = Appearance::as_ref(ctx);
+            EditorView::single_line(
+                SingleLineEditorOptions {
+                    text: TextOptions::ui_text(Some(12.), appearance),
+                    ..Default::default()
+                },
+                ctx,
+            )
+        });
+        editor.update(ctx, |editor, ctx| {
+            editor.set_placeholder_text("Mensagem do commit", ctx)
         });
         editor
     }
@@ -1668,6 +1727,8 @@ impl Workspace {
                         ctx.notify();
                     }
                 });
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.refresh_selected_local_workspace_git(ctx);
                 Ok(())
             }
             Kind::CreateProject(organization_id) => {
@@ -1713,6 +1774,8 @@ impl Workspace {
                     }
                 });
                 self.refresh_local_project_paths(ctx);
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.refresh_selected_local_workspace_git(ctx);
                 Ok(())
             }
             Kind::EditProject(id) => {
@@ -1736,6 +1799,8 @@ impl Workspace {
                         ctx.notify();
                     }
                 });
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.refresh_selected_local_workspace_git(ctx);
                 Ok(())
             }
         }
@@ -1818,6 +1883,626 @@ impl Workspace {
         });
 
         self.restore_selected_local_workspace_tab(ctx);
+        #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+        self.refresh_selected_local_workspace_git(ctx);
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn refresh_selected_local_workspace_git(&mut self, ctx: &mut ViewContext<Self>) {
+        let selected_path = self
+            .local_workspace
+            .as_ref(ctx)
+            .selected_project()
+            .and_then(|project_id| {
+                self.local_workspace
+                    .as_ref(ctx)
+                    .project(project_id)
+                    .map(|project| project.path.clone())
+            });
+        if self.local_workspace_git_path == selected_path {
+            return;
+        }
+
+        self.local_workspace_git_path = selected_path.clone();
+        self.local_workspace_git_generation = self.local_workspace_git_generation.wrapping_add(1);
+        let generation = self.local_workspace_git_generation;
+        if let Some(detection) = self.local_workspace_git_detection.take() {
+            detection.abort();
+        }
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        drop(self.local_workspace_git_watcher.take());
+        self.local_workspace_git_status = None;
+        self.local_workspace_git_branches.clear();
+        self.local_workspace_git_branch_menu = None;
+        self.local_workspace_git_error = None;
+        self.local_workspace_git_amend_confirmation = false;
+        self.local_workspace_git_undo_confirmation = false;
+        self.local_workspace_git_revert_confirmation = false;
+        self.local_workspace_git_discard_confirmation = None;
+        self.local_workspace_git_diff_generation =
+            self.local_workspace_git_diff_generation.wrapping_add(1);
+        if let Some(diff_task) = self.local_workspace_git_diff_task.take() {
+            diff_task.abort();
+        }
+        self.local_workspace_git_diff_preview = None;
+
+        let Some(project_path) = selected_path else {
+            return;
+        };
+        let detection = DetectedRepositories::handle(ctx).update(ctx, |model, ctx| {
+            model.detect_possible_local_git_repo(
+                &project_path,
+                RepoDetectionSource::CodeReviewInitialization,
+                ctx,
+            )
+        });
+        self.local_workspace_git_detection =
+            Some(ctx.spawn(detection, move |workspace, repo_path, ctx| {
+                workspace.local_workspace_git_detection = None;
+                if workspace.local_workspace_git_generation != generation {
+                    return;
+                }
+                let Some(repo_path) = repo_path else {
+                    workspace.local_workspace_git_error =
+                        Some("Esta pasta não contém um repositório Git.".to_owned());
+                    ctx.notify();
+                    return;
+                };
+                let Some(repository) = DetectedRepositories::as_ref(ctx)
+                    .get_local_watched_repo_for_path(&repo_path, ctx)
+                else {
+                    workspace.local_workspace_git_error =
+                        Some("Esta pasta não contém um repositório Git.".to_owned());
+                    ctx.notify();
+                    return;
+                };
+                let repo_path = repository.as_ref(ctx).root_dir().to_local_path_lossy();
+                let status_model = GitRepoModels::handle(ctx).update(ctx, |models, ctx| {
+                    models.subscribe(&LocalOrRemotePath::Local(repo_path.clone()), ctx)
+                });
+                match status_model {
+                    Ok(status_model) => {
+                        let selected_repo_path = repo_path.clone();
+                        ctx.subscribe_to_model(&status_model, move |workspace, _, _, ctx| {
+                            workspace.refresh_local_workspace_git_snapshot(
+                                generation,
+                                selected_repo_path.clone(),
+                                ctx,
+                            );
+                        });
+                        workspace.local_workspace_git_watcher = Some(status_model);
+                        workspace.refresh_local_workspace_git_snapshot(generation, repo_path, ctx);
+                    }
+                    Err(error) => {
+                        log::warn!("Could not watch selected local project Git state: {error}");
+                        workspace.local_workspace_git_error = Some(
+                            "Não foi possível acompanhar o estado do Git neste projeto.".to_owned(),
+                        );
+                        ctx.notify();
+                    }
+                }
+            }));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn refresh_local_workspace_git_snapshot(
+        &mut self,
+        generation: u64,
+        path: PathBuf,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        if self.local_workspace_git_generation != generation {
+            return;
+        }
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_refresh = Some(ctx.spawn(
+            async move {
+                let status = crate::local_git::read_status(&path).await?;
+                let branches = crate::local_git::read_local_branches(&path).await?;
+                Ok::<_, crate::local_git::GitError>((status, branches))
+            },
+            move |workspace, result, ctx| {
+                if workspace.local_workspace_git_generation != generation {
+                    return;
+                }
+                workspace.local_workspace_git_refresh = None;
+                match result {
+                    Ok((status, branches)) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_branches = branches;
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                    }
+                    Err(error) => {
+                        workspace.local_workspace_git_status = None;
+                        workspace.local_workspace_git_error = Some(error.to_string());
+                    }
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_file_action(
+        &mut self,
+        relative_path: &str,
+        stage: bool,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let generation = self.local_workspace_git_generation;
+        let relative_path = PathBuf::from(relative_path);
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                if stage {
+                    crate::local_git::stage_path(&repository_path, &relative_path).await?;
+                } else {
+                    crate::local_git::unstage_path(&repository_path, &relative_path).await?;
+                }
+                crate::local_git::read_status(&repository_path).await
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok(status) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_error = None;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_commit(
+        &mut self,
+        amend: bool,
+        all: bool,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let message = self
+            .local_workspace_commit_input
+            .as_ref(ctx)
+            .buffer_text(ctx);
+        let generation = self.local_workspace_git_generation;
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                if all {
+                    crate::local_git::commit_all(&repository_path, &message).await?;
+                } else {
+                    crate::local_git::commit(&repository_path, &message, amend).await?;
+                }
+                crate::local_git::read_status(&repository_path).await
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok(status) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                        workspace
+                            .local_workspace_commit_input
+                            .update(ctx, |editor, ctx| {
+                                editor.set_buffer_text_ignoring_undo("", ctx);
+                            });
+                        workspace.local_workspace_git_amend_confirmation = false;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_discard(&mut self, ctx: &mut ViewContext<Self>) {
+        let Some((relative_path, untracked)) = self.local_workspace_git_discard_confirmation.take()
+        else {
+            return;
+        };
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let generation = self.local_workspace_git_generation;
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                crate::local_git::discard_worktree(
+                    &repository_path,
+                    Path::new(&relative_path),
+                    untracked,
+                )
+                .await?;
+                crate::local_git::read_status(&repository_path).await
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok(status) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_undo(&mut self, ctx: &mut ViewContext<Self>) {
+        if !self.local_workspace_git_undo_confirmation {
+            return;
+        }
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let generation = self.local_workspace_git_generation;
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                crate::local_git::undo_last_commit(&repository_path).await?;
+                crate::local_git::read_status(&repository_path).await
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok(status) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                        workspace.local_workspace_git_undo_confirmation = false;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_revert(&mut self, ctx: &mut ViewContext<Self>) {
+        if !self.local_workspace_git_revert_confirmation {
+            return;
+        }
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let generation = self.local_workspace_git_generation;
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                crate::local_git::revert_last_commit(&repository_path).await?;
+                crate::local_git::read_status(&repository_path).await
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok(status) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                        workspace.local_workspace_git_revert_confirmation = false;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_checkout(&mut self, branch: &str, ctx: &mut ViewContext<Self>) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let branch = branch.to_owned();
+        let generation = self.local_workspace_git_generation;
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                crate::local_git::checkout_local_branch(&repository_path, &branch).await?;
+                let status = crate::local_git::read_status(&repository_path).await?;
+                let branches = crate::local_git::read_local_branches(&repository_path).await?;
+                Ok::<_, crate::local_git::GitError>((status, branches))
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok((status, branches)) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_branches = branches;
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_branch_menu = None;
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn open_local_workspace_git_diff(
+        &mut self,
+        path: &str,
+        staged: bool,
+        untracked: bool,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        self.local_workspace_git_diff_generation =
+            self.local_workspace_git_diff_generation.wrapping_add(1);
+        let diff_generation = self.local_workspace_git_diff_generation;
+        let repository_generation = self.local_workspace_git_generation;
+        let path = path.to_owned();
+        let diff_kind = if untracked {
+            crate::local_git::LocalGitDiffKind::Untracked
+        } else if staged {
+            crate::local_git::LocalGitDiffKind::Staged
+        } else {
+            crate::local_git::LocalGitDiffKind::Unstaged
+        };
+        self.local_workspace_git_diff_preview = Some(local_workspace::DiffPreview {
+            path: Some(path.clone()),
+            staged,
+            untracked,
+            loading: true,
+            ..Default::default()
+        });
+        ctx.notify();
+        let output_path = path.clone();
+        if let Some(diff_task) = self.local_workspace_git_diff_task.take() {
+            diff_task.abort();
+        }
+        self.local_workspace_git_diff_task =
+            Some(ctx.spawn(
+                async move {
+                    crate::local_git::diff(&repository_path, Path::new(&path), diff_kind).await
+                },
+                move |workspace, result, ctx| {
+                    if workspace.local_workspace_git_generation != repository_generation
+                        || workspace.local_workspace_git_diff_generation != diff_generation
+                    {
+                        return;
+                    }
+                    workspace.local_workspace_git_diff_task = None;
+                    let Some(preview) = workspace.local_workspace_git_diff_preview.as_mut() else {
+                        return;
+                    };
+                    if preview.path.as_deref() != Some(output_path.as_str()) {
+                        return;
+                    }
+                    preview.loading = false;
+                    match result {
+                        Ok(output) => {
+                            preview.binary = output.starts_with("Binary files ")
+                                || output.contains("GIT binary patch");
+                            preview.hunks = crate::local_git::parse_diff_hunks(&output);
+                            preview.lines = Some(crate::local_git::parse_unified_diff(&output));
+                            preview.error = None;
+                        }
+                        Err(error) => preview.error = Some(error.to_string()),
+                    }
+                    ctx.notify();
+                },
+            ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn apply_local_workspace_git_hunk(
+        &mut self,
+        path: String,
+        patch: String,
+        staged: bool,
+        untracked: bool,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        let generation = self.local_workspace_git_generation;
+        let diff_kind = if untracked {
+            crate::local_git::LocalGitDiffKind::Untracked
+        } else if staged {
+            crate::local_git::LocalGitDiffKind::Staged
+        } else {
+            crate::local_git::LocalGitDiffKind::Unstaged
+        };
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                crate::local_git::apply_hunk(
+                    &repository_path,
+                    Path::new(&path),
+                    diff_kind,
+                    &patch,
+                    staged,
+                )
+                .await?;
+                crate::local_git::read_status(&repository_path).await
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok(status) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn local_workspace_git_summary(&self) -> Option<String> {
+        let status = self.local_workspace_git_status.as_ref()?;
+        let head = match &status.head {
+            HeadState::Branch(name) => name.as_str(),
+            HeadState::Detached => "HEAD separado",
+            HeadState::Unborn => "sem commits",
+        };
+        let changed_count = status.changed_path_count();
+        Some(format!(
+            "{head} \u{00b7} {} preparados \u{00b7} {changed_count} altera\u{00e7}\u{00f5}es",
+            status.staged_path_count()
+        ))
     }
 
     fn restore_selected_local_workspace_tab(&mut self, ctx: &mut ViewContext<Self>) {
@@ -4411,9 +5096,42 @@ impl Workspace {
             model_event_sender,
             local_workspace,
             local_project_path_check_generation: 0,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_path: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_generation: 0,
+            local_workspace_source_control_open: false,
+            local_workspace_git_amend_confirmation: false,
+            local_workspace_git_undo_confirmation: false,
+            local_workspace_git_revert_confirmation: false,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_detection: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_watcher: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_status: None,
+            local_workspace_git_branches: Vec::new(),
+            local_workspace_git_branch_menu: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_diff_generation: 0,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_diff_task: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_diff_preview: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_error: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_refresh: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_operation: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_operation_pending: false,
+            local_workspace_git_discard_confirmation: None,
             local_workspace_dialog: None,
             local_workspace_search_input: Self::local_workspace_search_input(ctx),
             local_workspace_search_query: String::new(),
+            local_workspace_commit_input: Self::local_workspace_commit_input(ctx),
+            local_workspace_source_control_scroll: ClippedScrollStateHandle::default(),
             launch_config_save_modal,
             tab_config_params_modal,
             session_config_modal,
@@ -4530,6 +5248,8 @@ impl Workspace {
         };
 
         ws.refresh_local_project_paths(ctx);
+        #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+        ws.refresh_selected_local_workspace_git(ctx);
         ws.configure_new_workspace(workspace_setting, ctx);
         ws.sync_panel_positions_from_config(ctx);
         ws.sync_window_button_visibility(ctx);
@@ -6556,10 +7276,8 @@ impl Workspace {
             index
         };
 
-        let Some(target_workspace_tab_id) = self
-            .tabs
-            .get(index)
-            .map(|tab| tab.workspace_tab_id.clone())
+        let Some(target_workspace_tab_id) =
+            self.tabs.get(index).map(|tab| tab.workspace_tab_id.clone())
         else {
             return;
         };
@@ -6571,7 +7289,12 @@ impl Workspace {
             local_workspace::TabActivationRoute::KeepSelection => {}
             local_workspace::TabActivationRoute::Home => {
                 self.select_local_workspace(None, None, ctx);
-                if self.local_workspace.as_ref(ctx).selected_project().is_some() {
+                if self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .selected_project()
+                    .is_some()
+                {
                     return;
                 }
             }
@@ -25431,6 +26154,127 @@ impl TypedActionView for Workspace {
                     ctx.notify();
                 });
             }
+            ToggleLocalWorkspaceSourceControl => {
+                self.local_workspace_source_control_open =
+                    !self.local_workspace_source_control_open;
+                ctx.notify();
+            }
+            StageLocalGitPath(path) => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_file_action(path, true, ctx);
+            }
+            UnstageLocalGitPath(path) => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_file_action(path, false, ctx);
+            }
+            StageAllLocalGit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_file_action(".", true, ctx);
+            }
+            UnstageAllLocalGit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_file_action(".", false, ctx);
+            }
+            CommitLocalGit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_commit(false, false, ctx);
+            }
+            CommitAllLocalGit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_commit(false, true, ctx);
+            }
+            AmendLocalGitCommit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_commit(true, false, ctx);
+            }
+            RequestUndoLocalGitCommit => {
+                self.local_workspace_git_amend_confirmation = false;
+                self.local_workspace_git_revert_confirmation = false;
+                self.local_workspace_git_undo_confirmation = true;
+                ctx.notify();
+            }
+            ConfirmUndoLocalGitCommit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_undo(ctx);
+            }
+            CancelUndoLocalGitCommit => {
+                self.local_workspace_git_undo_confirmation = false;
+                ctx.notify();
+            }
+            RequestRevertLocalGitCommit => {
+                self.local_workspace_git_amend_confirmation = false;
+                self.local_workspace_git_undo_confirmation = false;
+                self.local_workspace_git_revert_confirmation = true;
+                ctx.notify();
+            }
+            ConfirmRevertLocalGitCommit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_revert(ctx);
+            }
+            CancelRevertLocalGitCommit => {
+                self.local_workspace_git_revert_confirmation = false;
+                ctx.notify();
+            }
+            RequestLocalGitAmend => {
+                self.local_workspace_git_undo_confirmation = false;
+                self.local_workspace_git_revert_confirmation = false;
+                self.local_workspace_git_amend_confirmation = true;
+                ctx.notify();
+            }
+            CancelLocalGitAmend => {
+                self.local_workspace_git_amend_confirmation = false;
+                ctx.notify();
+            }
+            RequestDiscardLocalGitPath { path, untracked } => {
+                self.local_workspace_git_discard_confirmation = Some((path.clone(), *untracked));
+                ctx.notify();
+            }
+            ConfirmDiscardLocalGitPath => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_discard(ctx);
+            }
+            CancelDiscardLocalGitPath => {
+                self.local_workspace_git_discard_confirmation = None;
+                ctx.notify();
+            }
+            OpenLocalGitDiff {
+                path,
+                staged,
+                untracked,
+            } => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.open_local_workspace_git_diff(path, *staged, *untracked, ctx);
+            }
+            ApplyLocalGitHunk {
+                path,
+                patch,
+                staged,
+                untracked,
+            } => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.apply_local_workspace_git_hunk(
+                    path.clone(),
+                    patch.clone(),
+                    *staged,
+                    *untracked,
+                    ctx,
+                );
+            }
+            OpenLocalGitBranchMenu(branch) => {
+                self.local_workspace_git_branch_menu = Some(branch.clone());
+                ctx.notify();
+            }
+            DismissLocalGitBranchMenu => {
+                self.local_workspace_git_branch_menu = None;
+                ctx.notify();
+            }
+            CheckoutLocalGitBranch(branch) => {
+                self.local_workspace_git_branch_menu = None;
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_checkout(branch, ctx);
+                #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+                ctx.notify();
+            }
             SelectLocalWorkspaceProject(id) => {
                 let organization_id = self
                     .local_workspace
@@ -28316,14 +29160,54 @@ impl View for Workspace {
                     (!assigned).then(|| (index, tab.pane_group.as_ref(app).display_title(app)))
                 })
                 .collect();
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_status_summary = self.local_workspace_git_summary();
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_status_summary: Option<String> = None;
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_status_error = self.local_workspace_git_error.as_deref();
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_status_error: Option<&str> = None;
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_status = self.local_workspace_git_status.as_ref();
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_status: Option<&RepositoryStatus> = None;
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_branches = self.local_workspace_git_branches.as_slice();
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_branches: &[LocalBranch] = &[];
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_diff_preview = self.local_workspace_git_diff_preview.as_ref();
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_diff_preview: Option<&local_workspace::DiffPreview> = None;
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_operation_pending = self.local_workspace_git_operation_pending;
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_operation_pending = false;
             local_workspace::render(
                 local_workspace_model,
                 appearance,
                 panels,
                 self.local_workspace_search_input.clone(),
+                self.local_workspace_commit_input.clone(),
                 &self.local_workspace_search_query,
                 &unassigned_tabs,
                 &available_workspace_tabs,
+                git_status_summary.as_deref(),
+                git_status_error,
+                git_status,
+                git_branches,
+                self.local_workspace_git_branch_menu.as_deref(),
+                git_diff_preview,
+                self.local_workspace_git_amend_confirmation,
+                self.local_workspace_git_undo_confirmation,
+                self.local_workspace_git_revert_confirmation,
+                self.local_workspace_git_discard_confirmation
+                    .as_ref()
+                    .map(|(path, untracked)| (path.as_str(), *untracked)),
+                git_operation_pending,
+                self.local_workspace_source_control_scroll.clone(),
+                self.local_workspace_source_control_open,
             )
         };
         let mut stack = Stack::new();

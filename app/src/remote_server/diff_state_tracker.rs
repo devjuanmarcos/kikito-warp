@@ -281,7 +281,7 @@ impl RemoteDiffStateManager {
             let model = ctx.add_model(|ctx| {
                 let mut m =
                     LocalDiffStateModel::new(Some(repo_path_str), BackendOrigin::RemoteDaemon, ctx);
-                m.set_diff_mode(mode, false, false, ctx);
+                m.set_diff_mode(mode, false, ctx);
                 m.set_code_review_metadata_refresh_enabled(true, ctx);
                 m
             });

@@ -151,6 +151,42 @@ pub enum WorkspaceAction {
     },
     AssignActiveTabToLocalWorkspaceProject,
     AddLocalWorkspaceTerminal,
+    ToggleLocalWorkspaceSourceControl,
+    StageLocalGitPath(String),
+    UnstageLocalGitPath(String),
+    StageAllLocalGit,
+    UnstageAllLocalGit,
+    CommitLocalGit,
+    CommitAllLocalGit,
+    AmendLocalGitCommit,
+    RequestUndoLocalGitCommit,
+    ConfirmUndoLocalGitCommit,
+    CancelUndoLocalGitCommit,
+    RequestRevertLocalGitCommit,
+    ConfirmRevertLocalGitCommit,
+    CancelRevertLocalGitCommit,
+    RequestLocalGitAmend,
+    CancelLocalGitAmend,
+    RequestDiscardLocalGitPath {
+        path: String,
+        untracked: bool,
+    },
+    ConfirmDiscardLocalGitPath,
+    CancelDiscardLocalGitPath,
+    OpenLocalGitDiff {
+        path: String,
+        staged: bool,
+        untracked: bool,
+    },
+    ApplyLocalGitHunk {
+        path: String,
+        patch: String,
+        staged: bool,
+        untracked: bool,
+    },
+    OpenLocalGitBranchMenu(String),
+    DismissLocalGitBranchMenu,
+    CheckoutLocalGitBranch(String),
     ActivateTab(usize),
     ActivatePrevTab,
     ActivateNextTab,
@@ -1256,7 +1292,31 @@ impl WorkspaceAction {
             | SelectLocalWorkspaceTab(_)
             | CloseLocalWorkspaceTab(_)
             | MoveLocalWorkspaceTab { .. }
-            | AssignActiveTabToLocalWorkspaceProject => false,
+            | AssignActiveTabToLocalWorkspaceProject
+            | ToggleLocalWorkspaceSourceControl
+            | StageLocalGitPath(_)
+            | UnstageLocalGitPath(_)
+            | StageAllLocalGit
+            | UnstageAllLocalGit
+            | CommitLocalGit
+            | CommitAllLocalGit
+            | AmendLocalGitCommit
+            | RequestUndoLocalGitCommit
+            | ConfirmUndoLocalGitCommit
+            | CancelUndoLocalGitCommit
+            | RequestRevertLocalGitCommit
+            | ConfirmRevertLocalGitCommit
+            | CancelRevertLocalGitCommit
+            | RequestLocalGitAmend
+            | CancelLocalGitAmend
+            | RequestDiscardLocalGitPath { .. }
+            | ConfirmDiscardLocalGitPath
+            | CancelDiscardLocalGitPath
+            | OpenLocalGitDiff { .. }
+            | ApplyLocalGitHunk { .. }
+            | OpenLocalGitBranchMenu(_)
+            | DismissLocalGitBranchMenu
+            | CheckoutLocalGitBranch(_) => false,
             #[cfg(debug_assertions)]
             ShowHoaOnboardingFlow => false,
             #[cfg(target_family = "wasm")]

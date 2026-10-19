@@ -762,13 +762,11 @@ impl CodeReviewView {
 
         // Always reload diffs on open. For local, this re-reads the
         // filesystem. For remote, this re-emits the model's current state
-        // (and will make an RPC once that path is wired). We pass
-        // should_fetch_base: false because re-opening the panel doesn't
-        // need to fetch the base branch from origin.
+        // (and will make an RPC once that path is wired).
         let preferred_session = self.preferred_review_session(ctx);
         self.diff_state_model.update(ctx, |model, ctx| {
             model.set_code_review_metadata_refresh_enabled(true, ctx);
-            model.load_diffs_for_current_repo(false, true, preferred_session, ctx);
+            model.load_diffs_for_current_repo(true, preferred_session, ctx);
         });
     }
 
@@ -1595,7 +1593,7 @@ impl CodeReviewView {
 
         let preferred_session = self.preferred_review_session(ctx);
         self.diff_state_model.update(ctx, |model, ctx| {
-            model.set_diff_mode(mode, false, true, preferred_session, ctx);
+            model.set_diff_mode(mode, true, preferred_session, ctx);
         });
         self.update_diff_selector_selection(ctx);
         self.invalidate_all(None, None, ctx);
@@ -6022,7 +6020,7 @@ impl CodeReviewView {
     pub(crate) fn set_diff_base(&mut self, diff_mode: DiffMode, ctx: &mut ViewContext<Self>) {
         let preferred_session = self.preferred_review_session(ctx);
         self.diff_state_model.update(ctx, |diff_state_model, ctx| {
-            diff_state_model.set_diff_mode_and_fetch_base(diff_mode, preferred_session, ctx);
+            diff_state_model.set_diff_mode_with_local_refs(diff_mode, preferred_session, ctx);
         });
         self.update_diff_selector_selection(ctx);
         self.invalidate_all(None, None, ctx);
@@ -7339,7 +7337,7 @@ impl TypedActionView for CodeReviewView {
             CodeReviewAction::RefreshGitState => {
                 let preferred_session = self.preferred_review_session(ctx);
                 self.diff_state_model.update(ctx, |model, ctx| {
-                    model.load_diffs_for_current_repo(false, true, preferred_session, ctx);
+                    model.load_diffs_for_current_repo(true, preferred_session, ctx);
                     model.refresh_metadata_after_git_operation(ctx);
                 });
                 self.refresh_pr_info(ctx);

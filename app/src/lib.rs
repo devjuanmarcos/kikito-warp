@@ -3284,4 +3284,7 @@ fn init_logging_for_unit_tests_glue() {
 #[path = "lib_tests.rs"]
 mod tests;
 
+#[cfg(not(target_family = "wasm"))]
+#[allow(dead_code)]
+pub(crate) mod local_git;
 mod local_workspace;

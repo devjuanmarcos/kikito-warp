@@ -19,6 +19,8 @@ pub(super) fn render(
     appearance: &Appearance,
     search_input: ViewHandle<EditorView>,
     search_query: &str,
+    git_status_summary: Option<&str>,
+    git_status_error: Option<&str>,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
     let search_query = search_query.trim().to_lowercase();
@@ -113,6 +115,22 @@ pub(super) fn render(
                             })
                             .finish(),
                     );
+                }
+                if active {
+                    if let Some(summary) = git_status_summary {
+                        details.add_child(
+                            Text::new_inline(summary.to_owned(), appearance.ui_font_family(), 10.)
+                                .with_color(theme.sub_text_color(theme.surface_1()).into())
+                                .finish(),
+                        );
+                    }
+                    if let Some(error) = git_status_error {
+                        details.add_child(
+                            Text::new_inline(error.to_owned(), appearance.ui_font_family(), 10.)
+                                .with_color(theme.ui_error_color().into())
+                                .finish(),
+                        );
+                    }
                 }
                 let row = Container::new(details.finish())
                     .with_background(if active {

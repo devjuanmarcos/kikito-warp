@@ -18,8 +18,6 @@ pub async fn run_git_command_with_env(
     args: &[&str],
     path_env: Option<&str>,
 ) -> Result<String> {
-    use command::Stdio;
-
     log::debug!(
         "[GIT OPERATION] git.rs run_git_command git {}",
         args.join(" ")
@@ -31,12 +29,7 @@ pub async fn run_git_command_with_env(
         env.push(("PATH", path_env));
     }
 
-    let mut cmd = git_command(repo_path, &git_args, &env);
-    cmd.stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .kill_on_drop(true);
-    let output = cmd
-        .output()
+    let output = run_git_command_output(repo_path, &git_args, &env)
         .await
         .map_err(|e| anyhow!("Failed to execute git command: {}", e))?;
 
@@ -52,6 +45,46 @@ pub async fn run_git_command_with_env(
     } else {
         Err(anyhow!("Git command failed: {}, {}", stderr, stdout))
     }
+}
+
+/// Runs `git` through the platform-aware command router and returns its raw process output.
+#[cfg(not(target_family = "wasm"))]
+pub async fn run_git_command_output(
+    repo_path: &Path,
+    args: &[&str],
+    env: &[(&str, &str)],
+) -> std::io::Result<std::process::Output> {
+    use command::Stdio;
+
+    let mut cmd = git_command(repo_path, args, env);
+    cmd.stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
+    cmd.output().await
+}
+
+#[cfg(not(target_family = "wasm"))]
+pub async fn run_git_command_with_input(
+    repo_path: &Path,
+    args: &[&str],
+    env: &[(&str, &str)],
+    input: &[u8],
+) -> std::io::Result<std::process::Output> {
+    use command::Stdio;
+    use futures_lite::io::AsyncWriteExt;
+
+    let mut cmd = git_command(repo_path, args, env);
+    let mut child = cmd
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true)
+        .spawn()?;
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin.write_all(input).await?;
+        stdin.flush().await?;
+    }
+    child.output().await
 }
 
 /// Builds the command that runs `git` with `args` in `repo_path`, with `env` set on the child.
@@ -196,6 +229,25 @@ pub async fn run_git_command_with_env(
     _path_env: Option<&str>,
 ) -> Result<String> {
     Err(anyhow!("Not supported on wasm"))
+}
+
+#[cfg(target_family = "wasm")]
+pub async fn run_git_command_output(
+    _repo_path: &Path,
+    _args: &[&str],
+    _env: &[(&str, &str)],
+) -> std::io::Result<std::process::Output> {
+    Err(std::io::Error::other("Not supported on wasm"))
+}
+
+#[cfg(target_family = "wasm")]
+pub async fn run_git_command_with_input(
+    _repo_path: &Path,
+    _args: &[&str],
+    _env: &[(&str, &str)],
+    _input: &[u8],
+) -> std::io::Result<std::process::Output> {
+    Err(std::io::Error::other("Not supported on wasm"))
 }
 
 #[cfg(all(test, not(target_family = "wasm")))]

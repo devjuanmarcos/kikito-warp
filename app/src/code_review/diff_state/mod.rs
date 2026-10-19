@@ -627,7 +627,6 @@ impl DiffStateModel {
     pub(crate) fn set_diff_mode(
         &self,
         mode: DiffMode,
-        should_fetch_base: bool,
         track_load_duration: bool,
         preferred_session: Option<SessionId>,
         ctx: &mut ModelContext<Self>,
@@ -635,7 +634,7 @@ impl DiffStateModel {
         match self {
             Self::Local(local) => {
                 local.update(ctx, |local, ctx| {
-                    local.set_diff_mode(mode, should_fetch_base, track_load_duration, ctx);
+                    local.set_diff_mode(mode, track_load_duration, ctx);
                 });
             }
             Self::Remote(model) => {
@@ -646,7 +645,7 @@ impl DiffStateModel {
         }
     }
 
-    pub(crate) fn set_diff_mode_and_fetch_base(
+    pub(crate) fn set_diff_mode_with_local_refs(
         &self,
         mode: DiffMode,
         preferred_session: Option<SessionId>,
@@ -655,7 +654,7 @@ impl DiffStateModel {
         match self {
             Self::Local(local) => {
                 local.update(ctx, |local, ctx| {
-                    local.set_diff_mode_and_fetch_base(mode, ctx);
+                    local.set_diff_mode(mode, true, ctx);
                 });
             }
             Self::Remote(model) => {
@@ -668,7 +667,6 @@ impl DiffStateModel {
 
     pub(crate) fn load_diffs_for_current_repo(
         &self,
-        should_fetch_base: bool,
         track_load_duration: bool,
         preferred_session: Option<SessionId>,
         ctx: &mut ModelContext<Self>,
@@ -676,7 +674,7 @@ impl DiffStateModel {
         match self {
             Self::Local(local) => {
                 local.update(ctx, |local, ctx| {
-                    local.load_diffs_for_current_repo(should_fetch_base, track_load_duration, ctx);
+                    local.load_diffs_for_current_repo(track_load_duration, ctx);
                 });
             }
             Self::Remote(remote) => {
