@@ -551,3 +551,51 @@ fn failed_selection_rolls_back_and_metadata_delete_preserves_session_tab() {
         None
     );
 }
+
+#[test]
+fn replacing_project_tabs_again_before_the_session_snapshot_keeps_pending_identities() {
+    let mut connection = connection();
+    create_organization(&mut connection, 1, "Equipe");
+    let root = tempfile::tempdir().unwrap();
+    create_project(
+        &mut connection,
+        1,
+        1,
+        &root.path().join("Projeto").display().to_string(),
+    );
+    local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(6, 0)],
+            active_tab_id: Some(6),
+            new_tab_identities: vec![(6, "pending-tab".to_string())],
+        },
+    )
+    .unwrap();
+
+    local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(6, 0)],
+            active_tab_id: Some(6),
+            new_tab_identities: Vec::new(),
+        },
+    )
+    .unwrap();
+
+    let missing = local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(7, 0)],
+            active_tab_id: Some(7),
+            new_tab_identities: Vec::new(),
+        },
+    );
+    assert!(missing.is_err());
+    let restored = local_workspace::read(&mut connection).unwrap();
+    assert_eq!(restored.tabs.len(), 1);
+    assert_eq!(restored.tabs[0].tab_id, 6);
+}

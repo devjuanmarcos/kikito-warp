@@ -209,13 +209,7 @@ pub(super) fn apply(
             tab_id,
             sort_order,
         } => connection.transaction(|connection| {
-            let session_tab_id = local_workspace_tab_identities::table
-                .find(tab_id)
-                .select(local_workspace_tab_identities::session_tab_id)
-                .first::<Option<i32>>(connection)?;
-            if session_tab_id.is_none() {
-                bail!("tab identity {tab_id} is not attached to a persisted session tab");
-            }
+            ensure_tab_identity_exists(connection, tab_id)?;
             let is_active = local_workspace_project_tabs::table
                 .filter(local_workspace_project_tabs::project_id.eq(project_id))
                 .select(diesel::dsl::count_star())
@@ -238,8 +232,6 @@ pub(super) fn apply(
             new_tab_identities,
         } => connection.transaction(|connection| {
             ensure_project_exists(connection, project_id)?;
-            let new_identity_ids: HashSet<i32> =
-                new_tab_identities.iter().map(|(id, _)| *id).collect();
             for (id, workspace_tab_id) in new_tab_identities {
                 diesel::insert_into(local_workspace_tab_identities::table)
                     .values((
@@ -256,13 +248,7 @@ pub(super) fn apply(
                 if !seen.insert(*tab_id) {
                     bail!("tab {tab_id} appears more than once in project membership");
                 }
-                let session_tab_id = local_workspace_tab_identities::table
-                    .find(tab_id)
-                    .select(local_workspace_tab_identities::session_tab_id)
-                    .first::<Option<i32>>(connection)?;
-                if session_tab_id.is_none() && !new_identity_ids.contains(tab_id) {
-                    bail!("tab identity {tab_id} is not attached to a persisted session tab");
-                }
+                ensure_tab_identity_exists(connection, *tab_id)?;
                 let other_project = local_workspace_project_tabs::table
                     .filter(local_workspace_project_tabs::tab_id.eq(tab_id))
                     .select(local_workspace_project_tabs::project_id)
@@ -508,6 +494,20 @@ fn ensure_organization_exists(connection: &mut SqliteConnection, id: i32) -> Res
     .get_result::<bool>(connection)?;
     if !exists {
         bail!("organization {id} does not exist");
+    }
+    Ok(())
+}
+
+/// Fails when `tab_id` has no identity row. An identity whose session tab is still unsaved is
+/// accepted: the next app-state snapshot attaches it, and the snapshot drops project memberships
+/// of identities that are still detached by then.
+fn ensure_tab_identity_exists(connection: &mut SqliteConnection, tab_id: i32) -> Result<()> {
+    let exists = diesel::select(diesel::dsl::exists(
+        local_workspace_tab_identities::table.find(tab_id),
+    ))
+    .get_result::<bool>(connection)?;
+    if !exists {
+        bail!("tab identity {tab_id} does not exist");
     }
     Ok(())
 }
