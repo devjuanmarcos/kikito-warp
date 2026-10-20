@@ -125,4 +125,11 @@ Achados úteis:
 - Fixtures de Git para a captura: repositórios vazios com commit em `scratchpad/repos` (branches `main`, `feat/checkout`); o `seed.py` aponta para lá para os textos de branch baterem com o kit.
 - Scripts novos no harness: `native_modal.ps1`, `native_project.ps1`, `native_empty.ps1`, `ref_modal_project.mjs`, `ref_empty.mjs`, `modal_compare.py`, `project_compare.py`, `sidebar_compare.py`, `empty_compare.py`.
 
-Próximos passos: (1) estado de organização sem projetos (texto + "Novo projeto" no centro, como o kit); (2) esconder a faixa de abas nativa duplicada; (3) ícones do kit via `Icon` (procurar em `bundled/svg` primeiro); (4) Home (Jarvis, nome, cards); (5) decisões com o Marcos: dados de agente (badge/status e contagem de abas), botão "vincular aba", arrastar arquivo para a imagem (o terminal sob o modal também recebe `DragAndDropFiles`).
+Também nesta sessão:
+- **Bug corrigido** (`b95b1e30e`): "Falha ao salvar as abas do projeto" aparecia ao abrir uma aba nova. A identidade da aba só é ligada à sessão no próximo snapshot do app, e um segundo `ReplaceProjectTabs` antes disso era rejeitado. Agora basta a identidade existir (o snapshot já remove associações que continuam soltas). Teste de regressão em `persistence/local_workspace_tests.rs`.
+- **Faixa de abas duplicada removida** (`ddbe2010a`): a barra empilhada de sessões não é mais desenhada sob a barra do projeto. Controles da janela e arrastar pelo cabeçalho continuam funcionando (verificado: a janela moveu 60px ao arrastar em y=17). Abas fora de projeto aparecem na Home ("Terminais sem projeto").
+- **Organização sem projetos** (`8d2254aa1`): cabeçalho com nome + busca (título 98,3%, busca 96,5%), fundo 100%, sidebar 94,7%, prompt central com botão secundário "Novo projeto". Diferença restante: o kit usa `text-wrap: pretty` no texto vazio da sidebar (quebra antes de "um"); o WarpUI não tem equivalente.
+- Log do app no perfil de paridade: `%LOCALAPPDATA%\warp\WarpOss-parity\data\logs\warp-oss.log` (o stderr fica vazio).
+- Artefato visto em várias capturas: uma linha de texto apagado em y≈798, na borda inferior da área do terminal. Não investigado.
+
+Próximos passos: (1) Home (campo "Jarvis" com Cmd+K, saudação com nome, status de agentes, branch e hover nos cards); (2) ícones do kit via `Icon` (procurar em `bundled/svg` primeiro); (3) decisões com o Marcos: de onde vem o nome da saudação ("Juan"), dados de agente (badge/status e contagem de abas), botão "vincular aba", arrastar arquivo para a imagem (o terminal sob o modal também recebe `DragAndDropFiles`).
