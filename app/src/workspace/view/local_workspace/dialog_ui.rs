@@ -4,8 +4,14 @@ use warpui::elements::{
     Border, ConstrainedBox, Container, CrossAxisAlignment, Element, Flex, Hoverable,
     MainAxisAlignment, MainAxisSize, ParentElement, Text,
 };
+use warpui::elements::Point;
+use warpui::event::DispatchedEvent;
 use warpui::fonts::{Properties, Weight};
+use warpui::geometry::vector::Vector2F;
 use warpui::platform::Cursor;
+use warpui::{
+    AfterLayoutContext, AppContext, EventContext, LayoutContext, PaintContext, SizeConstraint,
+};
 
 use super::ws_style::{mouse_state, neutral, radius, sized_icon};
 use crate::appearance::Appearance;
@@ -17,30 +23,37 @@ pub(super) enum ButtonVariant {
     Error,
 }
 
-/// Key legend pill: `size`px text on a rounded cap with `padding` on every side.
+/// Key legend pill: `size`px text on a rounded cap with `padding` on every side, inside the kit's
+/// transparent 1px border. Buttons render their legend in their own semibold weight.
 pub(super) fn keycap(
     appearance: &Appearance,
     label: &str,
     size: f32,
     padding: f32,
+    weight: Weight,
     color: Fill,
     background: Fill,
 ) -> Box<dyn Element> {
     let min = size + 2. * (padding + 1.);
+    // The UI font has no return-key glyph; the kit's browser fallback draws a corner-down-left arrow.
+    let legend = if label == "⏎" {
+        sized_icon(Icon::CornerDownLeft, color, size)
+    } else {
+        Text::new_inline(label.to_owned(), appearance.ui_font_family(), size)
+            .with_style(Properties::default().weight(weight))
+            .with_color(color.into())
+            .finish()
+    };
     ConstrainedBox::new(
         Container::new(
             Flex::row()
                 .with_main_axis_size(MainAxisSize::Min)
                 .with_main_axis_alignment(MainAxisAlignment::Center)
                 .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                .with_child(
-                    Text::new_inline(label.to_owned(), appearance.ui_font_family(), size)
-                        .with_color(color.into())
-                        .finish(),
-                )
+                .with_child(legend)
                 .finish(),
         )
-        .with_uniform_padding(padding)
+        .with_uniform_padding(padding + 1.)
         .with_background(background)
         .with_corner_radius(radius(3.))
         .finish(),
@@ -67,6 +80,7 @@ pub(super) fn dialog_close(
             "ESC",
             12.,
             2.,
+            Weight::Semibold,
             theme.foreground(),
             neutral(theme, 15),
         ))
@@ -152,7 +166,7 @@ pub(super) fn dialog_button(
             _ => (text_color, Fill::Solid(pathfinder_color::ColorU::transparent_black())),
         };
         row.add_child(
-            Container::new(keycap(appearance, cap, 12., 2., cap_color, cap_background))
+            Container::new(keycap(appearance, cap, 12., 2., Weight::Semibold, cap_color, cap_background))
                 .with_margin_left(2.)
                 .finish(),
         );
@@ -226,10 +240,34 @@ pub(super) fn small_secondary(
     on_click: impl Fn(&mut warpui::EventContext) + 'static,
     content: Box<dyn Element>,
 ) -> Box<dyn Element> {
+    small_button(theme, true, key, on_click, content)
+}
+
+/// 24px borderless button around caller-provided content.
+pub(super) fn small_naked(
+    theme: &warp_core::ui::theme::WarpTheme,
+    key: (&'static str, i64),
+    on_click: impl Fn(&mut warpui::EventContext) + 'static,
+    content: Box<dyn Element>,
+) -> Box<dyn Element> {
+    small_button(theme, false, key, on_click, content)
+}
+
+fn small_button(
+    theme: &warp_core::ui::theme::WarpTheme,
+    outlined: bool,
+    key: (&'static str, i64),
+    on_click: impl Fn(&mut warpui::EventContext) + 'static,
+    content: Box<dyn Element>,
+) -> Box<dyn Element> {
     let state = mouse_state(key.0, key.1);
     Hoverable::new(state, |mouse| {
         let mut button = Container::new(ConstrainedBox::new(content).with_height(22.).finish())
-            .with_border(Border::all(1.).with_border_fill(neutral(theme, 20)))
+            .with_border(if outlined {
+                Border::all(1.).with_border_fill(neutral(theme, 20))
+            } else {
+                Border::all(1.)
+            })
             .with_corner_radius(radius(4.));
         if mouse.is_mouse_over_element() {
             button = button.with_background(theme.foreground().with_opacity(if mouse.is_clicked() {
@@ -243,4 +281,57 @@ pub(super) fn small_secondary(
     .with_cursor(Cursor::PointingHand)
     .on_click(move |ctx, _, _| on_click(ctx))
     .finish()
+}
+
+/// Paints its child at the nearest whole device pixel. Centering an odd-sized dialog in an
+/// even-sized window lands on a half pixel, which blurs every border while text stays snapped.
+pub(super) struct PixelAligned {
+    child: Box<dyn Element>,
+}
+
+impl PixelAligned {
+    pub(super) fn new(child: Box<dyn Element>) -> Self {
+        Self { child }
+    }
+}
+
+impl Element for PixelAligned {
+    fn layout(
+        &mut self,
+        constraint: SizeConstraint,
+        ctx: &mut LayoutContext,
+        app: &AppContext,
+    ) -> Vector2F {
+        self.child.layout(constraint, ctx, app)
+    }
+
+    fn after_layout(&mut self, ctx: &mut AfterLayoutContext, app: &AppContext) {
+        self.child.after_layout(ctx, app);
+    }
+
+    fn paint(&mut self, origin: Vector2F, ctx: &mut PaintContext, app: &AppContext) {
+        let scale = ctx.scene.scale_factor();
+        let snapped = Vector2F::new(
+            (origin.x() * scale).round() / scale,
+            (origin.y() * scale).round() / scale,
+        );
+        self.child.paint(snapped, ctx, app);
+    }
+
+    fn dispatch_event(
+        &mut self,
+        event: &DispatchedEvent,
+        ctx: &mut EventContext,
+        app: &AppContext,
+    ) -> bool {
+        self.child.dispatch_event(event, ctx, app)
+    }
+
+    fn size(&self) -> Option<Vector2F> {
+        self.child.size()
+    }
+
+    fn origin(&self) -> Option<Point> {
+        self.child.origin()
+    }
 }

@@ -37,6 +37,7 @@ pub struct Modal<T> {
     body_styles: UiComponentStyles,
     close_modal_hover_state: MouseStateHandle,
     background_opacity: u8,
+    top_margin: f32,
     offset_positioning: OffsetPositioning,
     max_height_percentage: Option<f32>,
     /// Optional keystroke to display alongside the close button.
@@ -164,6 +165,7 @@ impl<T: View> Modal<T> {
             },
             close_modal_hover_state: Default::default(),
             background_opacity: MODAL_BACKDROP_OPACITY,
+            top_margin: MODAL_TOP_MARGIN,
             offset_positioning: Self::default_offset_positioning(),
             max_height_percentage: None,
             dismiss_keystroke: None,
@@ -202,6 +204,12 @@ impl<T: View> Modal<T> {
 
     pub fn with_background_opacity(mut self, opacity: u8) -> Self {
         self.background_opacity = opacity;
+        self
+    }
+
+    /// Space above the modal box, which shifts its centered position down by half this amount.
+    pub fn with_top_margin(mut self, margin: f32) -> Self {
+        self.top_margin = margin;
         self
     }
     /// Caps the modal height at a percentage of the containing window height.
@@ -497,7 +505,7 @@ impl<T: View> View for Modal<T> {
                     Border::all(self.modal_styles.border_width.unwrap())
                         .with_border_fill(self.modal_styles.border_color.unwrap()),
                 )
-                .with_margin_top(MODAL_TOP_MARGIN)
+                .with_margin_top(self.top_margin)
                 .finish(),
         )
         .with_max_width(self.modal_styles.width.unwrap())

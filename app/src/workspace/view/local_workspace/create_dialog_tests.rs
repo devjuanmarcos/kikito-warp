@@ -1,4 +1,7 @@
-use super::{next_image_generation, submit_blocking_status, validate_project_path_metadata};
+use super::{
+    expand_home, next_image_generation, project_path_placeholder, submit_blocking_status,
+    validate_project_path_metadata,
+};
 use std::io::ErrorKind;
 
 #[test]
@@ -63,4 +66,19 @@ fn project_path_metadata_requires_an_accessible_directory() {
         validate_project_path_metadata(Err(ErrorKind::Other)),
         Err("Não foi possível verificar a pasta selecionada.")
     );
+}
+
+#[test]
+fn project_path_placeholder_slugs_the_name_like_the_kit() {
+    assert_eq!(project_path_placeholder(""), "~/projeto");
+    assert_eq!(project_path_placeholder("  Keener API  "), "~/keener-api");
+    assert_eq!(project_path_placeholder("Gestão de Ação!"), "~/gestao-de-acao");
+}
+
+#[test]
+fn expand_home_resolves_only_a_leading_tilde() {
+    let home = dirs::home_dir().expect("home dir");
+    assert_eq!(expand_home("~/keener-api"), home.join("keener-api"));
+    assert_eq!(expand_home("~"), home);
+    assert_eq!(expand_home("D:/code/~x"), std::path::PathBuf::from("D:/code/~x"));
 }

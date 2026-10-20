@@ -1381,8 +1381,8 @@ impl Workspace {
         let dialog_height = match &kind {
             local_workspace::create_dialog::CreateDialogKind::CreateOrganization
             | local_workspace::create_dialog::CreateDialogKind::EditOrganization(_) => 395.,
-            local_workspace::create_dialog::CreateDialogKind::CreateProject(_)
-            | local_workspace::create_dialog::CreateDialogKind::EditProject(_) => 330.,
+            local_workspace::create_dialog::CreateDialogKind::CreateProject(_) => 318.,
+            local_workspace::create_dialog::CreateDialogKind::EditProject(_) => 243.,
             local_workspace::create_dialog::CreateDialogKind::RemoveOrganization(_)
             | local_workspace::create_dialog::CreateDialogKind::RemoveProject(_) => 190.,
         };
@@ -1480,8 +1480,10 @@ impl Workspace {
         });
         let modal = ctx.add_typed_action_view(|ctx| {
             Modal::new(None, body, ctx)
+                .with_top_margin(0.)
                 .with_modal_style(UiComponentStyles {
                     width: Some(420.),
+                    border_width: Some(0.),
                     ..Default::default()
                 })
                 .with_body_style(UiComponentStyles {
@@ -26277,6 +26279,20 @@ impl TypedActionView for Workspace {
                     None,
                     ctx,
                 );
+                let organization_name = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .organization(*organization_id)
+                    .map(|org| org.name.clone());
+                if let (Some(dialog), Some(organization_name)) =
+                    (self.local_workspace_dialog.clone(), organization_name)
+                {
+                    dialog.update(ctx, |modal, ctx| {
+                        modal.body().update(ctx, |body, ctx| {
+                            body.set_organization_name(organization_name, ctx)
+                        });
+                    });
+                }
             }
             EditLocalWorkspaceOrganization(id) | RemoveLocalWorkspaceOrganization(id) => {
                 let data = self

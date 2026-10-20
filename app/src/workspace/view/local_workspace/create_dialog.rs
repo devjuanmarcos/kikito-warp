@@ -7,7 +7,7 @@ use futures::io::AsyncReadExt as _;
 use warpui::assets::asset_cache::{AssetSource, AsyncAssetId, AsyncAssetType};
 use warpui::r#async::SpawnedFutureHandle;
 use warpui::elements::{
-    Border, CacheOption, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult,
+    Align, Border, ChildAnchor, OffsetPositioning, ParentAnchor, ParentOffsetBounds, Stack, CacheOption, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult,
     Element, EventHandler, Flex, Image, MainAxisAlignment, MainAxisSize, ParentElement, Shrinkable,
     Text,
 };
@@ -19,15 +19,27 @@ use warpui::{
     ViewHandle,
 };
 
-use super::dialog_ui::{ButtonVariant, color_dot, dialog_button, dialog_close, small_secondary};
+use super::dialog_ui::{
+    ButtonVariant, PixelAligned, color_dot, dialog_button, dialog_close, small_naked,
+    small_secondary,
+};
 use super::ws_style::{mouse_state, neutral, sized_icon};
 use crate::appearance::Appearance;
 use warp_core::ui::Icon;
 use warpui::elements::Hoverable;
+use warpui::geometry::vector::vec2f;
 use warpui::platform::Cursor;
 use warpui::ui_components::components::Coords;
 use crate::editor::{EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions};
 use crate::local_workspace::model::{OrganizationId, ProjectId};
+
+/// Kit mono inputs use 13px text, which makes them 37px tall instead of 36px.
+const PATH_FONT_SIZE: f32 = 13.;
+const PATH_INPUT_HEIGHT: f32 = 37.;
+/// Line box of dialog body text (`DialogBody` sets an 18px line height in the kit).
+const BODY_LINE_HEIGHT: f32 = 18.;
+/// Height of the kit's naked close button, which sets the header row height.
+const HEADER_ROW_HEIGHT: f32 = 32.;
 
 static IMAGE_CROP_LOCK: std::sync::OnceLock<futures::lock::Mutex<()>> = std::sync::OnceLock::new();
 
@@ -111,6 +123,8 @@ pub(crate) enum CreateDialogAction {
 pub(crate) struct CreateDialog {
     kind: CreateDialogKind,
     name_editor: ViewHandle<EditorView>,
+    path_editor: Option<ViewHandle<EditorView>>,
+    organization_name: Option<String>,
     project_path: Option<PathBuf>,
     accent_color: String,
     image_data: Option<Vec<u8>>,
@@ -174,13 +188,49 @@ impl CreateDialog {
             EditorEvent::Escape => ctx.emit(CreateDialogEvent::Close),
             EditorEvent::Edited(_) => {
                 me.error = None;
+                me.refresh_path_placeholder(ctx);
                 ctx.notify();
             }
             _ => {}
         });
+        let path_editor = matches!(kind, CreateDialogKind::CreateProject(_)).then(|| {
+            let mono_text = TextOptions {
+                font_size_override: Some(PATH_FONT_SIZE),
+                ..Default::default()
+            };
+            let path_editor = ctx.add_typed_action_view(|ctx| {
+                let mut editor = EditorView::single_line(
+                    SingleLineEditorOptions {
+                        text: mono_text,
+                        ..Default::default()
+                    },
+                    ctx,
+                );
+                editor.set_placeholder_text(project_path_placeholder(""), ctx);
+                editor
+            });
+            if let Some(path) = &project_path {
+                let text = path.display().to_string();
+                path_editor.update(ctx, |editor, ctx| {
+                    editor.set_buffer_text_ignoring_undo(&text, ctx)
+                });
+            }
+            ctx.subscribe_to_view(&path_editor, |me, _, event, ctx| match event {
+                EditorEvent::Enter => me.try_submit(ctx),
+                EditorEvent::Escape => ctx.emit(CreateDialogEvent::Close),
+                EditorEvent::Edited(_) => {
+                    me.error = None;
+                    ctx.notify();
+                }
+                _ => {}
+            });
+            path_editor
+        });
         Self {
             kind,
             name_editor,
+            path_editor,
+            organization_name: None,
             project_path,
             accent_color: accent_color.unwrap_or_else(|| "yellow".to_owned()),
             source_image_data: image_data.clone(),
@@ -225,12 +275,34 @@ impl CreateDialog {
                 editor.set_buffer_text_ignoring_undo(name, ctx)
             });
         }
+        if let Some(path_editor) = &self.path_editor {
+            let text = path.display().to_string();
+            path_editor.update(ctx, |editor, ctx| {
+                editor.set_buffer_text_ignoring_undo(&text, ctx)
+            });
+        }
         self.project_path = Some(path);
         self.project_validation_generation = self.project_validation_generation.wrapping_add(1);
         self.project_validation_pending = false;
         self.error = None;
         self.status = None;
         ctx.notify();
+    }
+
+    /// Organization named in the "Novo projeto em …" title.
+    pub(crate) fn set_organization_name(&mut self, name: String, ctx: &mut ViewContext<Self>) {
+        self.organization_name = Some(name);
+        ctx.notify();
+    }
+
+    fn refresh_path_placeholder(&mut self, ctx: &mut ViewContext<Self>) {
+        let Some(path_editor) = self.path_editor.clone() else {
+            return;
+        };
+        let name = self.name_editor.as_ref(ctx).buffer_text(ctx);
+        path_editor.update(ctx, |editor, ctx| {
+            editor.set_placeholder_text(project_path_placeholder(&name), ctx)
+        });
     }
 
     pub(crate) fn begin_image_load(&mut self, path: PathBuf, ctx: &mut ViewContext<Self>) {
@@ -455,6 +527,15 @@ impl CreateDialog {
             ctx.notify();
             return;
         }
+        if let Some(path_editor) = &self.path_editor {
+            let typed = path_editor.as_ref(ctx).buffer_text(ctx).trim().to_owned();
+            let typed = if typed.is_empty() {
+                project_path_placeholder(&name)
+            } else {
+                typed
+            };
+            self.project_path = Some(expand_home(&typed));
+        }
         if matches!(&self.kind, CreateDialogKind::CreateProject(_)) && self.project_path.is_none() {
             self.error = Some("Selecione uma pasta para o projeto.".to_owned());
             ctx.notify();
@@ -505,9 +586,10 @@ impl CreateDialog {
 }
 
 impl CreateDialog {
-    fn image_field(&self, appearance: &Appearance) -> Box<dyn Element> {
+    fn image_field(&self, name: &str, appearance: &Appearance) -> Box<dyn Element> {
         let theme = appearance.theme();
         let accent = super::org_rail::organization_accent(theme, &self.accent_color);
+        let initial = name.trim().chars().next().map(|c| c.to_uppercase().to_string());
         let tile_content: Box<dyn Element> = if let Some(bytes) = &self.image_data {
             Image::new(image_preview_source(bytes.clone()), CacheOption::BySize)
                 .with_corner_radius(warpui::elements::CornerRadius::with_all(
@@ -515,11 +597,14 @@ impl CreateDialog {
                 ))
                 .finish()
         } else {
-            Flex::row()
-                .with_main_axis_alignment(MainAxisAlignment::Center)
-                .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                .with_child(sized_icon(Icon::Image, accent, 20.))
-                .finish()
+            let glyph = match initial {
+                Some(initial) => Text::new_inline(initial, appearance.ui_font_family(), 22.)
+                    .with_style(Properties::default().weight(Weight::Bold))
+                    .with_color(accent.into())
+                    .finish(),
+                None => sized_icon(Icon::Image, accent, 20.),
+            };
+            Align::new(glyph).finish()
         };
         let tile = ConstrainedBox::new(
             Container::new(tile_content)
@@ -546,7 +631,8 @@ impl CreateDialog {
             })
             .finish();
         let mut actions = Flex::column().with_spacing(6.);
-        actions.add_child(small_secondary(
+        let mut buttons = Flex::row().with_spacing(6.);
+        buttons.add_child(small_secondary(
             theme,
             ("dialog-image-button", 0),
             |ctx| ctx.dispatch_typed_action(CreateDialogAction::PickOrganizationImage),
@@ -555,7 +641,7 @@ impl CreateDialog {
                     .with_main_axis_size(MainAxisSize::Min)
                     .with_cross_axis_alignment(CrossAxisAlignment::Center)
                     .with_spacing(2.)
-                    .with_child(sized_icon(Icon::UploadCloud, theme.foreground(), 14.))
+                    .with_child(sized_icon(Icon::Upload, theme.foreground(), 14.))
                     .with_child(
                         Text::new_inline(
                             if self.image_data.is_some() {
@@ -577,12 +663,31 @@ impl CreateDialog {
             .with_padding_bottom(2.)
             .finish(),
         ));
+        if self.image_data.is_some() {
+            buttons.add_child(small_naked(
+                theme,
+                ("dialog-image-remove", 0),
+                |ctx| ctx.dispatch_typed_action(CreateDialogAction::DiscardImage),
+                Container::new(
+                    Text::new_inline("Remover", appearance.ui_font_family(), 12.)
+                        .with_style(Properties::default().weight(Weight::Semibold))
+                        .with_color(theme.foreground().into())
+                        .finish(),
+                )
+                .with_padding_left(8.)
+                .with_padding_right(8.)
+                .with_padding_bottom(2.)
+                .finish(),
+            ));
+        }
+        actions.add_child(buttons.finish());
         actions.add_child(
             Text::new_inline(
                 "PNG, JPG ou SVG.".to_owned(),
                 appearance.ui_font_family(),
                 11.,
             )
+            .with_line_height_ratio(BODY_LINE_HEIGHT / 11.)
             .with_color(theme.hint_text_color(theme.surface_1()).into())
             .finish(),
         );
@@ -618,12 +723,15 @@ impl View for CreateDialog {
             CreateDialogKind::RemoveOrganization(_) | CreateDialogKind::RemoveProject(_)
         );
         let title = match &self.kind {
-            CreateDialogKind::CreateOrganization => "Nova organização",
-            CreateDialogKind::EditOrganization(_) => "Editar organização",
-            CreateDialogKind::RemoveOrganization(_) => "Remover organização",
-            CreateDialogKind::CreateProject(_) => "Novo projeto",
-            CreateDialogKind::EditProject(_) => "Editar projeto",
-            CreateDialogKind::RemoveProject(_) => "Remover projeto",
+            CreateDialogKind::CreateOrganization => "Nova organização".to_owned(),
+            CreateDialogKind::EditOrganization(_) => "Editar organização".to_owned(),
+            CreateDialogKind::RemoveOrganization(_) => "Remover organização".to_owned(),
+            CreateDialogKind::CreateProject(_) => match &self.organization_name {
+                Some(organization) => format!("Novo projeto em {organization}"),
+                None => "Novo projeto".to_owned(),
+            },
+            CreateDialogKind::EditProject(_) => "Editar projeto".to_owned(),
+            CreateDialogKind::RemoveProject(_) => "Remover projeto".to_owned(),
         };
         let close_button = dialog_close(appearance, ("dialog-close", 0), |ctx| {
             ctx.dispatch_typed_action(CreateDialogAction::Cancel)
@@ -639,7 +747,11 @@ impl View for CreateDialog {
                 .finish(),
         );
         header.add_child(close_button);
-        let header = Container::new(header.finish())
+        let header = Container::new(
+            ConstrainedBox::new(header.finish())
+                .with_min_height(HEADER_ROW_HEIGHT)
+                .finish(),
+        )
             .with_padding_left(24.)
             .with_padding_right(24.)
             .with_padding_top(24.)
@@ -661,6 +773,7 @@ impl View for CreateDialog {
             };
             body.add_child(
                 Text::new_inline(message.to_owned(), appearance.ui_font_family(), 12.)
+                    .with_line_height_ratio(BODY_LINE_HEIGHT / 12.)
                     .with_color(theme.sub_text_color(theme.background()).into())
                     .finish(),
             );
@@ -676,37 +789,13 @@ impl View for CreateDialog {
             };
             body.add_child(
                 Text::new_inline(description, appearance.ui_font_family(), 12.)
+                    .with_line_height_ratio(BODY_LINE_HEIGHT / 12.)
                     .with_color(theme.sub_text_color(theme.surface_1()).into())
                     .finish(),
             );
             body.add_child(field(
                 "Nome",
-                TextInput::new(
-                    self.name_editor.clone(),
-                    UiComponentStyles::default()
-                        .set_border_radius(warpui::elements::CornerRadius::with_all(
-                            warpui::elements::Radius::Pixels(4.),
-                        ))
-                        .set_border_width(1.)
-                        .set_border_color(
-                            if self.name_editor.is_focused(app) {
-                                theme.accent()
-                            } else {
-                                theme.foreground().with_opacity(20)
-                            }
-                            .into(),
-                        )
-                        .set_background(theme.background().into())
-                        .set_padding(Coords {
-                            top: 10.,
-                            bottom: 10.,
-                            left: 10.,
-                            right: 10.,
-                        })
-                        .set_height(36.),
-                )
-                .build()
-                .finish(),
+                text_input(&self.name_editor, 36., app),
                 appearance,
             ));
         }
@@ -716,7 +805,7 @@ impl View for CreateDialog {
         ) {
             body.add_child(field(
                 "Imagem",
-                self.image_field(appearance),
+                self.image_field(&self.name_editor.as_ref(app).buffer_text(app), appearance),
                 appearance,
             ));
             let mut colors = Flex::row().with_spacing(6.);
@@ -799,22 +888,33 @@ impl View for CreateDialog {
                 body.add_child(crop_preview.finish());
             }
         }
-        if matches!(&self.kind, CreateDialogKind::CreateProject(_)) {
-            let path = self
-                .project_path
-                .as_ref()
-                .map(|path| path.display().to_string())
-                .unwrap_or_else(|| "Nenhuma pasta selecionada".to_owned());
-            body.add_child(
-                Text::new_inline(path, appearance.ui_font_family(), 11.)
-                    .with_color(theme.sub_text_color(theme.background()).into())
-                    .finish(),
+        if let Some(path_editor) = &self.path_editor {
+            let mut path_field = Stack::new();
+            path_field.add_child(text_input(path_editor, PATH_INPUT_HEIGHT, app));
+            // The kit types the directory; the folder button keeps the native picker reachable.
+            path_field.add_positioned_child(
+                Hoverable::new(mouse_state("dialog-pick-path", 0), |mouse| {
+                    sized_icon(
+                        Icon::Folder,
+                        if mouse.is_mouse_over_element() {
+                            theme.foreground()
+                        } else {
+                            theme.foreground().with_opacity(40)
+                        },
+                        14.,
+                    )
+                })
+                .with_cursor(Cursor::PointingHand)
+                .on_click(|ctx, _, _| ctx.dispatch_typed_action(CreateDialogAction::PickProjectPath))
+                .finish(),
+                OffsetPositioning::offset_from_parent(
+                    vec2f(-11., 0.),
+                    ParentOffsetBounds::ParentByPosition,
+                    ParentAnchor::MiddleRight,
+                    ChildAnchor::MiddleRight,
+                ),
             );
-            body.add_child(Self::button(
-                "Escolher pasta...",
-                CreateDialogAction::PickProjectPath,
-                appearance,
-            ));
+            body.add_child(field("Diretório", path_field.finish(), appearance));
         }
         if let Some(error) = &self.error {
             body.add_child(
@@ -887,13 +987,80 @@ impl View for CreateDialog {
         dialog.add_child(header);
         dialog.add_child(body);
         dialog.add_child(footer);
-        Container::new(dialog.finish())
-            .with_background(theme.surface_1())
-            .with_border(Border::all(1.).with_border_fill(neutral(theme, 20)))
-            .with_corner_radius(warpui::elements::CornerRadius::with_all(
-                warpui::elements::Radius::Pixels(8.),
+        PixelAligned::new(
+            Container::new(dialog.finish())
+                .with_background(theme.surface_1())
+                .with_border(Border::all(1.).with_border_fill(neutral(theme, 20)))
+                .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                    warpui::elements::Radius::Pixels(8.),
+                ))
+                .finish(),
+        )
+        .finish()
+    }
+}
+
+/// Kit `TextInput`: 10px padding, 1px border at 20% foreground, accent border while focused.
+fn text_input(editor: &ViewHandle<EditorView>, height: f32, app: &AppContext) -> Box<dyn Element> {
+    let theme = Appearance::as_ref(app).theme();
+    TextInput::new(
+        editor.clone(),
+        UiComponentStyles::default()
+            .set_border_radius(warpui::elements::CornerRadius::with_all(
+                warpui::elements::Radius::Pixels(4.),
             ))
-            .finish()
+            .set_border_width(1.)
+            .set_border_color(
+                if editor.is_focused(app) {
+                    theme.accent()
+                } else {
+                    theme.foreground().with_opacity(20)
+                }
+                .into(),
+            )
+            .set_background(theme.background().into())
+            .set_padding(Coords {
+                top: 10.,
+                bottom: 10.,
+                left: 10.,
+                right: 10.,
+            })
+            .set_height(height),
+    )
+    .build()
+    .finish()
+}
+
+/// Default directory the kit proposes for a project name: `~/` plus an ASCII slug.
+fn project_path_placeholder(name: &str) -> String {
+    let mut slug = String::new();
+    for c in name.trim().to_lowercase().chars() {
+        let c = match c {
+            'á' | 'à' | 'â' | 'ã' | 'ä' => 'a',
+            'é' | 'è' | 'ê' | 'ë' => 'e',
+            'í' | 'ì' | 'î' | 'ï' => 'i',
+            'ó' | 'ò' | 'ô' | 'õ' | 'ö' => 'o',
+            'ú' | 'ù' | 'û' | 'ü' => 'u',
+            'ç' => 'c',
+            'ñ' => 'n',
+            c => c,
+        };
+        if c.is_ascii_alphanumeric() {
+            slug.push(c);
+        } else if !slug.is_empty() && !slug.ends_with('-') {
+            slug.push('-');
+        }
+    }
+    let slug = slug.trim_end_matches('-');
+    format!("~/{}", if slug.is_empty() { "projeto" } else { slug })
+}
+
+fn expand_home(path: &str) -> PathBuf {
+    let home_relative = path.strip_prefix("~/").or_else(|| path.strip_prefix("~\\"));
+    match (home_relative, dirs::home_dir()) {
+        (Some(rest), Some(home)) => home.join(rest),
+        (None, Some(home)) if path == "~" => home,
+        _ => PathBuf::from(path),
     }
 }
 
@@ -903,6 +1070,7 @@ fn field(label: &str, content: Box<dyn Element>, appearance: &Appearance) -> Box
         .with_spacing(6.);
     field.add_child(
         Text::new_inline(label.to_owned(), appearance.ui_font_family(), 12.)
+            .with_line_height_ratio(BODY_LINE_HEIGHT / 12.)
             .with_color(appearance.theme().main_text_color(appearance.theme().surface_1()).into())
             .finish(),
     );
