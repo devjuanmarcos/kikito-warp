@@ -29384,10 +29384,9 @@ impl View for Workspace {
                 .with_background(util::get_terminal_background_fill(self.window_id, app))
                 .finish()
         } else {
+            // The local workspace's project tab bar replaces the stacked session tab bar here;
+            // tabs outside any project are listed on Home.
             let mut outer_column = Flex::column();
-            if tab_bar_mode == ShowTabBar::Stacked {
-                outer_column.add_child(self.render_tab_bar(self.tab_fixed_width, appearance, app));
-            }
             let content = self.render_banner_and_active_tab(app, appearance);
             let panels_row = self.render_panels(app, Shrinkable::new(1.0, content).finish(), false);
             outer_column.add_child(Shrinkable::new(1.0, panels_row).finish());
