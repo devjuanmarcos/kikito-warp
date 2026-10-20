@@ -1,10 +1,10 @@
 use warp_core::ui::Icon;
 use warp_core::ui::theme::Fill;
+use warpui::elements::Point;
 use warpui::elements::{
     Border, ConstrainedBox, Container, CrossAxisAlignment, Element, Flex, Hoverable,
     MainAxisAlignment, MainAxisSize, ParentElement, Text,
 };
-use warpui::elements::Point;
 use warpui::event::DispatchedEvent;
 use warpui::fonts::{Properties, Weight};
 use warpui::geometry::vector::Vector2F;
@@ -93,11 +93,13 @@ pub(super) fn dialog_close(
     .finish()
 }
 
-/// 32px dialog button. A disabled primary button drops its fill and ignores clicks.
+/// 32px kit button with an optional leading 16px icon and trailing keycaps. A disabled primary
+/// button drops its fill and ignores clicks.
 pub(super) fn dialog_button(
     appearance: &Appearance,
+    icon: Option<Icon>,
     label: &str,
-    keycap_label: Option<&str>,
+    keys: &[&str],
     variant: ButtonVariant,
     enabled: bool,
     key: (&'static str, i64),
@@ -140,7 +142,7 @@ pub(super) fn dialog_button(
                 theme.accent()
             }),
             ButtonVariant::Error => {
-                let base = pathfinder_color::ColorU::from(theme.ui_error_color());
+                let base = theme.ui_error_color();
                 Some(Fill::Solid(pathfinder_color::ColorU::new(
                     base.r,
                     base.g,
@@ -153,23 +155,39 @@ pub(super) fn dialog_button(
     let mut row = Flex::row()
         .with_main_axis_size(MainAxisSize::Min)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
-        .with_spacing(4.)
-        .with_child(
-            Text::new_inline(label.to_owned(), appearance.ui_font_family(), 14.)
-                .with_style(Properties::default().weight(Weight::Semibold))
-                .with_color(text_color.into())
-                .finish(),
-        );
-    if let Some(cap) = keycap_label {
+        .with_spacing(4.);
+    if let Some(icon) = icon {
+        row.add_child(sized_icon(icon, text_color, 16.));
+    }
+    row.add_child(
+        Text::new_inline(label.to_owned(), appearance.ui_font_family(), 14.)
+            .with_style(Properties::default().weight(Weight::Semibold))
+            .with_color(text_color.into())
+            .finish(),
+    );
+    if !keys.is_empty() {
         let (cap_color, cap_background) = match (variant, disabled) {
             (ButtonVariant::Secondary, _) | (_, true) => (text_color, neutral(theme, 15)),
-            _ => (text_color, Fill::Solid(pathfinder_color::ColorU::transparent_black())),
+            _ => (
+                text_color,
+                Fill::Solid(pathfinder_color::ColorU::transparent_black()),
+            ),
         };
-        row.add_child(
-            Container::new(keycap(appearance, cap, 12., 2., Weight::Semibold, cap_color, cap_background))
-                .with_margin_left(2.)
-                .finish(),
-        );
+        let mut caps = Flex::row()
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_spacing(4.);
+        for cap in keys {
+            caps.add_child(keycap(
+                appearance,
+                cap,
+                12.,
+                2.,
+                Weight::Semibold,
+                cap_color,
+                cap_background,
+            ));
+        }
+        row.add_child(Container::new(caps.finish()).with_margin_left(2.).finish());
     }
     let mut body = Container::new(
         ConstrainedBox::new(
@@ -179,7 +197,11 @@ pub(super) fn dialog_button(
                 .with_child(row.finish())
                 .finish(),
         )
-        .with_height(if variant == ButtonVariant::Secondary { 30. } else { 32. })
+        .with_height(if variant == ButtonVariant::Secondary {
+            30.
+        } else {
+            32.
+        })
         .finish(),
     )
     .with_padding_left(12.)
@@ -270,11 +292,12 @@ fn small_button(
             })
             .with_corner_radius(radius(4.));
         if mouse.is_mouse_over_element() {
-            button = button.with_background(theme.foreground().with_opacity(if mouse.is_clicked() {
-                15
-            } else {
-                10
-            }));
+            button =
+                button.with_background(theme.foreground().with_opacity(if mouse.is_clicked() {
+                    15
+                } else {
+                    10
+                }));
         }
         button.finish()
     })

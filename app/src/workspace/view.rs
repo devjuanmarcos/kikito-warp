@@ -296,7 +296,7 @@ use crate::experiments::{BlockOnboarding, Experiment};
 use crate::launch_configs::launch_config::WindowTemplate;
 use crate::launch_configs::save_modal::{LaunchConfigModalEvent, LaunchConfigSaveModal};
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::local_git::{HeadState, LocalBranch, RepositoryStatus};
+use crate::local_git::{LocalBranch, RepositoryStatus};
 use crate::menu::{
     Event as MenuEvent, MENU_VERTICAL_PADDING, Menu, MenuItem, MenuItemFields, MenuSelectionSource,
     MenuVariant,
@@ -2671,21 +2671,6 @@ impl Workspace {
         ));
     }
 
-    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-    fn local_workspace_git_summary(&self) -> Option<String> {
-        let status = self.local_workspace_git_status.as_ref()?;
-        let head = match &status.head {
-            HeadState::Branch(name) => name.as_str(),
-            HeadState::Detached => "HEAD separado",
-            HeadState::Unborn => "sem commits",
-        };
-        let changed_count = status.changed_path_count();
-        Some(format!(
-            "{head} \u{00b7} {} preparados \u{00b7} {changed_count} altera\u{00e7}\u{00f5}es",
-            status.staged_path_count()
-        ))
-    }
-
     fn restore_selected_local_workspace_tab(&mut self, ctx: &mut ViewContext<Self>) {
         let Some(project_id) = self.local_workspace.as_ref(ctx).selected_project() else {
             return;
@@ -2999,7 +2984,7 @@ impl Workspace {
         }
         let checks = futures::stream::iter(paths)
             .map(|(project_id, path)| async move {
-                let status = match async_fs::metadata(path).await {
+                let status = match async_fs::metadata(&path).await {
                     Ok(metadata) if metadata.is_dir() => {
                         crate::local_workspace::model::ProjectPathStatus::Available
                     }
@@ -3012,7 +2997,8 @@ impl Workspace {
                     }
                     Err(_) => crate::local_workspace::model::ProjectPathStatus::Inaccessible,
                 };
-                (project_id, status)
+                let branch = local_workspace::read_checked_out_branch(&path).await;
+                (project_id, status, branch)
             })
             .buffer_unordered(8)
             .collect::<Vec<_>>();
@@ -3021,8 +3007,9 @@ impl Workspace {
                 return;
             }
             workspace.local_workspace.update(ctx, |model, ctx| {
-                for (project_id, status) in statuses {
+                for (project_id, status, branch) in statuses {
                     model.set_project_path_status(project_id, status);
+                    model.set_project_branch(project_id, branch);
                 }
                 ctx.notify();
             });
@@ -26777,6 +26764,17 @@ impl TypedActionView for Workspace {
                     DefaultSessionMode::DockerSandbox => {
                         self.add_docker_sandbox_tab(ctx);
                     }
+                    // The new-tab shortcut opens the selected project's terminal, as the empty
+                    // project state advertises.
+                    DefaultSessionMode::Terminal
+                        if self
+                            .local_workspace
+                            .as_ref(ctx)
+                            .selected_project()
+                            .is_some() =>
+                    {
+                        self.add_local_workspace_terminal(ctx);
+                    }
                     // Terminal and Agent are handled by the existing path
                     // (add_terminal_tab applies DefaultSessionMode::Agent internally).
                     DefaultSessionMode::Terminal | DefaultSessionMode::Agent => {
@@ -29428,10 +29426,9 @@ impl View for Workspace {
                     (!assigned).then(|| (index, tab.pane_group.as_ref(app).display_title(app)))
                 })
                 .collect();
-            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-            let git_status_summary = self.local_workspace_git_summary();
-            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
-            let git_status_summary: Option<String> = None;
+            let new_tab_keys = keybinding_name_to_display_string(NEW_TAB_BINDING_NAME, app)
+                .map(|displayed| local_workspace::keycaps_from_display(&displayed))
+                .unwrap_or_default();
             #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
             let git_status_error = self.local_workspace_git_error.as_deref();
             #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
@@ -29457,6 +29454,8 @@ impl View for Workspace {
                 appearance,
                 panels,
                 self.local_workspace_search_input.clone(),
+                self.local_workspace_search_input.is_focused(app),
+                &new_tab_keys,
                 self.local_workspace_commit_input.clone(),
                 &self.local_workspace_search_query,
                 self.local_workspace_project_sidebar_scroll.clone(),
@@ -29464,7 +29463,6 @@ impl View for Workspace {
                 &available_workspace_tabs,
                 &workspace_tab_titles,
                 self.local_workspace_home_scroll.clone(),
-                git_status_summary.as_deref(),
                 git_status_error,
                 git_status,
                 git_branches,

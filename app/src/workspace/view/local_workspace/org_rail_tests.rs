@@ -1,6 +1,4 @@
-use super::{
-    ORGANIZATION_TILE_SIZE, RAIL_HEADER_HEIGHT, RAIL_WIDTH, organization_marker_height,
-};
+use super::{ORGANIZATION_TILE_SIZE, RAIL_HEADER_HEIGHT, RAIL_WIDTH, organization_marker_height};
 
 #[test]
 fn organization_rail_matches_reference_dimensions() {

@@ -7,9 +7,9 @@ use futures::io::AsyncReadExt as _;
 use warpui::assets::asset_cache::{AssetSource, AsyncAssetId, AsyncAssetType};
 use warpui::r#async::SpawnedFutureHandle;
 use warpui::elements::{
-    Align, Border, ChildAnchor, OffsetPositioning, ParentAnchor, ParentOffsetBounds, Stack, CacheOption, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult,
-    Element, EventHandler, Flex, Image, MainAxisAlignment, MainAxisSize, ParentElement, Shrinkable,
-    Text,
+    Align, Border, CacheOption, ChildAnchor, ConstrainedBox, Container, CrossAxisAlignment,
+    DispatchEventResult, Element, EventHandler, Flex, Image, MainAxisAlignment, MainAxisSize,
+    OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Shrinkable, Stack, Text,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::ui_components::components::{UiComponent, UiComponentStyles};
@@ -25,13 +25,13 @@ use super::dialog_ui::{
 };
 use super::ws_style::{mouse_state, neutral, sized_icon};
 use crate::appearance::Appearance;
+use crate::editor::{EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions};
+use crate::local_workspace::model::{OrganizationId, ProjectId};
 use warp_core::ui::Icon;
 use warpui::elements::Hoverable;
 use warpui::geometry::vector::vec2f;
 use warpui::platform::Cursor;
 use warpui::ui_components::components::Coords;
-use crate::editor::{EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions};
-use crate::local_workspace::model::{OrganizationId, ProjectId};
 
 /// Kit mono inputs use 13px text, which makes them 37px tall instead of 36px.
 const PATH_FONT_SIZE: f32 = 13.;
@@ -589,7 +589,11 @@ impl CreateDialog {
     fn image_field(&self, name: &str, appearance: &Appearance) -> Box<dyn Element> {
         let theme = appearance.theme();
         let accent = super::org_rail::organization_accent(theme, &self.accent_color);
-        let initial = name.trim().chars().next().map(|c| c.to_uppercase().to_string());
+        let initial = name
+            .trim()
+            .chars()
+            .next()
+            .map(|c| c.to_uppercase().to_string());
         let tile_content: Box<dyn Element> = if let Some(bytes) = &self.image_data {
             Image::new(image_preview_source(bytes.clone()), CacheOption::BySize)
                 .with_corner_radius(warpui::elements::CornerRadius::with_all(
@@ -752,11 +756,11 @@ impl View for CreateDialog {
                 .with_min_height(HEADER_ROW_HEIGHT)
                 .finish(),
         )
-            .with_padding_left(24.)
-            .with_padding_right(24.)
-            .with_padding_top(24.)
-            .with_padding_bottom(12.)
-            .finish();
+        .with_padding_left(24.)
+        .with_padding_right(24.)
+        .with_padding_top(24.)
+        .with_padding_bottom(12.)
+        .finish();
         let mut body = Flex::column()
             .with_main_axis_size(MainAxisSize::Min)
             .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
@@ -905,7 +909,9 @@ impl View for CreateDialog {
                     )
                 })
                 .with_cursor(Cursor::PointingHand)
-                .on_click(|ctx, _, _| ctx.dispatch_typed_action(CreateDialogAction::PickProjectPath))
+                .on_click(|ctx, _, _| {
+                    ctx.dispatch_typed_action(CreateDialogAction::PickProjectPath)
+                })
                 .finish(),
                 OffsetPositioning::offset_from_parent(
                     vec2f(-11., 0.),
@@ -919,7 +925,7 @@ impl View for CreateDialog {
         if let Some(error) = &self.error {
             body.add_child(
                 Text::new_inline(error.clone(), appearance.ui_font_family(), 12.)
-                    .with_color(theme.ui_error_color().into())
+                    .with_color(theme.ui_error_color())
                     .finish(),
             );
         }
@@ -931,7 +937,12 @@ impl View for CreateDialog {
             );
         }
         let name_filled = confirmation
-            || !self.name_editor.as_ref(app).buffer_text(app).trim().is_empty();
+            || !self
+                .name_editor
+                .as_ref(app)
+                .buffer_text(app)
+                .trim()
+                .is_empty();
         let mut footer = Flex::row()
             .with_main_axis_size(MainAxisSize::Max)
             .with_main_axis_alignment(MainAxisAlignment::End)
@@ -939,8 +950,9 @@ impl View for CreateDialog {
             .with_spacing(8.);
         footer.add_child(dialog_button(
             appearance,
-            "Cancelar",
             None,
+            "Cancelar",
+            &[],
             ButtonVariant::Secondary,
             true,
             ("dialog-cancel", 0),
@@ -948,6 +960,7 @@ impl View for CreateDialog {
         ));
         footer.add_child(dialog_button(
             appearance,
+            None,
             match &self.kind {
                 CreateDialogKind::CreateOrganization | CreateDialogKind::CreateProject(_) => {
                     "Criar"
@@ -959,7 +972,7 @@ impl View for CreateDialog {
                     "Remover"
                 }
             },
-            Some("⏎"),
+            &["⏎"],
             if confirmation {
                 ButtonVariant::Error
             } else {
@@ -1071,7 +1084,12 @@ fn field(label: &str, content: Box<dyn Element>, appearance: &Appearance) -> Box
     field.add_child(
         Text::new_inline(label.to_owned(), appearance.ui_font_family(), 12.)
             .with_line_height_ratio(BODY_LINE_HEIGHT / 12.)
-            .with_color(appearance.theme().main_text_color(appearance.theme().surface_1()).into())
+            .with_color(
+                appearance
+                    .theme()
+                    .main_text_color(appearance.theme().surface_1())
+                    .into(),
+            )
             .finish(),
     );
     field.add_child(content);
@@ -1191,7 +1209,7 @@ impl CreateDialog {
                         ctx.notify();
                     }
                     Err(_) => {
-                    dialog.set_error("Não foi possível atualizar o recorte.".to_owned(), ctx)
+                        dialog.set_error("Não foi possível atualizar o recorte.".to_owned(), ctx)
                     }
                 }
             },

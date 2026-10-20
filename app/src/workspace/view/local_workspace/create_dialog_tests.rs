@@ -72,7 +72,10 @@ fn project_path_metadata_requires_an_accessible_directory() {
 fn project_path_placeholder_slugs_the_name_like_the_kit() {
     assert_eq!(project_path_placeholder(""), "~/projeto");
     assert_eq!(project_path_placeholder("  Keener API  "), "~/keener-api");
-    assert_eq!(project_path_placeholder("Gestão de Ação!"), "~/gestao-de-acao");
+    assert_eq!(
+        project_path_placeholder("Gestão de Ação!"),
+        "~/gestao-de-acao"
+    );
 }
 
 #[test]
@@ -80,5 +83,8 @@ fn expand_home_resolves_only_a_leading_tilde() {
     let home = dirs::home_dir().expect("home dir");
     assert_eq!(expand_home("~/keener-api"), home.join("keener-api"));
     assert_eq!(expand_home("~"), home);
-    assert_eq!(expand_home("D:/code/~x"), std::path::PathBuf::from("D:/code/~x"));
+    assert_eq!(
+        expand_home("D:/code/~x"),
+        std::path::PathBuf::from("D:/code/~x")
+    );
 }

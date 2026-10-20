@@ -8,8 +8,8 @@ use warp_core::ui::Icon;
 use warp_core::ui::theme::Fill;
 use warpui::elements::{
     Border, ConstrainedBox, Container, CrossAxisAlignment, Dismiss, DispatchEventResult,
-    DropShadow, Element, EventHandler, Expanded, Flex, Hoverable, MainAxisSize,
-    ParentElement, Rect, Text,
+    DropShadow, Element, EventHandler, Expanded, Flex, Hoverable, MainAxisSize, ParentElement,
+    Rect, Text,
 };
 use warpui::platform::Cursor;
 

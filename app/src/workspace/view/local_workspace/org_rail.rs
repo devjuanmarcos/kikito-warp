@@ -2,22 +2,22 @@ use std::sync::Arc;
 
 use super::ws_style::{TooltipSide, mouse_state, neutral, tooltip, with_tooltip};
 use crate::appearance::Appearance;
-use warpui::platform::Cursor;
 use crate::local_workspace::model::WorkspaceModel;
 use crate::workspace::action::WorkspaceAction;
 use bytes::Bytes;
 use pathfinder_color::ColorU;
+use pathfinder_geometry::vector::vec2f;
 use warp_core::ui::Icon;
 use warp_core::ui::theme::WarpTheme;
 use warpui::assets::asset_cache::{AssetSource, AsyncAssetId, AsyncAssetType};
 use warpui::elements::Element;
-use warpui::fonts::{Properties, Weight};
 use warpui::elements::{
-    Border, CacheOption, ChildAnchor, ConstrainedBox, Container, CrossAxisAlignment,
-    Dash, Flex, Hoverable, Image, MainAxisAlignment, OffsetPositioning, ParentAnchor,
-    ParentElement, ParentOffsetBounds, Rect, Stack, Text,
+    Border, CacheOption, ChildAnchor, ConstrainedBox, Container, CrossAxisAlignment, Dash, Flex,
+    Hoverable, Image, MainAxisAlignment, OffsetPositioning, ParentAnchor, ParentElement,
+    ParentOffsetBounds, Rect, Stack, Text,
 };
-use pathfinder_geometry::vector::vec2f;
+use warpui::fonts::{Properties, Weight};
+use warpui::platform::Cursor;
 
 const RAIL_WIDTH: f32 = 64.;
 const RAIL_HEADER_HEIGHT: f32 = 34.;
@@ -93,9 +93,9 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
             model.selected_organization() == Some(organization.id),
             ("org-tile", organization.id as i64),
             (model.context_menu()
-                != Some(crate::local_workspace::model::ContextMenuTarget::Organization(
-                    organization.id,
-                )))
+                != Some(
+                    crate::local_workspace::model::ContextMenuTarget::Organization(organization.id),
+                ))
             .then(|| organization.name.clone()),
             Some(organization.accent_color.as_str()),
             false,
@@ -220,7 +220,11 @@ fn rail_action(
         .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
         .finish();
     if hovered {
-        with_tooltip(button, tooltip(appearance, label), TooltipSide::Right { gap: 10. })
+        with_tooltip(
+            button,
+            tooltip(appearance, label),
+            TooltipSide::Right { gap: 10. },
+        )
     } else {
         button
     }
@@ -267,12 +271,10 @@ fn rail_item(
     } else {
         Text::new_inline(label, appearance.ui_font_family(), 15.)
             .with_style(Properties::default().weight(Weight::Bold))
-            .with_color(
-                accent_color.map_or_else(
-                    || theme.font_color(theme.surface_2()).into(),
-                    |accent| organization_accent_with_alpha(theme, accent, 255).into(),
-                ),
-            )
+            .with_color(accent_color.map_or_else(
+                || theme.font_color(theme.surface_2()).into(),
+                |accent| organization_accent_with_alpha(theme, accent, 255).into(),
+            ))
             .finish()
     };
     let tile_contents = Flex::row()
@@ -291,7 +293,9 @@ fn rail_item(
         Container::new(tile_contents)
             .with_background(accent_color.map_or_else(
                 || theme.surface_2(),
-                |accent| organization_accent_with_alpha(theme, accent, if active { 82 } else { 46 }),
+                |accent| {
+                    organization_accent_with_alpha(theme, accent, if active { 82 } else { 46 })
+                },
             ))
             .with_border(
                 warpui::elements::Border::all(1.).with_border_fill(if active {
@@ -354,7 +358,9 @@ fn rail_item(
         Some(label) if hovered => with_tooltip(
             handler,
             tooltip(appearance, &label),
-            TooltipSide::Right { gap: 10. - (RAIL_WIDTH - ORGANIZATION_TILE_SIZE) / 2. },
+            TooltipSide::Right {
+                gap: 10. - (RAIL_WIDTH - ORGANIZATION_TILE_SIZE) / 2.,
+            },
         ),
         _ => handler,
     }
@@ -364,7 +370,7 @@ struct OrganizationImageAsset;
 
 impl AsyncAssetType for OrganizationImageAsset {}
 
-fn organization_image_source(image_data: Vec<u8>) -> AssetSource {
+pub(super) fn organization_image_source(image_data: Vec<u8>) -> AssetSource {
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     std::hash::Hash::hash(&image_data, &mut hasher);
     use std::hash::Hasher;

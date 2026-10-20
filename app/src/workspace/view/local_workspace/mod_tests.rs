@@ -1,6 +1,7 @@
 use super::{
-    TabActivationRoute, can_activate_tab_in_selected_project, preferred_open_project_tab,
-    should_render_empty_organization_state, should_render_project_sidebar, tab_activation_route,
+    TabActivationRoute, branch_from_head, can_activate_tab_in_selected_project,
+    keycaps_from_display, preferred_open_project_tab, should_render_empty_organization_state,
+    should_render_project_sidebar, tab_activation_route,
 };
 use crate::local_workspace::model::WorkspaceModel;
 
@@ -130,7 +131,32 @@ fn empty_organization_uses_project_empty_state_instead_of_home() {
     model.select_organization(organization).unwrap();
     assert!(should_render_empty_organization_state(&model));
 
-    let project = model.add_project(organization, "Projeto", r"C:\\projeto").unwrap();
+    let project = model
+        .add_project(organization, "Projeto", r"C:\\projeto")
+        .unwrap();
     model.select_project(project).unwrap();
     assert!(!should_render_empty_organization_state(&model));
+}
+
+#[test]
+fn branch_from_head_reads_symbolic_and_detached_heads() {
+    assert_eq!(
+        branch_from_head("ref: refs/heads/feat/checkout\n").as_deref(),
+        Some("feat/checkout")
+    );
+    assert_eq!(
+        branch_from_head("4f2c9e1d0b7a6c5e4d3c2b1a0f9e8d7c6b5a4f3e\n").as_deref(),
+        Some("4f2c9e1")
+    );
+    assert_eq!(branch_from_head("  \n"), None);
+}
+
+#[test]
+fn keycaps_split_mac_symbols_and_spaced_labels() {
+    assert_eq!(keycaps_from_display("⌘T"), vec!["⌘", "T"]);
+    assert_eq!(keycaps_from_display("⇧⌘T"), vec!["⇧", "⌘", "T"]);
+    assert_eq!(
+        keycaps_from_display("Ctrl Shift T"),
+        vec!["Ctrl", "Shift", "T"]
+    );
 }

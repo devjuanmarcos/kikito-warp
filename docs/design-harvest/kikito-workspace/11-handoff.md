@@ -101,3 +101,28 @@ Avisos que custaram tempo:
 6. Esconder a barra de abas nativa duplicada.
 7. Ícones do design como assets.
 8. Decisões pendentes com o Marcos: dados de agente (badge/status), botão "vincular aba" e reordenação, atalhos.
+
+## 10. Atualização (20/10/2026, segunda sessão)
+
+Meta confirmada pelo Marcos: **95%** pela métrica combinada (não 98%). Fluxo autônomo: medir, corrigir, commitar e dar push sem pedir aprovação a cada passo.
+
+| # | Item | Estado | Paridade medida |
+| - | --- | --- | --- |
+| 5 | Modal "Nova organização" | fechado | 95,6% (desfoque σ=1, tol 16; era 84,3%) |
+| 5b | Modal "Novo projeto" | fechado | 96,2% |
+| 6 | Sidebar | fechado | 96,1% (era 79,9%) |
+| 7 | Projeto sem aba | fechado | geometria e cor exatas; fundo 100%; texto 76,7% (só glifos); teclas diferem por plataforma |
+
+O que mudou:
+- Modal: caixas de linha de 18px no corpo, cabeçalho de 32px, sem borda e sem margem superior do `Modal` genérico (`with_top_margin`), `PixelAligned` (em `dialog_ui.rs`) pinta o diálogo em pixel inteiro (395px numa janela de 800 caía em y=202,5 e borrava as bordas). Tile mostra a inicial do nome; "Remover" ao lado de "Trocar imagem"; teclas semibold e ⏎ como ícone `CornerDownLeft`; ícone `Icon::Upload` (`upload-01.svg`, idêntico ao do kit).
+- Modal de projeto: título "Novo projeto em {org}", campo "Diretório" mono 13px/37px com placeholder `~/slug` (vazio usa o slug; `~` é expandido). Mantive um ícone de pasta dentro do campo para o seletor nativo (desvio pequeno, consciente). Alturas: 318 (novo projeto), 243 (editar projeto). Remoção: o kit não tem diálogo de confirmação; continua 190.
+- Sidebar: busca com borda 20%/foco accent, imagem da organização (18px, raio 4) no cabeçalho, branch em todas as linhas (lido de `.git/HEAD` junto com a checagem de pastas; ativo usa o status Git ao vivo), sem a linha extra "master · N preparados", gap 2 entre linhas, linha de 43px, rodapé fixo embaixo, textos vazios do tom Jarvis ("Nada aqui ainda. Quer que eu crie um projeto?" / "Nenhum resultado encontrado").
+- Projeto sem aba: "Projeto quietinho. Abro um terminal?" 14px centralizado + botão secundário "Nova aba" com o atalho real (`workspace:new_tab`). O atalho de nova aba, no modo Terminal e com projeto selecionado, agora abre o terminal do projeto (como o kit promete).
+
+Achados úteis:
+- Vários ícones do kit já existem em `app/assets/bundled/svg/` com o mesmo desenho; antes de empacotar SVGs novos (item "ícones como assets"), procure lá e só crie a variante em `Icon`.
+- `cargo nextest` não está instalado nesta máquina; use `cargo test -p warp --lib <filtro>` (compilar o binário de teste leva ~20 min).
+- Fixtures de Git para a captura: repositórios vazios com commit em `scratchpad/repos` (branches `main`, `feat/checkout`); o `seed.py` aponta para lá para os textos de branch baterem com o kit.
+- Scripts novos no harness: `native_modal.ps1`, `native_project.ps1`, `native_empty.ps1`, `ref_modal_project.mjs`, `ref_empty.mjs`, `modal_compare.py`, `project_compare.py`, `sidebar_compare.py`, `empty_compare.py`.
+
+Próximos passos: (1) estado de organização sem projetos (texto + "Novo projeto" no centro, como o kit); (2) esconder a faixa de abas nativa duplicada; (3) ícones do kit via `Icon` (procurar em `bundled/svg` primeiro); (4) Home (Jarvis, nome, cards); (5) decisões com o Marcos: dados de agente (badge/status e contagem de abas), botão "vincular aba", arrastar arquivo para a imagem (o terminal sob o modal também recebe `DragAndDropFiles`).

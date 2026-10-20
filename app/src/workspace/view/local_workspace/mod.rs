@@ -10,8 +10,8 @@ mod source_control;
 mod ws_style;
 pub(crate) use source_control::DiffPreview;
 
-use warpui::ViewHandle;
 use crate::workspace::action::WorkspaceAction;
+use warpui::ViewHandle;
 use warpui::elements::{
     Align, Border, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment,
     DispatchEventResult, Element, EventHandler, Flex, MainAxisAlignment, MainAxisSize,
@@ -47,6 +47,7 @@ use crate::appearance::Appearance;
 use crate::editor::EditorView;
 use crate::local_git::{LocalBranch, RepositoryStatus};
 use crate::local_workspace::model::WorkspaceModel;
+use warp_core::ui::Icon;
 
 fn should_render_project_sidebar(model: &WorkspaceModel) -> bool {
     model.selected_organization().is_some()
@@ -112,6 +113,8 @@ pub(crate) fn render(
     appearance: &Appearance,
     content: Box<dyn Element>,
     search_input: ViewHandle<EditorView>,
+    search_focused: bool,
+    new_tab_keys: &[String],
     commit_input: ViewHandle<EditorView>,
     search_query: &str,
     project_sidebar_scroll: ClippedScrollStateHandle,
@@ -119,7 +122,6 @@ pub(crate) fn render(
     available_workspace_tabs: &[String],
     workspace_tab_titles: &std::collections::HashMap<String, String>,
     home_scroll: ClippedScrollStateHandle,
-    git_status_summary: Option<&str>,
     git_status_error: Option<&str>,
     git_status: Option<&RepositoryStatus>,
     git_branches: &[LocalBranch],
@@ -145,10 +147,9 @@ pub(crate) fn render(
             model,
             appearance,
             search_input,
+            search_focused,
             search_query,
             project_sidebar_scroll,
-            git_status_summary,
-            git_status_error,
             git_status,
         ));
     }
@@ -167,26 +168,37 @@ pub(crate) fn render(
             let has_open_project_tab =
                 project_has_open_terminal(model, project_id, available_workspace_tabs);
             let project_content: Box<dyn Element> = if !has_open_project_tab {
-                let action = crate::workspace::action::WorkspaceAction::AddLocalWorkspaceTerminal;
-                let empty = EventHandler::new(
-                    Container::new(
-                        Text::new_inline(
-                            "Este projeto ainda não tem terminais. Crie um terminal para começar.",
-                            appearance.ui_font_family(),
-                            13.,
-                        )
-                        .with_color(theme.sub_text_color(theme.background()).into())
-                        .finish(),
+                let keys: Vec<&str> = new_tab_keys.iter().map(String::as_str).collect();
+                let mut empty = Flex::column()
+                    .with_main_axis_size(MainAxisSize::Min)
+                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                    .with_spacing(12.);
+                empty.add_child(
+                    Text::new_inline(
+                        "Projeto quietinho. Abro um terminal?",
+                        appearance.ui_font_family(),
+                        14.,
                     )
-                    .with_uniform_padding(24.)
+                    .with_color(theme.sub_text_color(theme.background()).into())
                     .finish(),
-                )
-                .on_left_mouse_up(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(action.clone());
-                    DispatchEventResult::StopPropagation
-                })
-                .finish();
-                empty
+                );
+                empty.add_child(dialog_ui::dialog_button(
+                    appearance,
+                    Some(Icon::Plus),
+                    "Nova aba",
+                    &keys,
+                    dialog_ui::ButtonVariant::Secondary,
+                    true,
+                    ("empty-project-new-tab", 0),
+                    |ctx| {
+                        ctx.dispatch_typed_action(
+                            crate::workspace::action::WorkspaceAction::AddLocalWorkspaceTerminal,
+                        )
+                    },
+                ));
+                Container::new(Align::new(empty.finish()).finish())
+                    .with_background(theme.background())
+                    .finish()
             } else {
                 content
             };
@@ -260,9 +272,13 @@ fn empty_organization_state(
     };
     let theme = appearance.theme();
     let search = Container::new(
-        Text::new_inline("Buscar projetos e abas...", appearance.ui_font_family(), 12.)
-            .with_color(theme.sub_text_color(theme.surface_1()).into())
-            .finish(),
+        Text::new_inline(
+            "Buscar projetos e abas...",
+            appearance.ui_font_family(),
+            12.,
+        )
+        .with_color(theme.sub_text_color(theme.surface_1()).into())
+        .finish(),
     )
     .with_background(theme.surface_2())
     .with_padding_left(10.)
@@ -280,13 +296,9 @@ fn empty_organization_state(
     header.add_child(
         Shrinkable::new(
             1.,
-            Text::new_inline(
-                organization.name.clone(),
-                appearance.ui_font_family(),
-                12.,
-            )
-            .with_color(theme.font_color(theme.surface_1()).into())
-            .finish(),
+            Text::new_inline(organization.name.clone(), appearance.ui_font_family(), 12.)
+                .with_color(theme.font_color(theme.surface_1()).into())
+                .finish(),
         )
         .finish(),
     );
@@ -344,6 +356,55 @@ fn empty_organization_state(
         .with_child(header)
         .with_child(Shrinkable::new(1., Align::new(empty.finish()).finish()).finish())
         .finish()
+}
+
+/// Branch checked out in the Git work tree at `path`, read from `HEAD` without spawning Git so
+/// every sidebar row can show one. `None` when the folder is not a work tree.
+pub(crate) async fn read_checked_out_branch(path: &str) -> Option<String> {
+    let dot_git = std::path::Path::new(path).join(".git");
+    let git_dir = match async_fs::read_to_string(&dot_git).await {
+        Ok(pointer) => {
+            let target = pointer.trim().strip_prefix("gitdir:")?.trim().to_owned();
+            std::path::Path::new(path).join(target)
+        }
+        Err(_) => dot_git,
+    };
+    let head = async_fs::read_to_string(git_dir.join("HEAD")).await.ok()?;
+    branch_from_head(&head)
+}
+
+fn branch_from_head(head: &str) -> Option<String> {
+    let head = head.trim();
+    if head.is_empty() {
+        return None;
+    }
+    Some(match head.strip_prefix("ref: ") {
+        Some(reference) => reference
+            .strip_prefix("refs/heads/")
+            .unwrap_or(reference)
+            .to_owned(),
+        None => head.chars().take(7).collect(),
+    })
+}
+
+/// Splits a displayed keystroke ("⇧⌘T" on macOS, "Ctrl Shift T" elsewhere) into keycap labels.
+pub(crate) fn keycaps_from_display(displayed: &str) -> Vec<String> {
+    if displayed.contains(' ') {
+        return displayed.split_whitespace().map(str::to_owned).collect();
+    }
+    let mut caps = Vec::new();
+    let mut key = String::new();
+    for c in displayed.chars() {
+        if matches!(c, '⌃' | '⌥' | '⇧' | '⌘') && key.is_empty() {
+            caps.push(c.to_string());
+        } else {
+            key.push(c);
+        }
+    }
+    if !key.is_empty() {
+        caps.push(key);
+    }
+    caps
 }
 
 #[cfg(test)]

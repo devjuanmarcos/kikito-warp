@@ -1,14 +1,14 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+use pathfinder_geometry::vector::vec2f;
 use warp_core::ui::Icon;
 use warp_core::ui::color::blend::Blend;
 use warp_core::ui::theme::{Fill, WarpTheme};
-use pathfinder_geometry::vector::vec2f;
 use warpui::elements::{
-    Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Element, Flex,
-    Hoverable, MainAxisAlignment, MainAxisSize, MouseState, MouseStateHandle, OffsetPositioning,
-    ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack, Text,
+    Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Element,
+    Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseState, MouseStateHandle,
+    OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack, Text,
 };
 use warpui::platform::Cursor;
 
@@ -51,7 +51,9 @@ pub(super) enum TooltipSide {
     AboveRight,
     BelowRight,
     /// Beside the element; `gap` is measured from its right edge.
-    Right { gap: f32 },
+    Right {
+        gap: f32,
+    },
 }
 
 /// Inverted pill used for hover hints: tooltip background, theme-background text, 10px UI font.
@@ -165,9 +167,7 @@ pub(super) fn naked_icon_button(
     .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
     .finish();
     match tooltip_label {
-        Some((label, side)) if hovered => {
-            with_tooltip(button, tooltip(appearance, label), side)
-        }
+        Some((label, side)) if hovered => with_tooltip(button, tooltip(appearance, label), side),
         _ => button,
     }
 }
@@ -182,11 +182,11 @@ pub(super) fn secondary_button(
 ) -> Box<dyn Element> {
     Hoverable::new(mouse_state(key.0, key.1), |mouse| {
         let mut button = Container::new(
-            ConstrainedBox::new(content).with_height(height - 2.).finish(),
+            ConstrainedBox::new(content)
+                .with_height(height - 2.)
+                .finish(),
         )
-        .with_border(
-            warpui::elements::Border::all(1.).with_border_fill(neutral(theme, 20)),
-        )
+        .with_border(warpui::elements::Border::all(1.).with_border_fill(neutral(theme, 20)))
         .with_corner_radius(radius(4.));
         if let Some(background) = ghost_background(theme, mouse, None) {
             button = button.with_background(background);

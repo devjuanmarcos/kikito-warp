@@ -1,5 +1,5 @@
 param([string]$Tag = "t")
-$s = "C:\Users\Marcos\AppData\Local\Temp\claude\D--DEVJUANMARCOS-PROJETOS-KIKITO-WARP\76b83ee0-665c-47d8-a6dc-2c6001b9e265\scratchpad\harness"
+$s = "C:\Users\Marcos\AppData\Local\Temp\claude\D--DEVJUANMARCOS-PROJETOS-KIKITO-WARP\594f3941-77bf-483a-a5e1-364a7ec5d42c\scratchpad\harness"
 Add-Type -AssemblyName System.Windows.Forms
 $orig = [System.Windows.Forms.Cursor]::Position
 function N($a, $x = 0, $y = 0, $o = "") { & "$s\native.ps1" -Action $a -X $x -Y $y -Out $o -W 1280 -H 800 | Out-Null }

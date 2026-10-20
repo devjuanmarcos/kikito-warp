@@ -7,8 +7,8 @@ use warpui::assets::asset_cache::AssetSource;
 use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
 use warpui::elements::{
     Border, CacheOption, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment,
-    DispatchEventResult, Element, Empty, EventHandler, Expanded, Fill, Flex, Image, MainAxisAlignment,
-    MainAxisSize, ParentElement, ScrollbarWidth, Shrinkable, Text,
+    DispatchEventResult, Element, Empty, EventHandler, Expanded, Fill, Flex, Image,
+    MainAxisAlignment, MainAxisSize, ParentElement, ScrollbarWidth, Shrinkable, Text,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::text_layout::ClipConfig;
@@ -71,11 +71,7 @@ fn ellipsized(
         .finish()
 }
 
-fn section_title(
-    label: &str,
-    right: Option<String>,
-    appearance: &Appearance,
-) -> Box<dyn Element> {
+fn section_title(label: &str, right: Option<String>, appearance: &Appearance) -> Box<dyn Element> {
     let theme = appearance.theme();
     let background = theme.background();
     let mut row = Flex::row()
@@ -94,7 +90,9 @@ fn section_title(
                 .finish(),
         );
     }
-    Container::new(row.finish()).with_margin_bottom(10.).finish()
+    Container::new(row.finish())
+        .with_margin_bottom(10.)
+        .finish()
 }
 
 fn project_card(
@@ -138,10 +136,7 @@ fn project_card(
         .with_spacing(8.);
     let (status_text, status_color) = match model.project_path_status(project.id) {
         ProjectPathStatus::Checking | ProjectPathStatus::Available => (None, sub),
-        ProjectPathStatus::Missing => (
-            Some("Pasta não encontrada"),
-            theme.ui_error_color().into(),
-        ),
+        ProjectPathStatus::Missing => (Some("Pasta não encontrada"), theme.ui_error_color().into()),
         ProjectPathStatus::NotDirectory => (
             Some("O caminho não é uma pasta"),
             theme.ui_error_color().into(),
@@ -154,10 +149,8 @@ fn project_card(
         Shrinkable::new(
             1.,
             ellipsized(
-                status_text.map_or_else(
-                    || plural(project.tabs.len(), "aba", "abas"),
-                    str::to_owned,
-                ),
+                status_text
+                    .map_or_else(|| plural(project.tabs.len(), "aba", "abas"), str::to_owned),
                 appearance.ui_font_family(),
                 11.,
                 status_color,
@@ -388,9 +381,9 @@ pub(super) fn render(
             .finish(),
         );
     } else {
-        let projects: Vec<&LocalProject> =
-            model.recent_projects().take(RECENT_PROJECTS).collect();
-        let mut projects_section = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
+        let projects: Vec<&LocalProject> = model.recent_projects().take(RECENT_PROJECTS).collect();
+        let mut projects_section =
+            Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
         projects_section.add_child(section_title(
             "Projetos recentes",
             Some(format!(
@@ -446,11 +439,13 @@ pub(super) fn render(
         });
         recent_tabs.truncate(RECENT_TABS);
         if !recent_tabs.is_empty() {
-            let mut tabs_list = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
+            let mut tabs_list =
+                Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
             for tab in &recent_tabs {
                 tabs_list.add_child(recent_tab_row(model, tab, appearance));
             }
-            let mut tabs_section = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
+            let mut tabs_section =
+                Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
             tabs_section.add_child(section_title("Abas recentes", None, appearance));
             tabs_section.add_child(
                 Container::new(tabs_list.finish())

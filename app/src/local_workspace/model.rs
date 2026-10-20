@@ -97,6 +97,8 @@ pub struct WorkspaceModel {
     hovered_tab: Option<TabId>,
     status_error: Option<String>,
     project_path_statuses: HashMap<ProjectId, ProjectPathStatus>,
+    /// Checked-out branch of each project folder that is a Git work tree.
+    project_branches: HashMap<ProjectId, String>,
     next_organization_id: OrganizationId,
     next_project_id: ProjectId,
 }
@@ -262,6 +264,21 @@ impl WorkspaceModel {
             .collect()
     }
 
+    pub fn project_branch(&self, project_id: ProjectId) -> Option<&str> {
+        self.project_branches.get(&project_id).map(String::as_str)
+    }
+
+    pub fn set_project_branch(&mut self, project_id: ProjectId, branch: Option<String>) {
+        match branch {
+            Some(branch) if self.projects.contains_key(&project_id) => {
+                self.project_branches.insert(project_id, branch);
+            }
+            _ => {
+                self.project_branches.remove(&project_id);
+            }
+        }
+    }
+
     pub fn set_project_path_status(&mut self, project_id: ProjectId, status: ProjectPathStatus) {
         if self.projects.contains_key(&project_id) {
             self.project_path_statuses.insert(project_id, status);
@@ -335,6 +352,7 @@ impl WorkspaceModel {
             .remove(&id)
             .ok_or(ModelError::MissingProject)?;
         self.project_path_statuses.remove(&id);
+        self.project_branches.remove(&id);
         self.path_index.remove(&project.path_key);
         for tab_id in project.tabs {
             self.tab_index.remove(&tab_id);
@@ -669,7 +687,10 @@ impl WorkspaceModel {
         if self.hovered_organization == Some(organization_id) {
             self.hovered_organization = None;
         }
-        if self.hovered_project.is_some_and(|id| removed_project_ids.contains(&id)) {
+        if self
+            .hovered_project
+            .is_some_and(|id| removed_project_ids.contains(&id))
+        {
             self.hovered_project = None;
         }
         if self.context_menu.is_some_and(|target| match target {
