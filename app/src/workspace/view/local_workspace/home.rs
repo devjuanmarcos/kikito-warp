@@ -350,14 +350,11 @@ pub(super) fn render(
         .with_spacing(14.);
     header.add_child(
         ConstrainedBox::new(
-            Container::new(
-                Image::new(
-                    AssetSource::Bundled {
-                        path: "bundled/png/kikito-terminal-icon.png",
-                    },
-                    CacheOption::BySize,
-                )
-                .finish(),
+            Image::new(
+                AssetSource::Bundled {
+                    path: "bundled/png/kikito-terminal-icon.png",
+                },
+                CacheOption::BySize,
             )
             .with_corner_radius(radius(10.))
             .finish(),

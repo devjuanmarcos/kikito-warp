@@ -91,6 +91,7 @@ pub struct WorkspaceModel {
     selected_project: Option<ProjectId>,
     context_menu: Option<ContextMenuTarget>,
     context_menu_index: usize,
+    context_menu_keyboard_active: bool,
     hovered_organization: Option<OrganizationId>,
     hovered_project: Option<ProjectId>,
     hovered_tab: Option<TabId>,
@@ -481,10 +482,15 @@ impl WorkspaceModel {
     pub fn set_context_menu(&mut self, target: Option<ContextMenuTarget>) {
         self.context_menu = target;
         self.context_menu_index = 0;
+        self.context_menu_keyboard_active = false;
     }
 
     pub fn context_menu_index(&self) -> usize {
         self.context_menu_index
+    }
+
+    pub fn context_menu_keyboard_active(&self) -> bool {
+        self.context_menu_keyboard_active
     }
 
     pub fn move_context_menu_selection(&mut self, delta: i32) {
@@ -495,6 +501,7 @@ impl WorkspaceModel {
             ContextMenuTarget::Organization(_) => 2,
             ContextMenuTarget::Project(_) => 3,
         };
+        self.context_menu_keyboard_active = true;
         self.context_menu_index =
             (self.context_menu_index as i32 + delta).rem_euclid(item_count as i32) as usize;
     }

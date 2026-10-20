@@ -92,7 +92,11 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
                 .to_string(),
             model.selected_organization() == Some(organization.id),
             ("org-tile", organization.id as i64),
-            Some(organization.name.clone()),
+            (model.context_menu()
+                != Some(crate::local_workspace::model::ContextMenuTarget::Organization(
+                    organization.id,
+                )))
+            .then(|| organization.name.clone()),
             Some(organization.accent_color.as_str()),
             false,
             organization.image_data.clone(),
@@ -110,11 +114,12 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
                 super::context_menu::render(
                     crate::local_workspace::model::ContextMenuTarget::Organization(organization.id),
                     model.context_menu_index(),
+                    model.context_menu_keyboard_active(),
                     appearance,
                 ),
                 OffsetPositioning::offset_from_parent(
                     vec2f(RAIL_WIDTH / 2., ORGANIZATION_TILE_SIZE / 2.),
-                    ParentOffsetBounds::ParentByPosition,
+                    ParentOffsetBounds::WindowByPosition,
                     ParentAnchor::TopLeft,
                     ChildAnchor::TopLeft,
                 ),
@@ -155,7 +160,7 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
             .with_padding_bottom(12.)
             .finish(),
     )
-    .with_width(RAIL_WIDTH)
+    .with_width(RAIL_WIDTH + 1.)
     .finish()
 }
 
@@ -246,6 +251,9 @@ fn rail_item(
                 CacheOption::BySize,
             )
             .with_opacity(if active { 1. } else { 0.85 })
+            .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                warpui::elements::Radius::Pixels(8.),
+            ))
             .finish(),
         )
         .with_width(ORGANIZATION_TILE_SIZE)
@@ -374,7 +382,7 @@ pub(super) fn organization_accent(theme: &WarpTheme, name: &str) -> warp_core::u
     organization_accent_with_alpha(theme, name, 255)
 }
 
-fn organization_accent_with_alpha(
+pub(super) fn organization_accent_with_alpha(
     theme: &WarpTheme,
     name: &str,
     alpha: u8,

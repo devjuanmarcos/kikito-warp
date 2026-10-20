@@ -323,11 +323,12 @@ pub(super) fn render(
                         super::context_menu::render(
                             crate::local_workspace::model::ContextMenuTarget::Project(project.id),
                             model.context_menu_index(),
+                            model.context_menu_keyboard_active(),
                             appearance,
                         ),
                         OffsetPositioning::offset_from_parent(
-                            vec2f(-8., 0.),
-                            ParentOffsetBounds::ParentByPosition,
+                            vec2f(-38., 3.),
+                            ParentOffsetBounds::WindowByPosition,
                             ParentAnchor::TopRight,
                             ChildAnchor::TopRight,
                         ),
@@ -382,7 +383,7 @@ pub(super) fn render(
                 create_project_action,
                 ("footer-new-project", 0),
             ))
-            .with_width(SIDEBAR_WIDTH - 17.)
+            .with_width(SIDEBAR_WIDTH - 16.)
             .finish();
             sidebar.add_child(
                 Container::new(create_project_button)
@@ -468,6 +469,7 @@ pub(super) fn render(
                 project_item.add_child(super::context_menu::render(
                     crate::local_workspace::model::ContextMenuTarget::Project(project.id),
                     model.context_menu_index(),
+                            model.context_menu_keyboard_active(),
                     appearance,
                 ));
             }
@@ -487,7 +489,7 @@ pub(super) fn render(
             .with_border(Border::right(1.).with_border_fill(theme.outline()))
             .finish(),
     )
-    .with_width(SIDEBAR_WIDTH)
+    .with_width(SIDEBAR_WIDTH + 1.)
     .finish()
 }
 

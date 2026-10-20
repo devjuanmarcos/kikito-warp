@@ -1,5 +1,6 @@
 mod context_menu;
 pub(super) mod create_dialog;
+mod dialog_ui;
 mod home;
 pub(super) mod image_cropper;
 mod org_rail;

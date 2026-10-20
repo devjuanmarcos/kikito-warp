@@ -1,0 +1,13 @@
+[
+ {"name":"header+ fundo repouso","ref":"ref/ref_rest.png","nat":"s6_rest.png","rbox":[306,29,24,24],"nbox":[280,6,24,24],"ignore":[3,3,18,18]},
+ {"name":"header+ fundo hover","ref":"ref/ref_hover_header_plus.png","nat":"s6_hover_header_plus.png","rbox":[306,29,24,24],"nbox":[280,6,24,24],"ignore":[3,3,18,18]},
+ {"name":"header+ fundo press","ref":"ref/ref_press_header_plus.png","nat":"s6_press_header_plus.png","rbox":[306,29,24,24],"nbox":[280,6,24,24],"ignore":[3,3,18,18]},
+ {"name":"footer fundo repouso","ref":"ref/ref_rest.png","nat":"s6_rest.png","rbox":[98,744,232,24],"nbox":[73,257,232,24],"ignore":[60,2,112,20]},
+ {"name":"footer fundo hover","ref":"ref/ref_hover_footer.png","nat":"s6_hover_footer.png","rbox":[98,744,232,24],"nbox":[73,257,232,24],"ignore":[60,2,112,20]},
+ {"name":"footer fundo press","ref":"ref/ref_press_footer.png","nat":"s6_press_footer.png","rbox":[98,744,232,24],"nbox":[73,257,232,24],"ignore":[60,2,112,20]},
+ {"name":"footer completo hover","ref":"ref/ref_hover_footer.png","nat":"s6_hover_footer.png","rbox":[98,744,232,24],"nbox":[73,257,232,24],"save":"g_fh.png"},
+ {"name":"tab+ fundo repouso","ref":"ref/ref_rest.png","nat":"s6_rest.png","rbox":[943,29,24,24],"nbox":[769,6,24,24],"ignore":[3,3,18,18]},
+ {"name":"tab+ fundo hover","ref":"ref/ref_hover_tab_plus.png","nat":"s6_hover_tab_plus.png","rbox":[943,29,24,24],"nbox":[769,6,24,24],"ignore":[3,3,18,18]},
+ {"name":"git fundo repouso","ref":"ref/ref_rest.png","nat":"s6_rest.png","rbox":[1223,29,24,24],"nbox":[1109,6,24,24],"ignore":[3,3,18,18]},
+ {"name":"git fundo hover","ref":"ref/ref_hover_git.png","nat":"s6_hover_git.png","rbox":[1223,29,24,24],"nbox":[1109,6,24,24],"ignore":[3,3,18,18]}
+]

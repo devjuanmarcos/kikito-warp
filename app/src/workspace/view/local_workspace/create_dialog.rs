@@ -14,10 +14,19 @@ use warpui::elements::{
 use warpui::fonts::{Properties, Weight};
 use warpui::ui_components::components::{UiComponent, UiComponentStyles};
 use warpui::ui_components::text_input::TextInput;
-use warpui::{AppContext, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
+use warpui::{
+    AppContext, Entity, FocusContext, SingletonEntity, TypedActionView, View, ViewContext,
+    ViewHandle,
+};
 
+use super::dialog_ui::{ButtonVariant, color_dot, dialog_button, dialog_close, small_secondary};
+use super::ws_style::{mouse_state, neutral, sized_icon};
 use crate::appearance::Appearance;
-use crate::editor::{EditorView, Event as EditorEvent, SingleLineEditorOptions};
+use warp_core::ui::Icon;
+use warpui::elements::Hoverable;
+use warpui::platform::Cursor;
+use warpui::ui_components::components::Coords;
+use crate::editor::{EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions};
 use crate::local_workspace::model::{OrganizationId, ProjectId};
 
 static IMAGE_CROP_LOCK: std::sync::OnceLock<futures::lock::Mutex<()>> = std::sync::OnceLock::new();
@@ -132,9 +141,27 @@ impl CreateDialog {
         image_data: Option<Vec<u8>>,
         ctx: &mut ViewContext<Self>,
     ) -> Self {
+        let kind_for_placeholder = kind.clone();
+        let ui_text = TextOptions::ui_text(Some(12.), Appearance::as_ref(ctx));
         let name_editor = ctx.add_typed_action_view(|ctx| {
-            let mut editor = EditorView::single_line(SingleLineEditorOptions::default(), ctx);
-            editor.set_placeholder_text("Nome", ctx);
+            let mut editor = EditorView::single_line(
+                SingleLineEditorOptions {
+                    text: ui_text,
+                    ..Default::default()
+                },
+                ctx,
+            );
+            editor.set_placeholder_text(
+                if matches!(
+                    kind_for_placeholder,
+                    CreateDialogKind::CreateProject(_) | CreateDialogKind::EditProject(_)
+                ) {
+                    "Ex.: keener-api"
+                } else {
+                    "Ex.: Keener"
+                },
+                ctx,
+            );
             editor
         });
         name_editor.update(ctx, |editor, ctx| {
@@ -155,7 +182,7 @@ impl CreateDialog {
             kind,
             name_editor,
             project_path,
-            accent_color: accent_color.unwrap_or_else(|| "blue".to_owned()),
+            accent_color: accent_color.unwrap_or_else(|| "yellow".to_owned()),
             source_image_data: image_data.clone(),
             source_dimensions: image_data.as_ref().map(|_| (128, 128)),
             image_data,
@@ -477,6 +504,97 @@ impl CreateDialog {
     }
 }
 
+impl CreateDialog {
+    fn image_field(&self, appearance: &Appearance) -> Box<dyn Element> {
+        let theme = appearance.theme();
+        let accent = super::org_rail::organization_accent(theme, &self.accent_color);
+        let tile_content: Box<dyn Element> = if let Some(bytes) = &self.image_data {
+            Image::new(image_preview_source(bytes.clone()), CacheOption::BySize)
+                .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                    warpui::elements::Radius::Pixels(12.),
+                ))
+                .finish()
+        } else {
+            Flex::row()
+                .with_main_axis_alignment(MainAxisAlignment::Center)
+                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                .with_child(sized_icon(Icon::Image, accent, 20.))
+                .finish()
+        };
+        let tile = ConstrainedBox::new(
+            Container::new(tile_content)
+                .with_background(super::org_rail::organization_accent_with_alpha(
+                    theme,
+                    &self.accent_color,
+                    56,
+                ))
+                .with_border(Border::all(1.).with_border_fill(
+                    super::org_rail::organization_accent_with_alpha(theme, &self.accent_color, 102),
+                ))
+                .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                    warpui::elements::Radius::Pixels(12.),
+                ))
+                .finish(),
+        )
+        .with_width(56.)
+        .with_height(56.)
+        .finish();
+        let tile = Hoverable::new(mouse_state("dialog-image-tile", 0), |_| tile)
+            .with_cursor(Cursor::PointingHand)
+            .on_click(|ctx, _, _| {
+                ctx.dispatch_typed_action(CreateDialogAction::PickOrganizationImage)
+            })
+            .finish();
+        let mut actions = Flex::column().with_spacing(6.);
+        actions.add_child(small_secondary(
+            theme,
+            ("dialog-image-button", 0),
+            |ctx| ctx.dispatch_typed_action(CreateDialogAction::PickOrganizationImage),
+            Container::new(
+                Flex::row()
+                    .with_main_axis_size(MainAxisSize::Min)
+                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                    .with_spacing(2.)
+                    .with_child(sized_icon(Icon::UploadCloud, theme.foreground(), 14.))
+                    .with_child(
+                        Text::new_inline(
+                            if self.image_data.is_some() {
+                                "Trocar imagem"
+                            } else {
+                                "Escolher imagem"
+                            },
+                            appearance.ui_font_family(),
+                            12.,
+                        )
+                        .with_style(Properties::default().weight(Weight::Semibold))
+                        .with_color(theme.foreground().into())
+                        .finish(),
+                    )
+                    .finish(),
+            )
+            .with_padding_left(8.)
+            .with_padding_right(8.)
+            .with_padding_bottom(2.)
+            .finish(),
+        ));
+        actions.add_child(
+            Text::new_inline(
+                "PNG, JPG ou SVG.".to_owned(),
+                appearance.ui_font_family(),
+                11.,
+            )
+            .with_color(theme.hint_text_color(theme.surface_1()).into())
+            .finish(),
+        );
+        Flex::row()
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_spacing(12.)
+            .with_child(tile)
+            .with_child(actions.finish())
+            .finish()
+    }
+}
+
 impl Entity for CreateDialog {
     type Event = CreateDialogEvent;
 }
@@ -484,6 +602,12 @@ impl Entity for CreateDialog {
 impl View for CreateDialog {
     fn ui_name() -> &'static str {
         "LocalWorkspaceDialog"
+    }
+
+    fn on_focus(&mut self, focus_ctx: &FocusContext, ctx: &mut ViewContext<Self>) {
+        if focus_ctx.is_self_focused() {
+            ctx.focus(&self.name_editor);
+        }
     }
 
     fn render(&self, app: &AppContext) -> Box<dyn Element> {
@@ -501,34 +625,16 @@ impl View for CreateDialog {
             CreateDialogKind::EditProject(_) => "Editar projeto",
             CreateDialogKind::RemoveProject(_) => "Remover projeto",
         };
-        let close_button = EventHandler::new(
-            ConstrainedBox::new(
-                Flex::row()
-                    .with_main_axis_alignment(MainAxisAlignment::Center)
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_child(
-                        Text::new_inline("×", appearance.ui_font_family(), 18.)
-                            .with_color(theme.sub_text_color(theme.surface_2()).into())
-                            .finish(),
-                    )
-                    .finish(),
-            )
-            .with_width(24.)
-            .with_height(24.)
-            .finish(),
-        )
-        .on_left_mouse_up(|ctx, _, _| {
-            ctx.dispatch_typed_action(CreateDialogAction::Cancel);
-            DispatchEventResult::StopPropagation
-        })
-        .finish();
+        let close_button = dialog_close(appearance, ("dialog-close", 0), |ctx| {
+            ctx.dispatch_typed_action(CreateDialogAction::Cancel)
+        });
         let mut header = Flex::row()
             .with_main_axis_size(MainAxisSize::Max)
             .with_main_axis_alignment(MainAxisAlignment::SpaceBetween)
             .with_cross_axis_alignment(CrossAxisAlignment::Center);
         header.add_child(
             Text::new_inline(title, appearance.ui_font_family(), 18.)
-                .with_color(theme.font_color(theme.background()).into())
+                .with_color(theme.main_text_color(theme.surface_1()).into())
                 .with_style(Properties::default().weight(Weight::Semibold))
                 .finish(),
         );
@@ -570,7 +676,7 @@ impl View for CreateDialog {
             };
             body.add_child(
                 Text::new_inline(description, appearance.ui_font_family(), 12.)
-                    .with_color(theme.sub_text_color(theme.surface_2()).into())
+                    .with_color(theme.sub_text_color(theme.surface_1()).into())
                     .finish(),
             );
             body.add_child(field(
@@ -581,6 +687,22 @@ impl View for CreateDialog {
                         .set_border_radius(warpui::elements::CornerRadius::with_all(
                             warpui::elements::Radius::Pixels(4.),
                         ))
+                        .set_border_width(1.)
+                        .set_border_color(
+                            if self.name_editor.is_focused(app) {
+                                theme.accent()
+                            } else {
+                                theme.foreground().with_opacity(20)
+                            }
+                            .into(),
+                        )
+                        .set_background(theme.background().into())
+                        .set_padding(Coords {
+                            top: 10.,
+                            bottom: 10.,
+                            left: 10.,
+                            right: 10.,
+                        })
                         .set_height(36.),
                 )
                 .build()
@@ -592,36 +714,29 @@ impl View for CreateDialog {
             &self.kind,
             CreateDialogKind::CreateOrganization | CreateDialogKind::EditOrganization(_)
         ) {
-            let mut colors = Flex::row().with_spacing(8.);
-            for color in ["blue", "green", "magenta", "yellow", "cyan", "red"] {
-                let action = CreateDialogAction::SelectAccent(color.to_owned());
+            body.add_child(field(
+                "Imagem",
+                self.image_field(appearance),
+                appearance,
+            ));
+            let mut colors = Flex::row().with_spacing(6.);
+            for (index, color) in ["blue", "green", "magenta", "yellow", "cyan", "red"]
+                .into_iter()
+                .enumerate()
+            {
                 let selected = self.accent_color == color;
-                let swatch = ConstrainedBox::new(
-                    Container::new(
-                        Text::new_inline(" ".to_owned(), appearance.ui_font_family(), 1.).finish(),
-                    )
-                    .with_background(super::org_rail::organization_accent(theme, color))
-                    .with_border(if selected {
-                        Border::all(2.).with_border_fill(theme.font_color(theme.background()))
-                    } else {
-                        Border::all(1.).with_border_fill(theme.outline())
-                    })
-                    .with_corner_radius(warpui::elements::CornerRadius::with_all(
-                        warpui::elements::Radius::Pixels(999.),
-                    ))
-                    .finish(),
-                )
-                .with_width(16.)
-                .with_height(16.)
-                .finish();
-                colors.add_child(
-                    EventHandler::new(swatch)
-                        .on_left_mouse_up(move |ctx, _, _| {
-                            ctx.dispatch_typed_action(action.clone());
-                            DispatchEventResult::StopPropagation
-                        })
-                        .finish(),
-                );
+                let color_name = color.to_owned();
+                colors.add_child(color_dot(
+                    super::org_rail::organization_accent(theme, color),
+                    selected,
+                    theme.accent(),
+                    ("dialog-color", index as i64),
+                    move |ctx| {
+                        ctx.dispatch_typed_action(CreateDialogAction::SelectAccent(
+                            color_name.clone(),
+                        ))
+                    },
+                ));
             }
             body.add_child(field(
                 if self.image_data.is_some() {
@@ -630,11 +745,6 @@ impl View for CreateDialog {
                     "Cor"
                 },
                 colors.finish(),
-                appearance,
-            ));
-            body.add_child(Self::button(
-                "Escolher imagem...",
-                CreateDialogAction::PickOrganizationImage,
                 appearance,
             ));
             if self.image_selection_error {
@@ -720,16 +830,24 @@ impl View for CreateDialog {
                     .finish(),
             );
         }
+        let name_filled = confirmation
+            || !self.name_editor.as_ref(app).buffer_text(app).trim().is_empty();
         let mut footer = Flex::row()
+            .with_main_axis_size(MainAxisSize::Max)
             .with_main_axis_alignment(MainAxisAlignment::End)
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_spacing(8.);
-        footer.add_child(Self::button(
-            "Cancelar",
-            CreateDialogAction::Cancel,
+        footer.add_child(dialog_button(
             appearance,
+            "Cancelar",
+            None,
+            ButtonVariant::Secondary,
+            true,
+            ("dialog-cancel", 0),
+            |ctx| ctx.dispatch_typed_action(CreateDialogAction::Cancel),
         ));
-        footer.add_child(Self::button(
+        footer.add_child(dialog_button(
+            appearance,
             match &self.kind {
                 CreateDialogKind::CreateOrganization | CreateDialogKind::CreateProject(_) => {
                     "Criar"
@@ -741,8 +859,15 @@ impl View for CreateDialog {
                     "Remover"
                 }
             },
-            CreateDialogAction::Submit,
-            appearance,
+            Some("⏎"),
+            if confirmation {
+                ButtonVariant::Error
+            } else {
+                ButtonVariant::Primary
+            },
+            name_filled,
+            ("dialog-submit", 0),
+            |ctx| ctx.dispatch_typed_action(CreateDialogAction::Submit),
         ));
         let body = Container::new(Shrinkable::new(1., body.finish()).finish())
             .with_padding_left(24.)
@@ -754,15 +879,21 @@ impl View for CreateDialog {
             .with_padding_right(24.)
             .with_padding_top(12.)
             .with_padding_bottom(12.)
-            .with_border(Border::top(1.).with_border_fill(theme.outline()))
+            .with_border(Border::top(1.).with_border_fill(neutral(theme, 20)))
             .finish();
         let mut dialog = Flex::column()
-            .with_main_axis_size(MainAxisSize::Min)
+            .with_main_axis_size(MainAxisSize::Max)
             .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
         dialog.add_child(header);
         dialog.add_child(body);
         dialog.add_child(footer);
-        Container::new(dialog.finish()).finish()
+        Container::new(dialog.finish())
+            .with_background(theme.surface_1())
+            .with_border(Border::all(1.).with_border_fill(neutral(theme, 20)))
+            .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                warpui::elements::Radius::Pixels(8.),
+            ))
+            .finish()
     }
 }
 
@@ -772,7 +903,7 @@ fn field(label: &str, content: Box<dyn Element>, appearance: &Appearance) -> Box
         .with_spacing(6.);
     field.add_child(
         Text::new_inline(label.to_owned(), appearance.ui_font_family(), 12.)
-            .with_color(appearance.theme().font_color(appearance.theme().surface_2()).into())
+            .with_color(appearance.theme().main_text_color(appearance.theme().surface_1()).into())
             .finish(),
     );
     field.add_child(content);

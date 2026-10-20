@@ -1,11 +1,17 @@
+use super::ws_style::{mouse_state, radius, sized_icon};
 use crate::appearance::Appearance;
 use crate::local_workspace::model::ContextMenuTarget;
 use crate::workspace::action::WorkspaceAction;
+use pathfinder_color::ColorU;
+use pathfinder_geometry::vector::vec2f;
 use warp_core::ui::Icon;
+use warp_core::ui::theme::Fill;
 use warpui::elements::{
-    Border, ConstrainedBox, Container, CrossAxisAlignment, Dismiss, DispatchEventResult, Element,
-    EventHandler, Flex, MainAxisSize, ParentElement, Rect, Shrinkable, Text,
+    Border, ConstrainedBox, Container, CrossAxisAlignment, Dismiss, DispatchEventResult,
+    DropShadow, Element, EventHandler, Expanded, Flex, Hoverable, MainAxisSize,
+    ParentElement, Rect, Text,
 };
+use warpui::platform::Cursor;
 
 struct MenuItem {
     label: &'static str,
@@ -18,79 +24,64 @@ struct MenuItem {
 pub(super) fn render(
     target: ContextMenuTarget,
     selected_index: usize,
+    keyboard_active: bool,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
     let items = items(target);
-    let mut menu = Flex::column()
-        .with_main_axis_size(MainAxisSize::Max)
-        .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-        .with_spacing(1.);
+    let mut menu = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
     let mut action_index = 0;
     for item in items {
         if item.separator_before {
             menu.add_child(
                 Container::new(
-                    ConstrainedBox::new(
-                        Rect::new()
-                            .with_background(theme.outline())
-                            .finish(),
-                    )
-                    .with_height(1.)
-                    .finish(),
+                    ConstrainedBox::new(Rect::new().with_background(theme.outline()).finish())
+                        .with_height(1.)
+                        .finish(),
                 )
-                .with_margin_left(10.)
-                .with_margin_right(10.)
                 .with_margin_top(4.)
                 .with_margin_bottom(4.)
                 .finish(),
             );
         }
-        let selected = action_index == selected_index;
+        let keyboard_selected = keyboard_active && action_index == selected_index;
+        let state = mouse_state("menu-item", action_index as i64);
         action_index += 1;
-        let label_color = if item.danger {
-            theme.ui_error_color().into()
+        let hovered = state.lock().unwrap().is_mouse_over_element();
+        let item_color: Fill = if item.danger {
+            Fill::Solid(theme.terminal_colors().normal.red.into())
         } else {
-            theme.font_color(theme.surface_2()).into()
-        };
-        let icon_color = if item.danger {
-            theme.ui_error_color().into()
-        } else {
-            theme.sub_text_color(theme.surface_2())
+            theme.main_text_color(theme.surface_2())
         };
         let mut row = Flex::row()
             .with_main_axis_size(MainAxisSize::Max)
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_spacing(8.);
+        row.add_child(sized_icon(item.icon, item_color, 14.));
         row.add_child(
-            ConstrainedBox::new(item.icon.to_warpui_icon(icon_color).finish())
-                .with_width(14.)
-                .with_height(14.)
-                .finish(),
-        );
-        row.add_child(Shrinkable::new(
-            1.,
-            Text::new_inline(item.label, appearance.ui_font_family(), 12.)
-                .with_color(label_color)
-                .finish(),
-        ).finish());
-        let action = item.action;
-        menu.add_child(
-            EventHandler::new(
-                Container::new(row.finish())
-                    .with_background(if selected {
-                        theme.surface_3()
-                    } else {
-                        theme.surface_2()
-                    })
-                    .with_uniform_padding(5.)
+            Expanded::new(
+                1.,
+                Text::new_inline(item.label, appearance.ui_font_family(), 12.)
+                    .with_color(item_color.into())
+                    .soft_wrap(false)
                     .finish(),
             )
-            .on_left_mouse_up(move |ctx, _, _| {
-                ctx.dispatch_typed_action(action.clone());
-                DispatchEventResult::StopPropagation
-            })
             .finish(),
+        );
+        let mut body = Container::new(row.finish())
+            .with_padding_left(14.)
+            .with_padding_right(14.)
+            .with_padding_top(5.)
+            .with_padding_bottom(5.);
+        if hovered || keyboard_selected {
+            body = body.with_background(theme.accent());
+        }
+        let action = item.action;
+        menu.add_child(
+            Hoverable::new(state, |_| body.finish())
+                .with_cursor(Cursor::PointingHand)
+                .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
+                .finish(),
         );
     }
     let menu = EventHandler::new(
@@ -98,10 +89,15 @@ pub(super) fn render(
             Container::new(menu.finish())
                 .with_background(theme.surface_2())
                 .with_border(Border::all(1.).with_border_fill(theme.outline()))
-                .with_corner_radius(warpui::elements::CornerRadius::with_all(
-                    warpui::elements::Radius::Pixels(5.),
-                ))
-                .with_uniform_padding(4.)
+                .with_corner_radius(radius(5.))
+                .with_padding_top(9.)
+                .with_padding_bottom(9.)
+                .with_drop_shadow(DropShadow {
+                    color: ColorU::new(0, 0, 0, 102),
+                    offset: vec2f(0., 8.),
+                    blur_radius: 24.,
+                    spread_radius: 0.,
+                })
                 .finish(),
         )
         .with_width(186.)

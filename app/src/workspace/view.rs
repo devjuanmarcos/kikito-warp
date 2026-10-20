@@ -1378,6 +1378,14 @@ impl Workspace {
         image_data: Option<Vec<u8>>,
         ctx: &mut ViewContext<Self>,
     ) {
+        let dialog_height = match &kind {
+            local_workspace::create_dialog::CreateDialogKind::CreateOrganization
+            | local_workspace::create_dialog::CreateDialogKind::EditOrganization(_) => 395.,
+            local_workspace::create_dialog::CreateDialogKind::CreateProject(_)
+            | local_workspace::create_dialog::CreateDialogKind::EditProject(_) => 330.,
+            local_workspace::create_dialog::CreateDialogKind::RemoveOrganization(_)
+            | local_workspace::create_dialog::CreateDialogKind::RemoveProject(_) => 190.,
+        };
         let body = ctx.add_typed_action_view(|ctx| {
             local_workspace::create_dialog::CreateDialog::new(
                 kind,
@@ -1478,6 +1486,7 @@ impl Workspace {
                 })
                 .with_body_style(UiComponentStyles {
                     padding: Some(Coords::uniform(0.)),
+                    height: Some(dialog_height),
                     ..Default::default()
                 })
         });

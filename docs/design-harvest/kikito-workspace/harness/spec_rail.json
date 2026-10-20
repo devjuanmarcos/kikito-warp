@@ -1,0 +1,7 @@
+[
+ {"name":"tile K (ativo)","ref":"ref/ref_rest.png","nat":"s7_rest.png","rbox":[39,123,36,36],"nbox":[14,100,36,36],"save":"h_K.png"},
+ {"name":"tile P (inativo)","ref":"ref/ref_rest.png","nat":"s7_rest.png","rbox":[39,167,36,28],"nbox":[14,144,36,28],"save":"h_P.png"},
+ {"name":"tile F (inativo)","ref":"ref/ref_rest.png","nat":"s7_rest.png","rbox":[39,211,36,36],"nbox":[14,188,36,36],"save":"h_F.png"},
+ {"name":"botao + (tracejado)","ref":"ref/ref_rest.png","nat":"s7_rest.png","rbox":[39,255,36,36],"nbox":[14,232,36,36],"save":"h_add.png"},
+ {"name":"home (inativo)","ref":"ref/ref_rest.png","nat":"s7_rest.png","rbox":[39,66,36,36],"nbox":[14,42,36,36],"save":"h_home.png"}
+]
