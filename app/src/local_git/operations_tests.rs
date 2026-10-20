@@ -4,12 +4,15 @@ use super::operations::{GitOperation, OperationKind};
 
 #[test]
 fn status_and_ref_reads_are_local_only() {
-    let operations: [GitOperation; 6] = [
+    let operations: [GitOperation; 7] = [
         GitOperation::Status,
         GitOperation::DiscoverRepository,
         GitOperation::LocalBranches,
         GitOperation::ResolveReference {
             reference: "main".to_owned(),
+        },
+        GitOperation::ValidateBranchName {
+            name: "feature/example".to_owned(),
         },
         GitOperation::History { limit: 20 },
         GitOperation::MergeBase {
@@ -47,8 +50,36 @@ fn checkout_branch_uses_local_branch_switch_without_network_options() {
 }
 
 #[test]
+fn create_branch_from_ref_switches_to_the_new_local_branch() {
+    let operation = GitOperation::CreateBranchFromRef {
+        name: "feature/example".to_owned(),
+        source: "main".to_owned(),
+    };
+
+    assert_eq!(operation.kind(), OperationKind::LocalWrite);
+    assert_eq!(
+        operation.arguments(),
+        ["switch", "--create", "feature/example", "main"]
+    );
+}
+
+#[test]
+fn rename_branch_uses_local_branch_rename_without_network_options() {
+    let operation = GitOperation::RenameBranch {
+        old: "feature/old".to_owned(),
+        new: "feature/new".to_owned(),
+    };
+
+    assert_eq!(operation.kind(), OperationKind::LocalWrite);
+    assert_eq!(
+        operation.arguments(),
+        ["branch", "--move", "feature/old", "feature/new"]
+    );
+}
+
+#[test]
 fn explicit_remote_variants_are_the_only_network_capable_operations() {
-    let operations: [GitOperation; 11] = [
+    let operations: [GitOperation; 14] = [
         GitOperation::Status,
         GitOperation::DiscoverRepository,
         GitOperation::LocalBranches,
@@ -62,6 +93,17 @@ fn explicit_remote_variants_are_the_only_network_capable_operations() {
         },
         GitOperation::UndoLastCommit,
         GitOperation::ApplyCachedPatch { reverse: false },
+        GitOperation::ValidateBranchName {
+            name: "feature/example".to_owned(),
+        },
+        GitOperation::CreateBranchFromRef {
+            name: "feature/example".to_owned(),
+            source: "main".to_owned(),
+        },
+        GitOperation::RenameBranch {
+            old: "feature/old".to_owned(),
+            new: "feature/new".to_owned(),
+        },
         GitOperation::Fetch {
             remote: "origin".to_string(),
         },
@@ -460,6 +502,88 @@ async fn checkout_refuses_to_overwrite_local_worktree_changes() {
     assert_eq!(
         std::fs::read(temporary.path().join("tracked.txt")).unwrap(),
         b"local changes\n"
+    );
+}
+
+#[tokio::test]
+async fn create_branch_from_reference_uses_the_selected_commit() {
+    let temporary = tempfile::tempdir().unwrap();
+    git(temporary.path(), &["init", "-q"]);
+    git(temporary.path(), &["config", "user.name", "Kikito Tests"]);
+    git(
+        temporary.path(),
+        &["config", "user.email", "tests@example.invalid"],
+    );
+    std::fs::write(temporary.path().join("tracked.txt"), "base\n").unwrap();
+    git(temporary.path(), &["add", "tracked.txt"]);
+    git(temporary.path(), &["commit", "-qm", "base"]);
+    git(temporary.path(), &["branch", "-M", "main"]);
+    let source = git_output(temporary.path(), &["rev-parse", "main"]);
+
+    super::create_local_branch_from_ref(temporary.path(), "main", "feature/from-main")
+        .await
+        .unwrap();
+
+    assert_eq!(
+        git_output(temporary.path(), &["branch", "--show-current"]).trim(),
+        "feature/from-main"
+    );
+    assert_eq!(git_output(temporary.path(), &["rev-parse", "HEAD"]), source);
+}
+
+#[tokio::test]
+async fn renaming_current_local_branch_preserves_head_and_updates_branch_name() {
+    let temporary = tempfile::tempdir().unwrap();
+    git(temporary.path(), &["init", "-q"]);
+    git(temporary.path(), &["config", "user.name", "Kikito Tests"]);
+    git(
+        temporary.path(),
+        &["config", "user.email", "tests@example.invalid"],
+    );
+    std::fs::write(temporary.path().join("tracked.txt"), "base\n").unwrap();
+    git(temporary.path(), &["add", "tracked.txt"]);
+    git(temporary.path(), &["commit", "-qm", "base"]);
+    git(temporary.path(), &["branch", "-M", "main"]);
+    let head_before = git_output(temporary.path(), &["rev-parse", "HEAD"]);
+
+    super::rename_local_branch(temporary.path(), "main", "stable")
+        .await
+        .unwrap();
+
+    assert_eq!(
+        git_output(temporary.path(), &["branch", "--show-current"]).trim(),
+        "stable"
+    );
+    assert_eq!(
+        git_output(temporary.path(), &["rev-parse", "HEAD"]),
+        head_before
+    );
+    assert!(git_output(temporary.path(), &["branch", "--list", "main"]).is_empty());
+}
+
+#[tokio::test]
+async fn branch_creation_rejects_invalid_branch_names_without_mutating_refs() {
+    let temporary = tempfile::tempdir().unwrap();
+    git(temporary.path(), &["init", "-q"]);
+    git(temporary.path(), &["config", "user.name", "Kikito Tests"]);
+    git(
+        temporary.path(),
+        &["config", "user.email", "tests@example.invalid"],
+    );
+    std::fs::write(temporary.path().join("tracked.txt"), "base\n").unwrap();
+    git(temporary.path(), &["add", "tracked.txt"]);
+    git(temporary.path(), &["commit", "-qm", "base"]);
+    git(temporary.path(), &["branch", "-M", "main"]);
+
+    let error = super::create_local_branch_from_ref(temporary.path(), "main", "feature..broken")
+        .await
+        .unwrap_err();
+
+    assert!(matches!(error, super::GitError::InvalidBranchName));
+    assert!(git_output(temporary.path(), &["branch", "--list", "feature..broken"]).is_empty());
+    assert_eq!(
+        git_output(temporary.path(), &["branch", "--show-current"]).trim(),
+        "main"
     );
 }
 

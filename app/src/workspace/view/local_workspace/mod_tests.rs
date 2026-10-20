@@ -1,6 +1,6 @@
 use super::{
     TabActivationRoute, can_activate_tab_in_selected_project, preferred_open_project_tab,
-    tab_activation_route,
+    should_render_empty_organization_state, should_render_project_sidebar, tab_activation_route,
 };
 use crate::local_workspace::model::WorkspaceModel;
 
@@ -45,7 +45,7 @@ fn project_navigation_rejects_foreign_and_unassigned_tabs() {
         .unwrap();
     let first_tab = model.ensure_tab_identity("first-tab").unwrap();
     let second_tab = model.ensure_tab_identity("second-tab").unwrap();
-    let unassigned_tab = model.ensure_tab_identity("unassigned-tab").unwrap();
+    model.ensure_tab_identity("unassigned-tab").unwrap();
     model.assign_tab(first, first_tab).unwrap();
     model.assign_tab(second, second_tab).unwrap();
 
@@ -83,7 +83,7 @@ fn tab_activation_routes_to_its_project_or_home() {
         .unwrap();
     let first_tab = model.ensure_tab_identity("first-tab").unwrap();
     let second_tab = model.ensure_tab_identity("second-tab").unwrap();
-    let unassigned_tab = model.ensure_tab_identity("unassigned-tab").unwrap();
+    model.ensure_tab_identity("unassigned-tab").unwrap();
     model.assign_tab(first, first_tab).unwrap();
     model.assign_tab(second, second_tab).unwrap();
     model.select_project(first).unwrap();
@@ -108,4 +108,29 @@ fn tab_activation_routes_to_its_project_or_home() {
         tab_activation_route(&model, "unassigned-tab"),
         TabActivationRoute::Home
     );
+}
+
+#[test]
+fn project_sidebar_is_visible_only_after_selecting_an_organization() {
+    let mut model = WorkspaceModel::new();
+    assert!(!should_render_project_sidebar(&model));
+
+    let organization = model.add_organization("Equipe").unwrap();
+    model.select_organization(organization).unwrap();
+
+    assert!(should_render_project_sidebar(&model));
+}
+
+#[test]
+fn empty_organization_uses_project_empty_state_instead_of_home() {
+    let mut model = WorkspaceModel::new();
+    assert!(!should_render_empty_organization_state(&model));
+
+    let organization = model.add_organization("Equipe").unwrap();
+    model.select_organization(organization).unwrap();
+    assert!(should_render_empty_organization_state(&model));
+
+    let project = model.add_project(organization, "Projeto", r"C:\\projeto").unwrap();
+    model.select_project(project).unwrap();
+    assert!(!should_render_empty_organization_state(&model));
 }

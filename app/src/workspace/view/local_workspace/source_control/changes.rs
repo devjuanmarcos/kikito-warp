@@ -73,6 +73,9 @@ pub(super) fn render(
     status: Option<&RepositoryStatus>,
     branches: &[LocalBranch],
     branch_menu: Option<&str>,
+    create_branch_from: Option<&str>,
+    rename_branch: Option<&str>,
+    branch_name_input: ViewHandle<EditorView>,
     error: Option<&str>,
     commit_input: ViewHandle<EditorView>,
     diff_preview: Option<&super::DiffPreview>,
@@ -124,7 +127,14 @@ pub(super) fn render(
             crate::local_git::HeadState::Unborn => "sem commits",
         };
         panel.add_child(message(head, appearance, false));
-        panel.add_child(super::refs::render(branches, branch_menu, appearance));
+        panel.add_child(super::refs::render(
+            branches,
+            branch_menu,
+            create_branch_from,
+            rename_branch,
+            branch_name_input,
+            appearance,
+        ));
         let groups = change_groups(status);
         if groups.iter().all(|group| group.files.is_empty()) {
             panel.add_child(message("Nenhuma alteração detectada", appearance, false));

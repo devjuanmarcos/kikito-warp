@@ -1131,6 +1131,8 @@ pub struct Workspace {
     local_workspace_git_status: Option<RepositoryStatus>,
     local_workspace_git_branches: Vec<LocalBranch>,
     local_workspace_git_branch_menu: Option<String>,
+    local_workspace_git_create_branch_from: Option<String>,
+    local_workspace_git_rename_branch: Option<String>,
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     local_workspace_git_diff_generation: u64,
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -1150,6 +1152,9 @@ pub struct Workspace {
     local_workspace_search_input: ViewHandle<EditorView>,
     local_workspace_search_query: String,
     local_workspace_commit_input: ViewHandle<EditorView>,
+    local_workspace_git_branch_name_input: ViewHandle<EditorView>,
+    local_workspace_project_sidebar_scroll: ClippedScrollStateHandle,
+    local_workspace_home_scroll: ClippedScrollStateHandle,
     local_workspace_source_control_scroll: ClippedScrollStateHandle,
     launch_config_save_modal: ModalViewState<LaunchConfigSaveModal>,
     tab_config_params_modal: ModalViewState<Modal<TabConfigParamsModal>>,
@@ -1345,6 +1350,25 @@ impl Workspace {
         editor
     }
 
+    fn local_workspace_git_branch_name_input(
+        ctx: &mut ViewContext<Self>,
+    ) -> ViewHandle<EditorView> {
+        let editor = ctx.add_typed_action_view(|ctx| {
+            let appearance = Appearance::as_ref(ctx);
+            EditorView::single_line(
+                SingleLineEditorOptions {
+                    text: TextOptions::ui_text(Some(12.), appearance),
+                    ..Default::default()
+                },
+                ctx,
+            )
+        });
+        editor.update(ctx, |editor, ctx| {
+            editor.set_placeholder_text("Nome da nova branch", ctx)
+        });
+        editor
+    }
+
     fn open_local_workspace_dialog(
         &mut self,
         kind: local_workspace::create_dialog::CreateDialogKind,
@@ -1449,7 +1473,7 @@ impl Workspace {
         let modal = ctx.add_typed_action_view(|ctx| {
             Modal::new(None, body, ctx)
                 .with_modal_style(UiComponentStyles {
-                    width: Some(460.),
+                    width: Some(420.),
                     ..Default::default()
                 })
                 .with_body_style(UiComponentStyles {
@@ -1806,6 +1830,27 @@ impl Workspace {
         }
     }
 
+    fn add_local_workspace_terminal(&mut self, ctx: &mut ViewContext<Self>) {
+        let project_directory = self
+            .local_workspace
+            .as_ref(ctx)
+            .selected_project()
+            .and_then(|project_id| self.local_workspace.as_ref(ctx).project(project_id))
+            .map(|project| PathBuf::from(&project.path))
+            .and_then(startup_directory::existing_project_startup_directory);
+        self.add_new_session_tab_internal_with_default_session_mode_behavior(
+            NewSessionSource::Tab,
+            Some(ctx.window_id()),
+            None,
+            None,
+            false,
+            DefaultSessionModeBehavior::Ignore,
+            project_directory,
+            ctx,
+        );
+        ctx.notify();
+    }
+
     fn select_local_workspace(
         &mut self,
         organization_id: Option<crate::local_workspace::model::OrganizationId>,
@@ -1867,6 +1912,8 @@ impl Workspace {
         self.local_workspace.update(ctx, |model, ctx| {
             model.set_status_error(None);
             model.set_context_menu(None);
+            model.set_hovered_organization(None);
+            model.set_hovered_project(None);
             let result = match (organization_id, project_id) {
                 (Some(_), Some(project_id)) => model.select_project(project_id as u64),
                 (Some(organization_id), None) => model.select_organization(organization_id as u64),
@@ -1881,6 +1928,7 @@ impl Workspace {
             }
             ctx.notify();
         });
+        ctx.notify();
 
         self.restore_selected_local_workspace_tab(ctx);
         #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -1916,6 +1964,8 @@ impl Workspace {
         self.local_workspace_git_status = None;
         self.local_workspace_git_branches.clear();
         self.local_workspace_git_branch_menu = None;
+        self.local_workspace_git_create_branch_from = None;
+        self.local_workspace_git_rename_branch = None;
         self.local_workspace_git_error = None;
         self.local_workspace_git_amend_confirmation = false;
         self.local_workspace_git_undo_confirmation = false;
@@ -2345,6 +2395,126 @@ impl Workspace {
                             diff_task.abort();
                         }
                         workspace.local_workspace_git_diff_preview = None;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_create_branch(&mut self, source: &str, ctx: &mut ViewContext<Self>) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let name = self
+            .local_workspace_git_branch_name_input
+            .as_ref(ctx)
+            .buffer_text(ctx)
+            .trim()
+            .to_owned();
+        if name.is_empty() || self.local_workspace_git_operation_pending {
+            return;
+        }
+        let source = source.to_owned();
+        let generation = self.local_workspace_git_generation;
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                crate::local_git::create_local_branch_from_ref(&repository_path, &source, &name)
+                    .await?;
+                let status = crate::local_git::read_status(&repository_path).await?;
+                let branches = crate::local_git::read_local_branches(&repository_path).await?;
+                Ok::<_, crate::local_git::GitError>((status, branches))
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok((status, branches)) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_branches = branches;
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_branch_menu = None;
+                        workspace.local_workspace_git_create_branch_from = None;
+                        workspace
+                            .local_workspace_git_branch_name_input
+                            .update(ctx, |editor, ctx| {
+                                editor.set_buffer_text_ignoring_undo("", ctx)
+                            });
+                        workspace.local_workspace_git_diff_generation = workspace
+                            .local_workspace_git_diff_generation
+                            .wrapping_add(1);
+                        if let Some(diff_task) = workspace.local_workspace_git_diff_task.take() {
+                            diff_task.abort();
+                        }
+                        workspace.local_workspace_git_diff_preview = None;
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_rename_branch(&mut self, old: &str, ctx: &mut ViewContext<Self>) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        let new = self
+            .local_workspace_git_branch_name_input
+            .as_ref(ctx)
+            .buffer_text(ctx)
+            .trim()
+            .to_owned();
+        if new.is_empty() || self.local_workspace_git_operation_pending {
+            return;
+        }
+        let old = old.to_owned();
+        let generation = self.local_workspace_git_generation;
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                crate::local_git::rename_local_branch(&repository_path, &old, &new).await?;
+                let status = crate::local_git::read_status(&repository_path).await?;
+                let branches = crate::local_git::read_local_branches(&repository_path).await?;
+                Ok::<_, crate::local_git::GitError>((status, branches))
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok((status, branches)) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_branches = branches;
+                        workspace.local_workspace_git_error = None;
+                        workspace.local_workspace_git_branch_menu = None;
+                        workspace.local_workspace_git_rename_branch = None;
+                        workspace
+                            .local_workspace_git_branch_name_input
+                            .update(ctx, |editor, ctx| {
+                                editor.set_buffer_text_ignoring_undo("", ctx)
+                            });
                     }
                     Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
                 }
@@ -5112,6 +5282,8 @@ impl Workspace {
             local_workspace_git_status: None,
             local_workspace_git_branches: Vec::new(),
             local_workspace_git_branch_menu: None,
+            local_workspace_git_create_branch_from: None,
+            local_workspace_git_rename_branch: None,
             #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
             local_workspace_git_diff_generation: 0,
             #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -5131,6 +5303,9 @@ impl Workspace {
             local_workspace_search_input: Self::local_workspace_search_input(ctx),
             local_workspace_search_query: String::new(),
             local_workspace_commit_input: Self::local_workspace_commit_input(ctx),
+            local_workspace_git_branch_name_input: Self::local_workspace_git_branch_name_input(ctx),
+            local_workspace_project_sidebar_scroll: ClippedScrollStateHandle::default(),
+            local_workspace_home_scroll: ClippedScrollStateHandle::default(),
             local_workspace_source_control_scroll: ClippedScrollStateHandle::default(),
             launch_config_save_modal,
             tab_config_params_modal,
@@ -26154,10 +26329,35 @@ impl TypedActionView for Workspace {
                     ctx.notify();
                 });
             }
+            SetLocalWorkspaceHoveredProject(id) => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.set_hovered_project(*id);
+                    ctx.notify();
+                });
+            }
+            SetLocalWorkspaceHoveredTab(id) => {
+                self.local_workspace.update(ctx, |model, ctx| {
+                    model.set_hovered_tab(*id);
+                    ctx.notify();
+                });
+            }
             ToggleLocalWorkspaceSourceControl => {
                 self.local_workspace_source_control_open =
                     !self.local_workspace_source_control_open;
                 ctx.notify();
+            }
+            ToggleLocalWorkspaceSourceControlForProject(project_id) => {
+                if let Some(organization_id) = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(*project_id)
+                    .map(|project| project.organization_id)
+                {
+                    self.select_local_workspace(Some(organization_id), Some(*project_id), ctx);
+                    self.local_workspace_source_control_open =
+                        !self.local_workspace_source_control_open;
+                    ctx.notify();
+                }
             }
             StageLocalGitPath(path) => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -26275,6 +26475,45 @@ impl TypedActionView for Workspace {
                 #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
                 ctx.notify();
             }
+            OpenLocalGitCreateBranch(source) => {
+                self.local_workspace_git_branch_menu = None;
+                self.local_workspace_git_rename_branch = None;
+                self.local_workspace_git_create_branch_from = Some(source.clone());
+                self.local_workspace_git_branch_name_input
+                    .update(ctx, |editor, ctx| {
+                        editor.set_placeholder_text("Nome da nova branch", ctx);
+                        editor.set_buffer_text_ignoring_undo("", ctx)
+                    });
+                ctx.notify();
+            }
+            CreateLocalGitBranchFrom(source) => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_create_branch(source, ctx);
+                #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+                ctx.notify();
+            }
+            OpenLocalGitRenameBranch(branch) => {
+                self.local_workspace_git_branch_menu = None;
+                self.local_workspace_git_create_branch_from = None;
+                self.local_workspace_git_rename_branch = Some(branch.clone());
+                self.local_workspace_git_branch_name_input
+                    .update(ctx, |editor, ctx| {
+                        editor.set_placeholder_text("Novo nome da branch", ctx);
+                        editor.set_buffer_text_ignoring_undo("", ctx)
+                    });
+                ctx.notify();
+            }
+            RenameLocalGitBranch(branch) => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_rename_branch(branch, ctx);
+                #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+                ctx.notify();
+            }
+            CancelLocalGitCreateBranch => {
+                self.local_workspace_git_create_branch_from = None;
+                self.local_workspace_git_rename_branch = None;
+                ctx.notify();
+            }
             SelectLocalWorkspaceProject(id) => {
                 let organization_id = self
                     .local_workspace
@@ -26283,6 +26522,17 @@ impl TypedActionView for Workspace {
                     .map(|project| project.organization_id);
                 if let Some(organization_id) = organization_id {
                     self.select_local_workspace(Some(organization_id), Some(*id), ctx);
+                }
+            }
+            AddLocalWorkspaceTerminalToProject(id) => {
+                if let Some(organization_id) = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(*id)
+                    .map(|project| project.organization_id)
+                {
+                    self.select_local_workspace(Some(organization_id), Some(*id), ctx);
+                    self.add_local_workspace_terminal(ctx);
                 }
             }
             SelectLocalWorkspaceTab(tab_id) => self.select_local_workspace_tab(*tab_id, ctx),
@@ -26523,24 +26773,7 @@ impl TypedActionView for Workspace {
                 ctx.notify();
             }
             AddLocalWorkspaceTerminal => {
-                let project_directory = self
-                    .local_workspace
-                    .as_ref(ctx)
-                    .selected_project()
-                    .and_then(|project_id| self.local_workspace.as_ref(ctx).project(project_id))
-                    .map(|project| PathBuf::from(&project.path))
-                    .and_then(startup_directory::existing_project_startup_directory);
-                self.add_new_session_tab_internal_with_default_session_mode_behavior(
-                    NewSessionSource::Tab,
-                    Some(window_id),
-                    None,
-                    None,
-                    false,
-                    DefaultSessionModeBehavior::Ignore,
-                    project_directory,
-                    ctx,
-                );
-                ctx.notify();
+                self.add_local_workspace_terminal(ctx);
             }
             AddTabWithShell { shell, source } => {
                 self.add_tab_with_shell(shell.clone(), *source, ctx)
@@ -29148,6 +29381,16 @@ impl View for Workspace {
                 .iter()
                 .map(|tab| tab.workspace_tab_id.clone())
                 .collect();
+            let workspace_tab_titles: std::collections::HashMap<String, String> = self
+                .tabs
+                .iter()
+                .map(|tab| {
+                    (
+                        tab.workspace_tab_id.clone(),
+                        tab.pane_group.as_ref(app).display_title(app),
+                    )
+                })
+                .collect();
             let unassigned_tabs: Vec<(usize, String)> = self
                 .tabs
                 .iter()
@@ -29191,13 +29434,19 @@ impl View for Workspace {
                 self.local_workspace_search_input.clone(),
                 self.local_workspace_commit_input.clone(),
                 &self.local_workspace_search_query,
+                self.local_workspace_project_sidebar_scroll.clone(),
                 &unassigned_tabs,
                 &available_workspace_tabs,
+                &workspace_tab_titles,
+                self.local_workspace_home_scroll.clone(),
                 git_status_summary.as_deref(),
                 git_status_error,
                 git_status,
                 git_branches,
                 self.local_workspace_git_branch_menu.as_deref(),
+                self.local_workspace_git_create_branch_from.as_deref(),
+                self.local_workspace_git_rename_branch.as_deref(),
+                self.local_workspace_git_branch_name_input.clone(),
                 git_diff_preview,
                 self.local_workspace_git_amend_confirmation,
                 self.local_workspace_git_undo_confirmation,
@@ -32153,15 +32402,13 @@ fn local_workspace_context_actions(
 
     match target {
         ContextMenuTarget::Organization(id) => vec![
-            WorkspaceAction::CreateLocalWorkspaceProject(id),
             WorkspaceAction::EditLocalWorkspaceOrganization(id),
             WorkspaceAction::RemoveLocalWorkspaceOrganization(id),
-            WorkspaceAction::DismissLocalWorkspaceContextMenu,
         ],
         ContextMenuTarget::Project(id) => vec![
-            WorkspaceAction::EditLocalWorkspaceProject(id),
+            WorkspaceAction::AddLocalWorkspaceTerminalToProject(id),
+            WorkspaceAction::ToggleLocalWorkspaceSourceControlForProject(id),
             WorkspaceAction::RemoveLocalWorkspaceProject(id),
-            WorkspaceAction::DismissLocalWorkspaceContextMenu,
         ],
     }
 }

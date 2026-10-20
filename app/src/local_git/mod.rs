@@ -68,6 +68,74 @@ impl LocalGitService {
         Ok(())
     }
 
+    async fn create_branch_from_ref(&self, source: &str, name: &str) -> Result<(), GitError> {
+        operations::validate_reference(source)?;
+        operations::validate_reference(name)?;
+        match execute(
+            &self.root,
+            GitOperation::ValidateBranchName {
+                name: name.to_owned(),
+            },
+        )
+        .await
+        {
+            Ok(_) => {}
+            Err(GitError::CommandFailed { .. }) => return Err(GitError::InvalidBranchName),
+            Err(error) => return Err(error),
+        }
+        execute(
+            &self.root,
+            GitOperation::ResolveReference {
+                reference: source.to_owned(),
+            },
+        )
+        .await
+        .map_err(|error| repository::map_resolution_error(source, error))?;
+        execute(
+            &self.root,
+            GitOperation::CreateBranchFromRef {
+                name: name.to_owned(),
+                source: source.to_owned(),
+            },
+        )
+        .await?;
+        Ok(())
+    }
+
+    async fn rename_branch(&self, old: &str, new: &str) -> Result<(), GitError> {
+        operations::validate_reference(old)?;
+        operations::validate_reference(new)?;
+        if !self
+            .local_branches()
+            .await?
+            .iter()
+            .any(|branch| branch.name == old)
+        {
+            return Err(GitError::MissingReference(old.to_owned()));
+        }
+        match execute(
+            &self.root,
+            GitOperation::ValidateBranchName {
+                name: new.to_owned(),
+            },
+        )
+        .await
+        {
+            Ok(_) => {}
+            Err(GitError::CommandFailed { .. }) => return Err(GitError::InvalidBranchName),
+            Err(error) => return Err(error),
+        }
+        execute(
+            &self.root,
+            GitOperation::RenameBranch {
+                old: old.to_owned(),
+                new: new.to_owned(),
+            },
+        )
+        .await?;
+        Ok(())
+    }
+
     async fn history(&self, limit: usize) -> Result<Vec<LocalCommit>, GitError> {
         let output = execute(&self.root, GitOperation::History { limit }).await?;
         parse_history(&output)
@@ -243,6 +311,28 @@ pub(crate) async fn checkout_local_branch(repository: &Path, branch: &str) -> Re
     LocalGitService::open(repository)
         .await?
         .checkout_branch(branch)
+        .await
+}
+
+pub(crate) async fn create_local_branch_from_ref(
+    repository: &Path,
+    source: &str,
+    name: &str,
+) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .create_branch_from_ref(source, name)
+        .await
+}
+
+pub(crate) async fn rename_local_branch(
+    repository: &Path,
+    old: &str,
+    new: &str,
+) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .rename_branch(old, new)
         .await
 }
 

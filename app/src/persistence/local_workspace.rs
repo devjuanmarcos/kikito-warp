@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{Result, bail};
 use diesel::prelude::*;
@@ -430,16 +430,33 @@ fn validate_organization_visuals(accent_color: &str, image_data: Option<&[u8]>) 
 }
 
 pub(super) fn read(connection: &mut SqliteConnection) -> diesel::QueryResult<LocalWorkspaceData> {
+    let organizations = local_workspace_organizations::table
+        .order(local_workspace_organizations::sort_order.asc())
+        .load::<LocalWorkspaceOrganization>(connection)?;
+    let organization_order = organizations
+        .iter()
+        .enumerate()
+        .map(|(index, organization)| (organization.id, index))
+        .collect::<HashMap<_, _>>();
+    let mut projects = local_workspace_projects::table
+        .order((
+            local_workspace_projects::organization_id.asc(),
+            local_workspace_projects::sort_order.asc(),
+        ))
+        .load::<LocalWorkspaceProject>(connection)?;
+    projects.sort_by_key(|project| {
+        (
+            organization_order
+                .get(&project.organization_id)
+                .copied()
+                .unwrap_or(usize::MAX),
+            project.sort_order,
+            project.id,
+        )
+    });
     Ok(LocalWorkspaceData {
-        organizations: local_workspace_organizations::table
-            .order(local_workspace_organizations::sort_order.asc())
-            .load::<LocalWorkspaceOrganization>(connection)?,
-        projects: local_workspace_projects::table
-            .order((
-                local_workspace_projects::organization_id.asc(),
-                local_workspace_projects::sort_order.asc(),
-            ))
-            .load::<LocalWorkspaceProject>(connection)?,
+        organizations,
+        projects,
         tabs: local_workspace_project_tabs::table
             .order((
                 local_workspace_project_tabs::project_id.asc(),

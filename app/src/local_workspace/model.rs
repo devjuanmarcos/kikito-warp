@@ -92,6 +92,8 @@ pub struct WorkspaceModel {
     context_menu: Option<ContextMenuTarget>,
     context_menu_index: usize,
     hovered_organization: Option<OrganizationId>,
+    hovered_project: Option<ProjectId>,
+    hovered_tab: Option<TabId>,
     status_error: Option<String>,
     project_path_statuses: HashMap<ProjectId, ProjectPathStatus>,
     next_organization_id: OrganizationId,
@@ -342,6 +344,9 @@ impl WorkspaceModel {
         if self.selected_project == Some(id) {
             self.selected_project = None;
         }
+        if self.hovered_project == Some(id) {
+            self.hovered_project = None;
+        }
         Ok(())
     }
 
@@ -453,6 +458,22 @@ impl WorkspaceModel {
         self.hovered_organization = id.filter(|id| self.organizations.contains_key(id));
     }
 
+    pub fn hovered_project(&self) -> Option<ProjectId> {
+        self.hovered_project
+    }
+
+    pub fn set_hovered_project(&mut self, id: Option<ProjectId>) {
+        self.hovered_project = id.filter(|id| self.projects.contains_key(id));
+    }
+
+    pub fn hovered_tab(&self) -> Option<TabId> {
+        self.hovered_tab
+    }
+
+    pub fn set_hovered_tab(&mut self, id: Option<TabId>) {
+        self.hovered_tab = id.filter(|id| self.tab_index.contains_key(id));
+    }
+
     pub fn set_status_error(&mut self, error: Option<String>) {
         self.status_error = error;
     }
@@ -471,7 +492,7 @@ impl WorkspaceModel {
             return;
         };
         let item_count = match target {
-            ContextMenuTarget::Organization(_) => 4,
+            ContextMenuTarget::Organization(_) => 2,
             ContextMenuTarget::Project(_) => 3,
         };
         self.context_menu_index =
@@ -640,6 +661,9 @@ impl WorkspaceModel {
         }
         if self.hovered_organization == Some(organization_id) {
             self.hovered_organization = None;
+        }
+        if self.hovered_project.is_some_and(|id| removed_project_ids.contains(&id)) {
+            self.hovered_project = None;
         }
         if self.context_menu.is_some_and(|target| match target {
             ContextMenuTarget::Organization(id) => id == organization_id,

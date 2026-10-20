@@ -4,14 +4,17 @@ mod home;
 pub(super) mod image_cropper;
 mod org_rail;
 mod project_sidebar;
+mod project_tabs;
 mod source_control;
+mod ws_style;
 pub(crate) use source_control::DiffPreview;
 
-use warp_core::ui::Icon;
 use warpui::ViewHandle;
+use crate::workspace::action::WorkspaceAction;
 use warpui::elements::{
-    ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult,
-    Element, EventHandler, Flex, MainAxisSize, ParentElement, Shrinkable, Text,
+    Align, Border, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment,
+    DispatchEventResult, Element, EventHandler, Flex, MainAxisAlignment, MainAxisSize,
+    ParentElement, Shrinkable, Text,
 };
 
 pub(super) fn preferred_open_project_tab(
@@ -43,6 +46,14 @@ use crate::appearance::Appearance;
 use crate::editor::EditorView;
 use crate::local_git::{LocalBranch, RepositoryStatus};
 use crate::local_workspace::model::WorkspaceModel;
+
+fn should_render_project_sidebar(model: &WorkspaceModel) -> bool {
+    model.selected_organization().is_some()
+}
+
+fn should_render_empty_organization_state(model: &WorkspaceModel) -> bool {
+    model.selected_organization().is_some() && model.selected_project().is_none()
+}
 
 pub(super) fn can_activate_tab_in_selected_project(
     model: &WorkspaceModel,
@@ -102,13 +113,19 @@ pub(crate) fn render(
     search_input: ViewHandle<EditorView>,
     commit_input: ViewHandle<EditorView>,
     search_query: &str,
+    project_sidebar_scroll: ClippedScrollStateHandle,
     unassigned_tabs: &[(usize, String)],
     available_workspace_tabs: &[String],
+    workspace_tab_titles: &std::collections::HashMap<String, String>,
+    home_scroll: ClippedScrollStateHandle,
     git_status_summary: Option<&str>,
     git_status_error: Option<&str>,
     git_status: Option<&RepositoryStatus>,
     git_branches: &[LocalBranch],
     git_branch_menu: Option<&str>,
+    git_create_branch_from: Option<&str>,
+    git_rename_branch: Option<&str>,
+    git_branch_name_input: ViewHandle<EditorView>,
     git_diff_preview: Option<&DiffPreview>,
     git_amend_confirmation: bool,
     git_undo_confirmation: bool,
@@ -122,229 +139,30 @@ pub(crate) fn render(
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
     workspace.add_child(org_rail::render(model, appearance));
-    workspace.add_child(project_sidebar::render(
-        model,
-        appearance,
-        search_input,
-        search_query,
-        git_status_summary,
-        git_status_error,
-    ));
+    if should_render_project_sidebar(model) {
+        workspace.add_child(project_sidebar::render(
+            model,
+            appearance,
+            search_input,
+            search_query,
+            project_sidebar_scroll,
+            git_status_summary,
+            git_status_error,
+            git_status,
+        ));
+    }
     let main_content = if let Some(project_id) = model.selected_project() {
-        if let Some(project) = model.project(project_id) {
+        if model.project(project_id).is_some() {
             let theme = appearance.theme();
-            let mut tab_title = Flex::row()
-                .with_main_axis_size(MainAxisSize::Max)
-                .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                .with_spacing(8.)
-                .with_cross_axis_alignment(CrossAxisAlignment::Center);
-            for (index, tab_id) in project.tabs.iter().enumerate() {
-                let Some(workspace_tab_id) = model.workspace_tab_id(*tab_id) else {
-                    continue;
-                };
-                if !available_workspace_tabs
-                    .iter()
-                    .any(|id| id == workspace_tab_id)
-                {
-                    continue;
-                }
-                let active = project.active_tab == Some(*tab_id);
-                let select_action =
-                    crate::workspace::action::WorkspaceAction::SelectLocalWorkspaceTab(*tab_id);
-                let close_action =
-                    crate::workspace::action::WorkspaceAction::CloseLocalWorkspaceTab(*tab_id);
-                let move_left_action =
-                    crate::workspace::action::WorkspaceAction::MoveLocalWorkspaceTab {
-                        tab_id: *tab_id,
-                        delta: -1,
-                    };
-                let move_right_action =
-                    crate::workspace::action::WorkspaceAction::MoveLocalWorkspaceTab {
-                        tab_id: *tab_id,
-                        delta: 1,
-                    };
-                let mut tab = Flex::row()
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_spacing(6.);
-                tab.add_child(
-                    Icon::Terminal
-                        .to_warpui_icon(if active {
-                            theme.font_color(theme.surface_1())
-                        } else {
-                            theme.sub_text_color(theme.surface_1())
-                        })
-                        .finish(),
-                );
-                tab.add_child(
-                    Text::new_inline(
-                        format!("Terminal {}", index + 1),
-                        appearance.ui_font_family(),
-                        12.,
-                    )
-                    .with_color(if active {
-                        theme.font_color(theme.surface_1()).into()
-                    } else {
-                        theme.sub_text_color(theme.surface_1()).into()
-                    })
-                    .finish(),
-                );
-                tab.add_child(
-                    EventHandler::new(
-                        Text::new_inline("‹", appearance.ui_font_family(), 13.)
-                            .with_color(theme.sub_text_color(theme.surface_1()).into())
-                            .finish(),
-                    )
-                    .on_left_mouse_up(move |ctx, _, _| {
-                        ctx.dispatch_typed_action(move_left_action.clone());
-                        DispatchEventResult::StopPropagation
-                    })
-                    .finish(),
-                );
-                tab.add_child(
-                    EventHandler::new(
-                        Text::new_inline("›", appearance.ui_font_family(), 13.)
-                            .with_color(theme.sub_text_color(theme.surface_1()).into())
-                            .finish(),
-                    )
-                    .on_left_mouse_up(move |ctx, _, _| {
-                        ctx.dispatch_typed_action(move_right_action.clone());
-                        DispatchEventResult::StopPropagation
-                    })
-                    .finish(),
-                );
-                tab.add_child(
-                    EventHandler::new(
-                        Text::new_inline("×", appearance.ui_font_family(), 13.)
-                            .with_color(theme.sub_text_color(theme.surface_1()).into())
-                            .finish(),
-                    )
-                    .on_left_mouse_up(move |ctx, _, _| {
-                        ctx.dispatch_typed_action(close_action.clone());
-                        DispatchEventResult::StopPropagation
-                    })
-                    .finish(),
-                );
-                tab_title.add_child(
-                    EventHandler::new(
-                        Container::new(tab.finish())
-                            .with_background(if active {
-                                theme.surface_2()
-                            } else {
-                                theme.surface_1()
-                            })
-                            .with_padding_left(10.)
-                            .with_padding_right(10.)
-                            .with_border(warpui::elements::Border::all(1.).with_border_fill(
-                                if active {
-                                    theme.outline()
-                                } else {
-                                    theme.surface_1()
-                                },
-                            ))
-                            .with_corner_radius(warpui::elements::CornerRadius::with_all(
-                                warpui::elements::Radius::Pixels(4.),
-                            ))
-                            .finish(),
-                    )
-                    .on_left_mouse_up(move |ctx, _, _| {
-                        ctx.dispatch_typed_action(select_action.clone());
-                        DispatchEventResult::StopPropagation
-                    })
-                    .finish(),
-                );
-            }
-            let new_terminal_action =
-                crate::workspace::action::WorkspaceAction::AddLocalWorkspaceTerminal;
-            tab_title.add_child(
-                EventHandler::new(
-                    Container::new(
-                        Text::new_inline("+", appearance.ui_font_family(), 16.)
-                            .with_color(theme.font_color(theme.surface_1()).into())
-                            .finish(),
-                    )
-                    .with_uniform_padding(6.)
-                    .finish(),
-                )
-                .on_left_mouse_up(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(new_terminal_action.clone());
-                    DispatchEventResult::StopPropagation
-                })
-                .finish(),
-            );
-            let assign_tab_action =
-                crate::workspace::action::WorkspaceAction::AssignActiveTabToLocalWorkspaceProject;
-            tab_title.add_child(
-                EventHandler::new(
-                    Container::new(
-                        Text::new_inline("Vincular aba ativa", appearance.ui_font_family(), 11.)
-                            .with_color(theme.sub_text_color(theme.surface_1()).into())
-                            .finish(),
-                    )
-                    .with_uniform_padding(6.)
-                    .finish(),
-                )
-                .on_left_mouse_up(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(assign_tab_action.clone());
-                    DispatchEventResult::StopPropagation
-                })
-                .finish(),
-            );
-            let search = Text::new_inline(
-                format!(
-                    "{} · {}",
-                    project.name,
-                    model
-                        .organization(project.organization_id)
-                        .map(|org| org.name.as_str())
-                        .unwrap_or("")
-                ),
-                appearance.ui_font_family(),
-                12.,
+            let project_bar = project_tabs::render(
+                model,
+                appearance,
+                project_id,
+                available_workspace_tabs,
+                workspace_tab_titles,
+                source_control_open,
             )
-            .with_color(theme.sub_text_color(theme.surface_1()).into())
-            .finish();
-            tab_title.add_child(
-                Shrinkable::new(1., Container::new(search).with_uniform_padding(6.).finish())
-                    .finish(),
-            );
-            let source_control_action =
-                crate::workspace::action::WorkspaceAction::ToggleLocalWorkspaceSourceControl;
-            tab_title.add_child(
-                EventHandler::new(
-                    Container::new(
-                        Text::new_inline(
-                            if source_control_open {
-                                "Fechar Git"
-                            } else {
-                                "Controle de Código-Fonte"
-                            },
-                            appearance.ui_font_family(),
-                            11.,
-                        )
-                        .with_color(theme.font_color(theme.surface_1()).into())
-                        .finish(),
-                    )
-                    .with_uniform_padding(6.)
-                    .finish(),
-                )
-                .on_left_mouse_up(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(source_control_action.clone());
-                    DispatchEventResult::StopPropagation
-                })
-                .finish(),
-            );
-            let project_bar = ConstrainedBox::new(
-                Container::new(tab_title.finish())
-                    .with_background(theme.surface_1())
-                    .with_padding_left(8.)
-                    .with_padding_right(8.)
-                    .with_border(
-                        warpui::elements::Border::bottom(1.).with_border_fill(theme.outline()),
-                    )
-                    .finish(),
-            )
-            .with_height(34.)
-            .finish();
+            .unwrap_or_else(|| Flex::row().finish());
             let has_open_project_tab =
                 project_has_open_terminal(model, project_id, available_workspace_tabs);
             let project_content: Box<dyn Element> = if !has_open_project_tab {
@@ -385,6 +203,9 @@ pub(crate) fn render(
                         git_status,
                         git_branches,
                         git_branch_menu,
+                        git_create_branch_from,
+                        git_rename_branch,
+                        git_branch_name_input,
                         git_status_error,
                         commit_input,
                         git_diff_preview,
@@ -401,13 +222,127 @@ pub(crate) fn render(
                 project_view
             }
         } else {
-            home::render(model, appearance, unassigned_tabs)
+            home::render(
+                model,
+                appearance,
+                unassigned_tabs,
+                workspace_tab_titles,
+                home_scroll,
+            )
         }
+    } else if should_render_empty_organization_state(model) {
+        empty_organization_state(model, appearance, workspace_tab_titles, home_scroll)
     } else {
-        home::render(model, appearance, unassigned_tabs)
+        home::render(
+            model,
+            appearance,
+            unassigned_tabs,
+            workspace_tab_titles,
+            home_scroll,
+        )
     };
     workspace.add_child(Shrinkable::new(1., main_content).finish());
     workspace.finish()
+}
+
+fn empty_organization_state(
+    model: &WorkspaceModel,
+    appearance: &Appearance,
+    workspace_tab_titles: &std::collections::HashMap<String, String>,
+    home_scroll: ClippedScrollStateHandle,
+) -> Box<dyn Element> {
+    let Some(organization_id) = model.selected_organization() else {
+        return home::render(model, appearance, &[], workspace_tab_titles, home_scroll);
+    };
+    let Some(organization) = model.organization(organization_id) else {
+        return home::render(model, appearance, &[], workspace_tab_titles, home_scroll);
+    };
+    let theme = appearance.theme();
+    let search = Container::new(
+        Text::new_inline("Buscar projetos e abas...", appearance.ui_font_family(), 12.)
+            .with_color(theme.sub_text_color(theme.surface_1()).into())
+            .finish(),
+    )
+    .with_background(theme.surface_2())
+    .with_padding_left(10.)
+    .with_padding_right(10.)
+    .with_padding_top(5.)
+    .with_padding_bottom(5.)
+    .with_corner_radius(warpui::elements::CornerRadius::with_all(
+        warpui::elements::Radius::Pixels(4.),
+    ))
+    .finish();
+    let mut header = Flex::row()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(8.);
+    header.add_child(
+        Shrinkable::new(
+            1.,
+            Text::new_inline(
+                organization.name.clone(),
+                appearance.ui_font_family(),
+                12.,
+            )
+            .with_color(theme.font_color(theme.surface_1()).into())
+            .finish(),
+        )
+        .finish(),
+    );
+    header.add_child(ConstrainedBox::new(search).with_width(240.).finish());
+    let header = ConstrainedBox::new(
+        Container::new(header.finish())
+            .with_background(theme.surface_1())
+            .with_padding_left(16.)
+            .with_padding_right(8.)
+            .with_border(Border::bottom(1.).with_border_fill(theme.outline()))
+            .finish(),
+    )
+    .with_height(34.)
+    .finish();
+    let create_action = WorkspaceAction::CreateLocalWorkspaceProject(organization_id);
+    let create_button = EventHandler::new(
+        Container::new(
+            Text::new_inline("+  Novo projeto", appearance.ui_font_family(), 12.)
+                .with_color(theme.font_color(theme.surface_1()).into())
+                .finish(),
+        )
+        .with_background(theme.surface_2())
+        .with_padding_left(12.)
+        .with_padding_right(12.)
+        .with_padding_top(8.)
+        .with_padding_bottom(8.)
+        .with_corner_radius(warpui::elements::CornerRadius::with_all(
+            warpui::elements::Radius::Pixels(4.),
+        ))
+        .finish(),
+    )
+    .on_left_mouse_up(move |ctx, _, _| {
+        ctx.dispatch_typed_action(create_action.clone());
+        DispatchEventResult::StopPropagation
+    })
+    .finish();
+    let mut empty = Flex::column()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_main_axis_alignment(MainAxisAlignment::Center)
+        .with_spacing(12.);
+    empty.add_child(
+        Text::new_inline(
+            "Nada aqui ainda. Quer que eu crie um projeto?",
+            appearance.ui_font_family(),
+            14.,
+        )
+        .with_color(theme.sub_text_color(theme.background()).into())
+        .finish(),
+    );
+    empty.add_child(create_button);
+    Flex::column()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
+        .with_child(header)
+        .with_child(Shrinkable::new(1., Align::new(empty.finish()).finish()).finish())
+        .finish()
 }
 
 #[cfg(test)]

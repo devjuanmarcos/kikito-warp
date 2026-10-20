@@ -9,7 +9,55 @@ use crate::persistence::model::{
 };
 
 #[test]
+fn organization_context_menu_selection_wraps_over_its_two_actions() {
+    let mut model = WorkspaceModel::new();
+    let organization = model.add_organization("Equipe").unwrap();
+    model.set_context_menu(Some(super::model::ContextMenuTarget::Organization(organization)));
+
+    model.move_context_menu_selection(1);
+    assert_eq!(model.context_menu_index(), 1);
+
+    model.move_context_menu_selection(1);
+    assert_eq!(model.context_menu_index(), 0);
+}
+
+#[test]
+fn project_context_menu_selection_wraps_over_its_three_actions() {
+    let mut model = WorkspaceModel::new();
+    let organization = model.add_organization("Equipe").unwrap();
+    let project = model.add_project(organization, "Projeto", r"C:\projeto").unwrap();
+    model.set_context_menu(Some(super::model::ContextMenuTarget::Project(project)));
+
+    model.move_context_menu_selection(-1);
+    assert_eq!(model.context_menu_index(), 2);
+}
+
+#[test]
+fn removing_hovered_project_clears_its_transient_hover_state() {
+    let mut model = WorkspaceModel::new();
+    let organization = model.add_organization("Equipe").unwrap();
+    let project = model
+        .add_project(organization, "Projeto", r"C:\projeto")
+        .unwrap();
+    model.set_hovered_project(Some(project));
+
+    model.remove_project(project).unwrap();
+
+    assert_eq!(model.hovered_project(), None);
+}
+
+#[test]
 fn persisted_workspace_hydrates_database_ids_order_selection_and_tab_identity_ids() {
+    let api_path = if cfg!(windows) {
+        r"C:\repos\api"
+    } else {
+        "/repos/api"
+    };
+    let web_path = if cfg!(windows) {
+        r"C:\repos\web"
+    } else {
+        "/repos/web"
+    };
     let data = LocalWorkspaceData {
         organizations: vec![
             LocalWorkspaceOrganization {
@@ -32,8 +80,8 @@ fn persisted_workspace_hydrates_database_ids_order_selection_and_tab_identity_id
                 id: 12,
                 organization_id: 7,
                 name: "API".into(),
-                path: "/repos/api".into(),
-                path_key: "/repos/api".into(),
+                path: api_path.into(),
+                path_key: api_path.into(),
                 sort_order: 0,
                 last_opened_ts: 20,
             },
@@ -41,8 +89,8 @@ fn persisted_workspace_hydrates_database_ids_order_selection_and_tab_identity_id
                 id: 4,
                 organization_id: 7,
                 name: "Web".into(),
-                path: "/repos/web".into(),
-                path_key: "/repos/web".into(),
+                path: web_path.into(),
+                path_key: web_path.into(),
                 sort_order: 1,
                 last_opened_ts: 10,
             },

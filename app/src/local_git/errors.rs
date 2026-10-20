@@ -5,6 +5,7 @@ pub(crate) enum GitError {
     NotRepository,
     GitUnavailable,
     InvalidReference,
+    InvalidBranchName,
     EmptyCommitMessage,
     InvalidPatch,
     MissingReference(String),
@@ -35,6 +36,7 @@ impl fmt::Display for GitError {
                 formatter.write_str("Não foi possível iniciar o Git instalado.")
             }
             Self::InvalidReference => formatter.write_str("A referência Git informada é inválida."),
+            Self::InvalidBranchName => formatter.write_str("Informe um nome válido para a branch."),
             Self::EmptyCommitMessage => formatter.write_str("Informe uma mensagem para o commit."),
             Self::InvalidPatch => formatter.write_str(
                 "O bloco mudou desde a comparação. Atualize a visualização e tente novamente.",

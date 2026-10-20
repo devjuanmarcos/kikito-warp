@@ -60,7 +60,7 @@ fn submit_blocking_status(
     if image_job_active || image_path_pending || crop_preview_pending {
         Some("Aguarde o processamento da imagem terminar.")
     } else if project_validation_pending {
-        Some("Aguarde a verificacao da pasta terminar.")
+        Some("Aguarde a verificação da pasta terminar.")
     } else if image_selection_error {
         Some("Remova a imagem com erro ou escolha outra antes de salvar.")
     } else {
@@ -77,11 +77,11 @@ pub(crate) fn validate_project_path_metadata(
 ) -> Result<(), &'static str> {
     match metadata_result {
         Ok(true) => Ok(()),
-        Ok(false) => Err("O caminho selecionado nao e uma pasta."),
-        Err(std::io::ErrorKind::NotFound) => Err("A pasta selecionada nao foi encontrada."),
-        Err(std::io::ErrorKind::NotADirectory) => Err("O caminho selecionado nao e uma pasta."),
-        Err(std::io::ErrorKind::PermissionDenied) => Err("Sem acesso a pasta selecionada."),
-        Err(_) => Err("Nao foi possivel verificar a pasta selecionada."),
+        Ok(false) => Err("O caminho selecionado não é uma pasta."),
+        Err(std::io::ErrorKind::NotFound) => Err("A pasta selecionada não foi encontrada."),
+        Err(std::io::ErrorKind::NotADirectory) => Err("O caminho selecionado não é uma pasta."),
+        Err(std::io::ErrorKind::PermissionDenied) => Err("Sem acesso à pasta selecionada."),
+        Err(_) => Err("Não foi possível verificar a pasta selecionada."),
     }
 }
 
@@ -226,7 +226,7 @@ impl CreateDialog {
         if self.image_job.is_some() {
             self.pending_image_path = Some(path);
             self.crop_preview_pending = false;
-            self.status = Some("Aguardando processamento atual...".to_owned());
+            self.status = Some("Aguardando o processamento atual…".to_owned());
             ctx.notify();
             return;
         }
@@ -501,16 +501,48 @@ impl View for CreateDialog {
             CreateDialogKind::EditProject(_) => "Editar projeto",
             CreateDialogKind::RemoveProject(_) => "Remover projeto",
         };
+        let close_button = EventHandler::new(
+            ConstrainedBox::new(
+                Flex::row()
+                    .with_main_axis_alignment(MainAxisAlignment::Center)
+                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                    .with_child(
+                        Text::new_inline("×", appearance.ui_font_family(), 18.)
+                            .with_color(theme.sub_text_color(theme.surface_2()).into())
+                            .finish(),
+                    )
+                    .finish(),
+            )
+            .with_width(24.)
+            .with_height(24.)
+            .finish(),
+        )
+        .on_left_mouse_up(|ctx, _, _| {
+            ctx.dispatch_typed_action(CreateDialogAction::Cancel);
+            DispatchEventResult::StopPropagation
+        })
+        .finish();
+        let mut header = Flex::row()
+            .with_main_axis_size(MainAxisSize::Max)
+            .with_main_axis_alignment(MainAxisAlignment::SpaceBetween)
+            .with_cross_axis_alignment(CrossAxisAlignment::Center);
+        header.add_child(
+            Text::new_inline(title, appearance.ui_font_family(), 18.)
+                .with_color(theme.font_color(theme.background()).into())
+                .with_style(Properties::default().weight(Weight::Semibold))
+                .finish(),
+        );
+        header.add_child(close_button);
+        let header = Container::new(header.finish())
+            .with_padding_left(24.)
+            .with_padding_right(24.)
+            .with_padding_top(24.)
+            .with_padding_bottom(12.)
+            .finish();
         let mut body = Flex::column()
             .with_main_axis_size(MainAxisSize::Min)
             .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-            .with_spacing(12.);
-        body.add_child(
-            Text::new_inline(title, appearance.ui_font_family(), 18.)
-                .with_color(theme.font_color(theme.background()).into())
-                .with_style(Properties::default().weight(Weight::Bold))
-                .finish(),
-        );
+            .with_spacing(14.);
         if confirmation {
             let message = match &self.kind {
                 CreateDialogKind::RemoveOrganization(_) => {
@@ -527,7 +559,22 @@ impl View for CreateDialog {
                     .finish(),
             );
         } else {
+            let description = match &self.kind {
+                CreateDialogKind::CreateOrganization | CreateDialogKind::EditOrganization(_) => {
+                    "Agrupe projetos por empresa, cliente ou contexto."
+                }
+                CreateDialogKind::CreateProject(_) | CreateDialogKind::EditProject(_) => {
+                    "Cada projeto guarda as próprias abas."
+                }
+                CreateDialogKind::RemoveOrganization(_) | CreateDialogKind::RemoveProject(_) => "",
+            };
             body.add_child(
+                Text::new_inline(description, appearance.ui_font_family(), 12.)
+                    .with_color(theme.sub_text_color(theme.surface_2()).into())
+                    .finish(),
+            );
+            body.add_child(field(
+                "Nome",
                 TextInput::new(
                     self.name_editor.clone(),
                     UiComponentStyles::default()
@@ -538,7 +585,8 @@ impl View for CreateDialog {
                 )
                 .build()
                 .finish(),
-            );
+                appearance,
+            ));
         }
         if matches!(
             &self.kind,
@@ -552,7 +600,7 @@ impl View for CreateDialog {
                     Container::new(
                         Text::new_inline(" ".to_owned(), appearance.ui_font_family(), 1.).finish(),
                     )
-                    .with_background(organization_accent(color, theme.accent()))
+                    .with_background(super::org_rail::organization_accent(theme, color))
                     .with_border(if selected {
                         Border::all(2.).with_border_fill(theme.font_color(theme.background()))
                     } else {
@@ -563,8 +611,8 @@ impl View for CreateDialog {
                     ))
                     .finish(),
                 )
-                .with_width(20.)
-                .with_height(20.)
+                .with_width(16.)
+                .with_height(16.)
                 .finish();
                 colors.add_child(
                     EventHandler::new(swatch)
@@ -575,7 +623,15 @@ impl View for CreateDialog {
                         .finish(),
                 );
             }
-            body.add_child(colors.finish());
+            body.add_child(field(
+                if self.image_data.is_some() {
+                    "Cor de destaque"
+                } else {
+                    "Cor"
+                },
+                colors.finish(),
+                appearance,
+            ));
             body.add_child(Self::button(
                 "Escolher imagem...",
                 CreateDialogAction::PickOrganizationImage,
@@ -674,16 +730,53 @@ impl View for CreateDialog {
             appearance,
         ));
         footer.add_child(Self::button(
-            if confirmation { "Remover" } else { "Salvar" },
+            match &self.kind {
+                CreateDialogKind::CreateOrganization | CreateDialogKind::CreateProject(_) => {
+                    "Criar"
+                }
+                CreateDialogKind::EditOrganization(_) | CreateDialogKind::EditProject(_) => {
+                    "Salvar"
+                }
+                CreateDialogKind::RemoveOrganization(_) | CreateDialogKind::RemoveProject(_) => {
+                    "Remover"
+                }
+            },
             CreateDialogAction::Submit,
             appearance,
         ));
-        body.add_child(footer.finish());
         let body = Container::new(Shrinkable::new(1., body.finish()).finish())
-            .with_uniform_padding(12.)
+            .with_padding_left(24.)
+            .with_padding_right(24.)
+            .with_padding_bottom(24.)
             .finish();
-        Container::new(body).finish()
+        let footer = Container::new(footer.finish())
+            .with_padding_left(24.)
+            .with_padding_right(24.)
+            .with_padding_top(12.)
+            .with_padding_bottom(12.)
+            .with_border(Border::top(1.).with_border_fill(theme.outline()))
+            .finish();
+        let mut dialog = Flex::column()
+            .with_main_axis_size(MainAxisSize::Min)
+            .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
+        dialog.add_child(header);
+        dialog.add_child(body);
+        dialog.add_child(footer);
+        Container::new(dialog.finish()).finish()
     }
+}
+
+fn field(label: &str, content: Box<dyn Element>, appearance: &Appearance) -> Box<dyn Element> {
+    let mut field = Flex::column()
+        .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
+        .with_spacing(6.);
+    field.add_child(
+        Text::new_inline(label.to_owned(), appearance.ui_font_family(), 12.)
+            .with_color(appearance.theme().font_color(appearance.theme().surface_2()).into())
+            .finish(),
+    );
+    field.add_child(content);
+    field.finish()
 }
 
 impl TypedActionView for CreateDialog {
@@ -799,29 +892,12 @@ impl CreateDialog {
                         ctx.notify();
                     }
                     Err(_) => {
-                        dialog.set_error("Nao foi possivel atualizar o recorte.".to_owned(), ctx)
+                    dialog.set_error("Não foi possível atualizar o recorte.".to_owned(), ctx)
                     }
                 }
             },
         ));
     }
-}
-
-fn organization_accent(
-    name: &str,
-    fallback: warp_core::ui::theme::Fill,
-) -> warp_core::ui::theme::Fill {
-    let hex = match name {
-        "green" => "#20A874",
-        "magenta" => "#CF5B9C",
-        "yellow" => "#D8A82E",
-        "cyan" => "#29A5B3",
-        "red" => "#D45D5D",
-        _ => "#4E83D3",
-    };
-    warp_core::ui::color::hex_color::coloru_from_hex_string(hex)
-        .map(warp_core::ui::theme::Fill::Solid)
-        .unwrap_or(fallback)
 }
 
 struct OrganizationPreviewAsset;

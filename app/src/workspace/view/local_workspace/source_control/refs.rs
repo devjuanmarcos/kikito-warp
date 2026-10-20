@@ -8,6 +8,9 @@ use warpui::elements::{
 pub(super) fn render(
     branches: &[LocalBranch],
     open_menu: Option<&str>,
+    create_from: Option<&str>,
+    rename_branch: Option<&str>,
+    branch_name_input: warpui::ViewHandle<crate::editor::EditorView>,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
@@ -55,6 +58,20 @@ pub(super) fn render(
         if open_menu == Some(branch.name.as_str()) {
             section.add_child(branch_menu(branch, appearance));
         }
+        if create_from == Some(branch.name.as_str()) {
+            section.add_child(branch_creation_form(
+                branch.name.as_str(),
+                branch_name_input.clone(),
+                appearance,
+            ));
+        }
+        if rename_branch == Some(branch.name.as_str()) {
+            section.add_child(branch_rename_form(
+                branch.name.as_str(),
+                branch_name_input.clone(),
+                appearance,
+            ));
+        }
     }
     Container::new(section.finish()).finish()
 }
@@ -78,6 +95,18 @@ fn branch_menu(branch: &LocalBranch, appearance: &Appearance) -> Box<dyn Element
         ));
     }
     menu.add_child(menu_item(
+        "Criar branch a partir daqui",
+        WorkspaceAction::OpenLocalGitCreateBranch(branch.name.clone()),
+        true,
+        appearance,
+    ));
+    menu.add_child(menu_item(
+        "Renomear branch",
+        WorkspaceAction::OpenLocalGitRenameBranch(branch.name.clone()),
+        true,
+        appearance,
+    ));
+    menu.add_child(menu_item(
         "Fechar menu",
         WorkspaceAction::DismissLocalGitBranchMenu,
         true,
@@ -90,6 +119,76 @@ fn branch_menu(branch: &LocalBranch, appearance: &Appearance) -> Box<dyn Element
         .with_padding_right(8.)
         .with_padding_top(4.)
         .with_padding_bottom(4.)
+        .finish()
+}
+
+fn branch_rename_form(
+    branch: &str,
+    input: warpui::ViewHandle<crate::editor::EditorView>,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
+    use warpui::ui_components::components::{UiComponent, UiComponentStyles};
+    use warpui::ui_components::text_input::TextInput;
+
+    let mut form = Flex::column().with_spacing(5.);
+    form.add_child(
+        TextInput::new(input, UiComponentStyles::default().set_height(32.))
+            .build()
+            .finish(),
+    );
+    form.add_child(menu_item(
+        "Renomear",
+        WorkspaceAction::RenameLocalGitBranch(branch.to_owned()),
+        true,
+        appearance,
+    ));
+    form.add_child(menu_item(
+        "Cancelar",
+        WorkspaceAction::CancelLocalGitCreateBranch,
+        true,
+        appearance,
+    ));
+    Container::new(form.finish())
+        .with_background(appearance.theme().surface_2())
+        .with_padding_left(10.)
+        .with_padding_right(10.)
+        .with_padding_top(6.)
+        .with_padding_bottom(6.)
+        .finish()
+}
+
+fn branch_creation_form(
+    source: &str,
+    input: warpui::ViewHandle<crate::editor::EditorView>,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
+    use warpui::ui_components::components::{UiComponent, UiComponentStyles};
+    use warpui::ui_components::text_input::TextInput;
+
+    let mut form = Flex::column().with_spacing(5.);
+    form.add_child(
+        TextInput::new(input, UiComponentStyles::default().set_height(32.))
+            .build()
+            .finish(),
+    );
+    form.add_child(menu_item(
+        "Criar e mudar",
+        WorkspaceAction::CreateLocalGitBranchFrom(source.to_owned()),
+        true,
+        appearance,
+    ));
+    form.add_child(menu_item(
+        "Cancelar",
+        WorkspaceAction::CancelLocalGitCreateBranch,
+        true,
+        appearance,
+    ));
+    Container::new(form.finish())
+        .with_background(appearance.theme().surface_2())
+        .with_padding_left(10.)
+        .with_padding_right(10.)
+        .with_padding_top(6.)
+        .with_padding_bottom(6.)
         .finish()
 }
 

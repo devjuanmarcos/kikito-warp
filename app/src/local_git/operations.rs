@@ -22,6 +22,9 @@ pub(super) enum GitOperation {
     DiscoverRepository,
     LocalBranches,
     CheckoutBranch { branch: String },
+    ValidateBranchName { name: String },
+    CreateBranchFromRef { name: String, source: String },
+    RenameBranch { old: String, new: String },
     ResolveReference { reference: String },
     History { limit: usize },
     MergeBase { left: String, right: String },
@@ -45,12 +48,15 @@ impl GitOperation {
             Self::Status
             | Self::DiscoverRepository
             | Self::LocalBranches
+            | Self::ValidateBranchName { .. }
             | Self::ResolveReference { .. }
             | Self::History { .. }
             | Self::MergeBase { .. } => OperationKind::LocalRead,
             Self::Diff { .. } => OperationKind::LocalRead,
             Self::Stage { .. }
             | Self::CheckoutBranch { .. }
+            | Self::CreateBranchFromRef { .. }
+            | Self::RenameBranch { .. }
             | Self::StageAll
             | Self::Unstage { .. }
             | Self::DiscardWorktree { .. }
@@ -80,6 +86,18 @@ impl GitOperation {
             ],
             Self::CheckoutBranch { branch } => {
                 vec!["switch".into(), "--".into(), branch.clone()]
+            }
+            Self::ValidateBranchName { name } => {
+                vec!["check-ref-format".into(), format!("refs/heads/{name}")]
+            }
+            Self::CreateBranchFromRef { name, source } => vec![
+                "switch".into(),
+                "--create".into(),
+                name.clone(),
+                source.clone(),
+            ],
+            Self::RenameBranch { old, new } => {
+                vec!["branch".into(), "--move".into(), old.clone(), new.clone()]
             }
             Self::ResolveReference { reference } => vec![
                 "rev-parse".into(),
@@ -180,6 +198,9 @@ impl GitOperation {
             Self::DiscoverRepository => "identificar o repositório local",
             Self::LocalBranches => "listar as branches locais",
             Self::CheckoutBranch { .. } => "mudar para a branch local selecionada",
+            Self::ValidateBranchName { .. } => "validar o nome da nova branch",
+            Self::CreateBranchFromRef { .. } => "criar e mudar para a nova branch local",
+            Self::RenameBranch { .. } => "renomear a branch local selecionada",
             Self::ResolveReference { .. } => "verificar a referência local",
             Self::History { .. } => "consultar o histórico local",
             Self::MergeBase { .. } => "comparar referências locais",

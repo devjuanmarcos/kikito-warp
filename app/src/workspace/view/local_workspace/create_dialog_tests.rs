@@ -32,7 +32,7 @@ fn choosing_an_invalid_image_invalidates_older_image_jobs() {
 fn submission_waits_for_project_path_validation() {
     assert_eq!(
         submit_blocking_status(false, false, false, true, false),
-        Some("Aguarde a verificacao da pasta terminar.")
+        Some("Aguarde a verificação da pasta terminar.")
     );
     assert_eq!(
         submit_blocking_status(false, false, false, false, false),
@@ -49,18 +49,18 @@ fn project_path_metadata_requires_an_accessible_directory() {
     assert_eq!(validate_project_path_metadata(Ok(true)), Ok(()));
     assert_eq!(
         validate_project_path_metadata(Ok(false)),
-        Err("O caminho selecionado nao e uma pasta.")
+        Err("O caminho selecionado não é uma pasta.")
     );
     assert_eq!(
         validate_project_path_metadata(Err(ErrorKind::NotFound)),
-        Err("A pasta selecionada nao foi encontrada.")
+        Err("A pasta selecionada não foi encontrada.")
     );
     assert_eq!(
         validate_project_path_metadata(Err(ErrorKind::PermissionDenied)),
-        Err("Sem acesso a pasta selecionada.")
+        Err("Sem acesso à pasta selecionada.")
     );
     assert_eq!(
         validate_project_path_metadata(Err(ErrorKind::Other)),
-        Err("Nao foi possivel verificar a pasta selecionada.")
+        Err("Não foi possível verificar a pasta selecionada.")
     );
 }

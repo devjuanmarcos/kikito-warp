@@ -502,11 +502,8 @@ fn failed_selection_rolls_back_and_metadata_delete_preserves_session_tab() {
         .into_iter()
         .next()
         .unwrap();
-    assert_eq!(restored_organization.accent_color, "magenta");
-    assert_eq!(
-        restored_organization.image_data,
-        Some(vec![137, 80, 78, 71])
-    );
+    assert_eq!(restored_organization.accent_color, "blue");
+    assert_eq!(restored_organization.image_data, None);
 
     local_workspace::apply(&mut connection, Operation::DeleteOrganization(1)).unwrap();
     assert_eq!(

@@ -1,4 +1,6 @@
-# Workspace visual reference
+# Workspace visual reference (legacy summary)
+
+> Especificação atualizada e inventário completo: [coleta de design do workspace](../design-harvest/kikito-workspace/00-overview.md). Evidência de captura: [08-playwright-evidence.md](../design-harvest/kikito-workspace/08-playwright-evidence.md). Use a coleta como fonte de verdade.
 
 Reference source: `C:\Users\Marcos\Downloads\✅ Kikito Terminal.zip`, extracted from `tokens/`, `guidelines/`, and `ui_kits/workspace/`.
 
@@ -43,4 +45,4 @@ Organization image input accepts PNG, JPG, and SVG files up to 5 MiB. File metad
 
 ## Screenshot comparison
 
-The reference ZIP contains JSX/UI-kit sources and tokens but no full workspace screenshot for direct pixel comparison. A local GUI launch was attempted with `WARP_DATA_PROFILE=task3-review-20261018`, which resolves to the previously absent `~/.warp-local-task3-review-20261018` config directory and a separate channel data domain. The app binary compiled, but startup exited before opening a window because the private `warp-channel-config` executable was not on `PATH`; its suggested installer was not run. No live screenshot or interaction-state captures were produced, and the installed profile was not launched or modified. A live visual comparison remains pending; implementation dimensions and theme values above are design-source measurements, not a claim of pixel-perfect runtime validation.
+The kit has no original full-workspace screenshot. A clean extraction was served over local HTTP and rendered in isolated Chromium at 1280×800, DPR 1, dark scheme. The valid Home capture and evidence details are in `docs/design-harvest/kikito-workspace/08-playwright-evidence.md`; it is a render of the prototype, not proof of native app parity. The implementation screenshot and comparison are still pending. Earlier startup notes in this file describe a different capture attempt and do not supersede the current evidence report.

@@ -142,7 +142,10 @@ pub enum WorkspaceAction {
     ActivateLocalWorkspaceContextMenuSelection,
     SelectLocalWorkspaceOrganization(OrganizationId),
     SetLocalWorkspaceHoveredOrganization(Option<OrganizationId>),
+    SetLocalWorkspaceHoveredProject(Option<ProjectId>),
+    SetLocalWorkspaceHoveredTab(Option<i32>),
     SelectLocalWorkspaceProject(ProjectId),
+    AddLocalWorkspaceTerminalToProject(ProjectId),
     SelectLocalWorkspaceTab(i32),
     CloseLocalWorkspaceTab(i32),
     MoveLocalWorkspaceTab {
@@ -152,6 +155,7 @@ pub enum WorkspaceAction {
     AssignActiveTabToLocalWorkspaceProject,
     AddLocalWorkspaceTerminal,
     ToggleLocalWorkspaceSourceControl,
+    ToggleLocalWorkspaceSourceControlForProject(ProjectId),
     StageLocalGitPath(String),
     UnstageLocalGitPath(String),
     StageAllLocalGit,
@@ -187,6 +191,11 @@ pub enum WorkspaceAction {
     OpenLocalGitBranchMenu(String),
     DismissLocalGitBranchMenu,
     CheckoutLocalGitBranch(String),
+    OpenLocalGitCreateBranch(String),
+    CreateLocalGitBranchFrom(String),
+    OpenLocalGitRenameBranch(String),
+    RenameLocalGitBranch(String),
+    CancelLocalGitCreateBranch,
     ActivateTab(usize),
     ActivatePrevTab,
     ActivateNextTab,
@@ -1288,12 +1297,16 @@ impl WorkspaceAction {
             | ActivateLocalWorkspaceContextMenuSelection
             | SelectLocalWorkspaceOrganization(_)
             | SetLocalWorkspaceHoveredOrganization(_)
+            | SetLocalWorkspaceHoveredProject(_)
+            | SetLocalWorkspaceHoveredTab(_)
             | SelectLocalWorkspaceProject(_)
+            | AddLocalWorkspaceTerminalToProject(_)
             | SelectLocalWorkspaceTab(_)
             | CloseLocalWorkspaceTab(_)
             | MoveLocalWorkspaceTab { .. }
             | AssignActiveTabToLocalWorkspaceProject
             | ToggleLocalWorkspaceSourceControl
+            | ToggleLocalWorkspaceSourceControlForProject(_)
             | StageLocalGitPath(_)
             | UnstageLocalGitPath(_)
             | StageAllLocalGit
@@ -1316,7 +1329,12 @@ impl WorkspaceAction {
             | ApplyLocalGitHunk { .. }
             | OpenLocalGitBranchMenu(_)
             | DismissLocalGitBranchMenu
-            | CheckoutLocalGitBranch(_) => false,
+            | CheckoutLocalGitBranch(_)
+            | OpenLocalGitCreateBranch(_)
+            | CreateLocalGitBranchFrom(_)
+            | OpenLocalGitRenameBranch(_)
+            | RenameLocalGitBranch(_)
+            | CancelLocalGitCreateBranch => false,
             #[cfg(debug_assertions)]
             ShowHoaOnboardingFlow => false,
             #[cfg(target_family = "wasm")]
