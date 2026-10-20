@@ -55,7 +55,12 @@ switch ($Action) {
   "launch" {
     Get-Process warp-oss -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe } | Stop-Process -Force
     $env:WARP_DATA_PROFILE = "parity"
-    Start-Process $exe -WorkingDirectory "D:\DEVJUANMARCOS\PROJETOS\KIKITO WARP"
+    if ($env:PARITY_STDERR) {
+      $env:RUST_LOG = "warn"
+      Start-Process $exe -WorkingDirectory "D:\DEVJUANMARCOS\PROJETOS\KIKITO WARP" -RedirectStandardError $env:PARITY_STDERR -RedirectStandardOutput "$env:PARITY_STDERR.out"
+    } else {
+      Start-Process $exe -WorkingDirectory "D:\DEVJUANMARCOS\PROJETOS\KIKITO WARP"
+    }
     for ($i = 0; $i -lt 60; $i++) { Start-Sleep 1; if (Get-AppWindow) { break } }
     $p = Get-AppWindow
     if (-not $p) { Write-Output "NO WINDOW"; exit 1 }

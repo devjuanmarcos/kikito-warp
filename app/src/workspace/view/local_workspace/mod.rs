@@ -13,8 +13,7 @@ pub(crate) use source_control::DiffPreview;
 use crate::workspace::action::WorkspaceAction;
 use warpui::ViewHandle;
 use warpui::elements::{
-    Align, Border, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment,
-    DispatchEventResult, Element, EventHandler, Flex, MainAxisAlignment, MainAxisSize,
+    Align, ClippedScrollStateHandle, Container, CrossAxisAlignment, Element, Flex, MainAxisSize,
     ParentElement, Shrinkable, Text,
 };
 
@@ -271,74 +270,9 @@ fn empty_organization_state(
         return home::render(model, appearance, &[], workspace_tab_titles, home_scroll);
     };
     let theme = appearance.theme();
-    let search = Container::new(
-        Text::new_inline(
-            "Buscar projetos e abas...",
-            appearance.ui_font_family(),
-            12.,
-        )
-        .with_color(theme.sub_text_color(theme.surface_1()).into())
-        .finish(),
-    )
-    .with_background(theme.surface_2())
-    .with_padding_left(10.)
-    .with_padding_right(10.)
-    .with_padding_top(5.)
-    .with_padding_bottom(5.)
-    .with_corner_radius(warpui::elements::CornerRadius::with_all(
-        warpui::elements::Radius::Pixels(4.),
-    ))
-    .finish();
-    let mut header = Flex::row()
-        .with_main_axis_size(MainAxisSize::Max)
-        .with_cross_axis_alignment(CrossAxisAlignment::Center)
-        .with_spacing(8.);
-    header.add_child(
-        Shrinkable::new(
-            1.,
-            Text::new_inline(organization.name.clone(), appearance.ui_font_family(), 12.)
-                .with_color(theme.font_color(theme.surface_1()).into())
-                .finish(),
-        )
-        .finish(),
-    );
-    header.add_child(ConstrainedBox::new(search).with_width(240.).finish());
-    let header = ConstrainedBox::new(
-        Container::new(header.finish())
-            .with_background(theme.surface_1())
-            .with_padding_left(16.)
-            .with_padding_right(8.)
-            .with_border(Border::bottom(1.).with_border_fill(theme.outline()))
-            .finish(),
-    )
-    .with_height(34.)
-    .finish();
-    let create_action = WorkspaceAction::CreateLocalWorkspaceProject(organization_id);
-    let create_button = EventHandler::new(
-        Container::new(
-            Text::new_inline("+  Novo projeto", appearance.ui_font_family(), 12.)
-                .with_color(theme.font_color(theme.surface_1()).into())
-                .finish(),
-        )
-        .with_background(theme.surface_2())
-        .with_padding_left(12.)
-        .with_padding_right(12.)
-        .with_padding_top(8.)
-        .with_padding_bottom(8.)
-        .with_corner_radius(warpui::elements::CornerRadius::with_all(
-            warpui::elements::Radius::Pixels(4.),
-        ))
-        .finish(),
-    )
-    .on_left_mouse_up(move |ctx, _, _| {
-        ctx.dispatch_typed_action(create_action.clone());
-        DispatchEventResult::StopPropagation
-    })
-    .finish();
     let mut empty = Flex::column()
-        .with_main_axis_size(MainAxisSize::Max)
+        .with_main_axis_size(MainAxisSize::Min)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
-        .with_main_axis_alignment(MainAxisAlignment::Center)
         .with_spacing(12.);
     empty.add_child(
         Text::new_inline(
@@ -349,12 +283,36 @@ fn empty_organization_state(
         .with_color(theme.sub_text_color(theme.background()).into())
         .finish(),
     );
-    empty.add_child(create_button);
+    empty.add_child(dialog_ui::dialog_button(
+        appearance,
+        Some(Icon::Plus),
+        "Novo projeto",
+        &[],
+        dialog_ui::ButtonVariant::Secondary,
+        true,
+        ("empty-organization-new-project", 0),
+        move |ctx| {
+            ctx.dispatch_typed_action(WorkspaceAction::CreateLocalWorkspaceProject(
+                organization_id,
+            ))
+        },
+    ));
     Flex::column()
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-        .with_child(header)
-        .with_child(Shrinkable::new(1., Align::new(empty.finish()).finish()).finish())
+        .with_child(project_tabs::render_title_bar(
+            appearance,
+            &organization.name,
+        ))
+        .with_child(
+            Shrinkable::new(
+                1.,
+                Container::new(Align::new(empty.finish()).finish())
+                    .with_background(theme.background())
+                    .finish(),
+            )
+            .finish(),
+        )
         .finish()
 }
 

@@ -156,48 +156,11 @@ pub(super) fn render(
         .organization(project.organization_id)
         .map(|organization| organization.name.as_str())
         .unwrap_or_default();
-    let mut search = Flex::row()
-        .with_main_axis_size(MainAxisSize::Max)
-        .with_cross_axis_alignment(CrossAxisAlignment::Center)
-        .with_spacing(8.);
-    search.add_child(sized_icon(
-        Icon::Search,
-        theme.hint_text_color(bar_background),
-        14.,
-    ));
-    search.add_child(
-        Shrinkable::new(
-            1.,
-            Text::new_inline(
-                format!("{} · {organization_name}", project.name),
-                appearance.ui_font_family(),
-                12.,
-            )
-            .with_color(theme.hint_text_color(bar_background).into())
-            .soft_wrap(false)
-            .with_clip(ClipConfig::ellipsis())
-            .finish(),
-        )
-        .finish(),
+    let search = search_pill(
+        appearance,
+        bar_background,
+        format!("{} · {organization_name}", project.name),
     );
-    let search = EventHandler::new(
-        ConstrainedBox::new(
-            Container::new(search.finish())
-                .with_padding_left(10.)
-                .with_padding_right(10.)
-                .with_background(fg_overlay(theme, 5))
-                .with_corner_radius(radius(4.))
-                .finish(),
-        )
-        .with_height(24.)
-        .with_width(SEARCH_WIDTH)
-        .finish(),
-    )
-    .on_left_mouse_up(move |ctx, _, _| {
-        ctx.dispatch_typed_action(WorkspaceAction::SelectLocalWorkspaceHome);
-        DispatchEventResult::StopPropagation
-    })
-    .finish();
 
     let mut bar = Flex::row()
         .with_main_axis_size(MainAxisSize::Max)
@@ -224,17 +187,99 @@ pub(super) fn render(
         Some(("Controle de versão", TooltipSide::BelowRight)),
     ));
 
-    Some(
-        ConstrainedBox::new(
-            Container::new(bar.finish())
-                .with_background(bar_background)
-                .with_padding_top(1.)
-                .with_padding_left(8.)
-                .with_padding_right(8. + WINDOW_CONTROLS_INSET)
-                .with_border(Border::bottom(1.).with_border_fill(theme.outline()))
+    Some(bar_frame(appearance, bar.finish()))
+}
+
+/// Header shown above a view without a project (an empty organization): its title on the left
+/// and the palette search on the right.
+pub(super) fn render_title_bar(appearance: &Appearance, title: &str) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    let bar_background = theme.surface_1();
+    let mut bar = Flex::row()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(8.);
+    bar.add_child(
+        Expanded::new(
+            1.,
+            Container::new(
+                Text::new_inline(title.to_owned(), appearance.ui_font_family(), 12.)
+                    .with_color(theme.main_text_color(bar_background).into())
+                    .soft_wrap(false)
+                    .with_clip(ClipConfig::ellipsis())
+                    .finish(),
+            )
+            .with_padding_left(8.)
+            .finish(),
+        )
+        .finish(),
+    );
+    bar.add_child(search_pill(
+        appearance,
+        bar_background,
+        "Buscar projetos e abas...".to_owned(),
+    ));
+    bar_frame(appearance, bar.finish())
+}
+
+fn bar_frame(appearance: &Appearance, bar: Box<dyn Element>) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    ConstrainedBox::new(
+        Container::new(bar)
+            .with_background(theme.surface_1())
+            .with_padding_top(1.)
+            .with_padding_left(8.)
+            .with_padding_right(8. + WINDOW_CONTROLS_INSET)
+            .with_border(Border::bottom(1.).with_border_fill(theme.outline()))
+            .finish(),
+    )
+    .with_height(BAR_HEIGHT)
+    .finish()
+}
+
+/// Palette entry point styled as a 24px search field; clicking it opens Home.
+fn search_pill(
+    appearance: &Appearance,
+    bar_background: warp_core::ui::theme::Fill,
+    label: String,
+) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    let mut search = Flex::row()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(8.);
+    search.add_child(sized_icon(
+        Icon::Search,
+        theme.hint_text_color(bar_background),
+        14.,
+    ));
+    search.add_child(
+        Shrinkable::new(
+            1.,
+            Text::new_inline(label, appearance.ui_font_family(), 12.)
+                .with_color(theme.hint_text_color(bar_background).into())
+                .soft_wrap(false)
+                .with_clip(ClipConfig::ellipsis())
                 .finish(),
         )
-        .with_height(BAR_HEIGHT)
+        .finish(),
+    );
+    EventHandler::new(
+        ConstrainedBox::new(
+            Container::new(search.finish())
+                .with_padding_left(10.)
+                .with_padding_right(10.)
+                .with_background(fg_overlay(theme, 5))
+                .with_corner_radius(radius(4.))
+                .finish(),
+        )
+        .with_height(24.)
+        .with_width(SEARCH_WIDTH)
         .finish(),
     )
+    .on_left_mouse_up(move |ctx, _, _| {
+        ctx.dispatch_typed_action(WorkspaceAction::SelectLocalWorkspaceHome);
+        DispatchEventResult::StopPropagation
+    })
+    .finish()
 }

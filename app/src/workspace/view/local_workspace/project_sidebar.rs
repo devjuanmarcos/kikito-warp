@@ -542,7 +542,7 @@ fn empty_state(
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     Container::new(
-        Text::new_inline(message.to_owned(), appearance.ui_font_family(), 12.)
+        Text::new(message.to_owned(), appearance.ui_font_family(), 12.)
             .with_color(color.into())
             .finish(),
     )
