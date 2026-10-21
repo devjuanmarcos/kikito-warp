@@ -1408,7 +1408,7 @@ impl Workspace {
         };
         let action = result.target.action();
         self.clear_local_workspace_home_query(ctx);
-        ctx.dispatch_typed_action(&action);
+        self.handle_action(&action, ctx);
     }
 
     fn clear_local_workspace_home_query(&mut self, ctx: &mut ViewContext<Self>) {
