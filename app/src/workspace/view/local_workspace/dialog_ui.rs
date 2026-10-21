@@ -95,6 +95,7 @@ pub(super) fn dialog_close(
 
 /// 32px kit button with an optional leading 16px icon and trailing keycaps. A disabled primary
 /// button drops its fill and ignores clicks.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn dialog_button(
     appearance: &Appearance,
     icon: Option<Icon>,
@@ -103,7 +104,7 @@ pub(super) fn dialog_button(
     variant: ButtonVariant,
     enabled: bool,
     key: (&'static str, i64),
-    on_click: impl Fn(&mut warpui::EventContext) + 'static,
+    on_click: impl Fn(&mut warpui::EventContext, Vector2F) + 'static,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
     let state = mouse_state(key.0, key.1);
@@ -220,7 +221,7 @@ pub(super) fn dialog_button(
         Cursor::PointingHand
     });
     if enabled {
-        hoverable = hoverable.on_click(move |ctx, _, _| on_click(ctx));
+        hoverable = hoverable.on_click(move |ctx, _, position| on_click(ctx, position));
     }
     hoverable.finish()
 }

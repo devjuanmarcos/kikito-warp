@@ -1105,6 +1105,12 @@ pub struct Workspace {
     /// variant determines whether the menu sits below the `+` add-tab button
     /// or floats at the pointer position (right-click on the panel chrome).
     show_new_session_dropdown_menu: Option<NewSessionMenuAnchor>,
+    /// Set while adding a tab that must stay outside every local project.
+    suppress_local_project_assignment: bool,
+    /// Project tab whose context menu is open, with the click position.
+    local_workspace_tab_menu: Option<(i32, Vector2F)>,
+    /// Click position of the open tabs layout menu.
+    local_workspace_tabs_layout_menu: Option<Vector2F>,
     changelog_model: ModelHandle<ChangelogModel>,
     palette: ViewHandle<CommandPalette>,
     ctrl_tab_palette: ViewHandle<CommandPalette>,
@@ -1768,6 +1774,7 @@ impl Workspace {
         ctx.notify();
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn validate_local_project_path_and_submit(
         &mut self,
         dialog: ViewHandle<Modal<local_workspace::create_dialog::CreateDialog>>,
@@ -2101,14 +2108,54 @@ impl Workspace {
         }
     }
 
-    fn add_local_workspace_terminal(&mut self, ctx: &mut ViewContext<Self>) {
-        let project_directory = self
+    /// The tab rename editor, keyed by the project tab being renamed.
+    fn local_workspace_rename_editor(&self, app: &AppContext) -> Option<(i32, Box<dyn Element>)> {
+        let index = self.current_workspace_state.tab_being_renamed()?;
+        let tab_id = self
             .local_workspace
-            .as_ref(ctx)
-            .selected_project()
-            .and_then(|project_id| self.local_workspace.as_ref(ctx).project(project_id))
-            .map(|project| PathBuf::from(&project.path))
-            .and_then(startup_directory::existing_project_startup_directory);
+            .as_ref(app)
+            .tab_identity_id(&self.tabs.get(index)?.workspace_tab_id)?;
+        Some((tab_id, ChildView::new(&self.tab_rename_editor).finish()))
+    }
+
+    /// Whether the tabs sidebar lists the tab at `index`: in the local workspace only the
+    /// selected project's tabs are listed.
+    pub(super) fn local_workspace_lists_tab(&self, index: usize, app: &AppContext) -> bool {
+        let model = self.local_workspace.as_ref(app);
+        let Some(project_id) = model.selected_project() else {
+            return true;
+        };
+        self.tabs.get(index).is_some_and(|tab| {
+            model
+                .tab_identity_id(&tab.workspace_tab_id)
+                .and_then(|tab_id| model.tab_owner(tab_id))
+                == Some(project_id)
+        })
+    }
+
+    /// Whether the tab at `index` hosts this window's settings pane.
+    fn is_settings_tab(&self, index: usize, app: &AppContext) -> bool {
+        let Some(tab) = self.tabs.get(index) else {
+            return false;
+        };
+        SettingsPaneManager::as_ref(app)
+            .find_pane(self.window_id)
+            .is_some_and(|locator| locator.pane_group_id == tab.pane_group.id())
+    }
+
+    fn add_local_workspace_stand_in_tab(&mut self, ctx: &mut ViewContext<Self>) {
+        self.suppress_local_project_assignment = true;
+        self.add_tab_with_pane_layout(
+            PanesLayout::SingleTerminal(Box::default()),
+            Arc::new(HashMap::new()),
+            None,
+            ctx,
+        );
+        self.suppress_local_project_assignment = false;
+    }
+
+    fn add_local_workspace_terminal(&mut self, ctx: &mut ViewContext<Self>) {
+        let project_directory = self.selected_local_project_directory(ctx);
         self.add_new_session_tab_internal_with_default_session_mode_behavior(
             NewSessionSource::Tab,
             Some(ctx.window_id()),
@@ -2128,6 +2175,17 @@ impl Workspace {
         project_id: Option<crate::local_workspace::model::ProjectId>,
         ctx: &mut ViewContext<Self>,
     ) {
+        // Like the kit, opening an organization lands on its most recent project; only an
+        // organization without projects shows the empty state.
+        let project_id = project_id.or_else(|| {
+            let model = self.local_workspace.as_ref(ctx);
+            organization_id.and_then(|organization_id| {
+                model
+                    .recent_projects()
+                    .find(|project| project.organization_id == organization_id)
+                    .map(|project| project.id)
+            })
+        });
         let organization_id = match organization_id {
             Some(id) => match i32::try_from(id) {
                 Ok(id) => Some(id),
@@ -5546,6 +5604,9 @@ impl Workspace {
             show_tab_selection_right_click_menu: None,
             new_session_dropdown_menu,
             show_new_session_dropdown_menu: None,
+            suppress_local_project_assignment: false,
+            local_workspace_tab_menu: None,
+            local_workspace_tabs_layout_menu: None,
             changelog_model,
             welcome_tips_view_state,
             welcome_tips_view,
@@ -5970,6 +6031,7 @@ impl Workspace {
                 self.sync_window_button_visibility(ctx);
                 ctx.notify();
             }
+            TabSettingsChangedEvent::LocalWorkspaceTabsInSidebar { .. } => ctx.notify(),
             TabSettingsChangedEvent::UseVerticalTabs { .. } => {
                 let vertical_tabs_enabled = *TabSettings::as_ref(ctx).use_vertical_tabs;
                 // During HOA onboarding, keep the vertical tabs panel open
@@ -7765,17 +7827,6 @@ impl Workspace {
         );
         match route {
             local_workspace::TabActivationRoute::KeepSelection => {}
-            local_workspace::TabActivationRoute::Home => {
-                self.select_local_workspace(None, None, ctx);
-                if self
-                    .local_workspace
-                    .as_ref(ctx)
-                    .selected_project()
-                    .is_some()
-                {
-                    return;
-                }
-            }
             local_workspace::TabActivationRoute::Project {
                 organization_id,
                 project_id,
@@ -7797,11 +7848,13 @@ impl Workspace {
         if let (Some(project_id), Some(tab)) = (
             self.local_workspace.as_ref(ctx).selected_project(),
             self.tabs.get(index),
-        ) && !local_workspace::can_activate_tab_in_selected_project(
-            self.local_workspace.as_ref(ctx),
-            Some(project_id),
-            &tab.workspace_tab_id,
-        ) {
+        ) && !self.is_settings_tab(index, ctx)
+            && !local_workspace::can_activate_tab_in_selected_project(
+                self.local_workspace.as_ref(ctx),
+                Some(project_id),
+                &tab.workspace_tab_id,
+            )
+        {
             let available_workspace_tabs: Vec<String> = self
                 .tabs
                 .iter()
@@ -10389,6 +10442,7 @@ impl Workspace {
                 ctx,
             )
         };
+        let menu_items = without_cross_project_close_items(menu_items);
         ctx.update_view(&self.tab_right_click_menu, |context_menu, view_ctx| {
             context_menu.set_items(menu_items, view_ctx);
         });
@@ -10475,6 +10529,7 @@ impl Workspace {
             Some(pane_name_target),
             ctx,
         );
+        let menu_items = without_cross_project_close_items(menu_items);
 
         ctx.update_view(&self.tab_right_click_menu, |context_menu, view_ctx| {
             context_menu.set_items(menu_items, view_ctx);
@@ -14575,13 +14630,10 @@ impl Workspace {
         self.vertical_tabs_panel
             .clear_detail_sidecar_if_for_pane_group(pane_group.id());
 
-        // If this is the last tab, close the window instead of actually removing
-        // the tab.
+        // Closing a project's last tab leaves the project on its empty state instead of closing
+        // the window, so a hidden tab outside every project takes the last tab's place.
         if self.tabs.len() == 1 {
-            if ContextFlag::CloseWindow.is_enabled() {
-                ctx.close_window();
-            }
-            return;
+            self.add_local_workspace_stand_in_tab(ctx);
         }
 
         // Preserve split-off child-agent tabs by moving their lone pane back
@@ -14783,17 +14835,13 @@ impl Workspace {
         add_to_undo_stack: bool,
         ctx: &mut ViewContext<Self>,
     ) {
-        let is_last_tab = self.tabs.len() == 1;
-        if !ContextFlag::CloseWindow.is_enabled() && is_last_tab {
-            return;
-        }
-
         let closed_tab_id = self.tabs.get(index).map(|tab| tab.pane_group.id());
 
+        // The last tab closes like any other: `remove_tab` keeps the window open.
         let tabs_closed = self.close_tabs(
             vec![index].into_iter(),
             OpenDialogSource::CloseTab { tab_index: index },
-            skip_confirmation || is_last_tab, // If this is the last tab, the confirmation dialog will be handled by the window close.
+            skip_confirmation,
             add_to_undo_stack,
             ctx,
         );
@@ -15434,7 +15482,7 @@ impl Workspace {
         self.tab_mru_order
             .push(self.tabs[insert_idx].pane_group.id());
 
-        if is_new_terminal && !is_restoration {
+        if !is_restoration && !self.suppress_local_project_assignment {
             let selected_project = self.local_workspace.as_ref(ctx).selected_project();
             if let Some(project_id) = selected_project {
                 let workspace_tab_id = self.tabs[insert_idx].workspace_tab_id.clone();
@@ -26902,6 +26950,31 @@ impl TypedActionView for Workspace {
                     self.select_local_workspace(Some(organization_id), Some(*id), ctx);
                 }
             }
+            OpenLocalWorkspaceNewTabMenu {
+                project_id,
+                position,
+            } => {
+                let organization_id = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(*project_id)
+                    .map(|project| project.organization_id);
+                if let Some(organization_id) = organization_id {
+                    self.select_local_workspace(Some(organization_id), Some(*project_id), ctx);
+                    let anchor = match position {
+                        Some(position) => NewSessionMenuAnchor::Pointer(*position),
+                        None => NewSessionMenuAnchor::AddTabButton(
+                            ctx.element_position_by_id_at_last_frame(
+                                self.window_id,
+                                vertical_tabs::VERTICAL_TABS_ADD_TAB_POSITION_ID,
+                            )
+                            .map_or(Vector2F::zero(), |bounds| bounds.lower_left()),
+                        ),
+                    };
+                    self.show_new_session_dropdown_menu = None;
+                    self.handle_action(&ToggleNewSessionMenu { anchor }, ctx);
+                }
+            }
             AddLocalWorkspaceTerminalToProject(id) => {
                 if let Some(organization_id) = self
                     .local_workspace
@@ -26927,6 +27000,49 @@ impl TypedActionView for Workspace {
                 }) {
                     self.close_tab(index, false, true, ctx);
                 }
+            }
+            OpenLocalWorkspaceTabMenu { tab_id, position } => {
+                self.local_workspace_tab_menu = Some((*tab_id, *position));
+                ctx.notify();
+            }
+            OpenLocalWorkspaceTabsLayoutMenu(position) => {
+                self.local_workspace_tabs_layout_menu = Some(*position);
+                ctx.notify();
+            }
+            DismissLocalWorkspaceMenus => {
+                self.local_workspace_tab_menu = None;
+                self.local_workspace_tabs_layout_menu = None;
+                ctx.notify();
+            }
+            RenameLocalWorkspaceTab(tab_id) => {
+                self.local_workspace_tab_menu = None;
+                let identity = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .workspace_tab_id(*tab_id)
+                    .map(str::to_owned);
+                if let Some(index) = identity.and_then(|identity| {
+                    self.tabs
+                        .iter()
+                        .position(|tab| tab.workspace_tab_id == identity)
+                }) {
+                    self.rename_tab(index, ctx);
+                }
+            }
+            SetLocalWorkspaceTabsInSidebar(in_sidebar) => {
+                self.local_workspace_tabs_layout_menu = None;
+                TabSettings::handle(ctx).update(ctx, |settings, ctx| {
+                    report_if_error!(
+                        settings
+                            .local_workspace_tabs_in_sidebar
+                            .set_value(*in_sidebar, ctx)
+                    );
+                });
+                ctx.notify();
+            }
+            ToggleLocalWorkspaceTabsInSidebar => {
+                let in_sidebar = *TabSettings::as_ref(ctx).local_workspace_tabs_in_sidebar;
+                self.handle_action(&SetLocalWorkspaceTabsInSidebar(!in_sidebar), ctx);
             }
             MoveLocalWorkspaceTab { tab_id, delta } => {
                 self.move_local_workspace_tab(*tab_id, *delta, ctx)
@@ -29754,11 +29870,35 @@ impl View for Workspace {
             // tabs outside any project are listed on Home.
             let mut outer_column = Flex::column();
             let content = self.render_banner_and_active_tab(app, appearance);
-            let panels_row = self.render_panels(app, Shrinkable::new(1.0, content).finish(), false);
+            // The local workspace's organization rail and project sidebar replace the vertical
+            // tabs panel; its view options and new-session menu live in the project bar.
+            let panels_row = self.render_panels(app, Shrinkable::new(1.0, content).finish(), true);
             outer_column.add_child(Shrinkable::new(1.0, panels_row).finish());
-            Container::new(outer_column.finish())
+            let panels = Container::new(outer_column.finish())
                 .with_background(util::get_terminal_background_fill(self.window_id, app))
-                .finish()
+                .finish();
+            // The sidebar tab layout lists the selected project's tabs beside its content.
+            if *TabSettings::as_ref(app).local_workspace_tabs_in_sidebar
+                && self
+                    .local_workspace
+                    .as_ref(app)
+                    .selected_project()
+                    .is_some()
+            {
+                Flex::row()
+                    .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
+                    .with_child(
+                        SavePosition::new(
+                            self.render_vertical_tabs_panel(PanelPosition::Left, app),
+                            VERTICAL_TABS_PANEL_POSITION_ID,
+                        )
+                        .finish(),
+                    )
+                    .with_child(Shrinkable::new(1.0, panels).finish())
+                    .finish()
+            } else {
+                panels
+            }
         };
         let panels = if use_simplified_wasm_tab_bar {
             panels
@@ -29770,18 +29910,6 @@ impl View for Workspace {
                 .map(|tab| tab.workspace_tab_id.clone())
                 .collect();
             let workspace_tab_titles = self.local_workspace_tab_titles(app);
-            let unassigned_tabs: Vec<(usize, String)> = self
-                .tabs
-                .iter()
-                .enumerate()
-                .filter_map(|(index, tab)| {
-                    let assigned = local_workspace_model
-                        .tab_identity_id(&tab.workspace_tab_id)
-                        .and_then(|tab_id| local_workspace_model.tab_owner(tab_id))
-                        .is_some();
-                    (!assigned).then(|| (index, tab.pane_group.as_ref(app).display_title(app)))
-                })
-                .collect();
             let new_tab_keys = keybinding_name_to_display_string(NEW_TAB_BINDING_NAME, app)
                 .map(|displayed| local_workspace::keycaps_from_display(&displayed))
                 .unwrap_or_default();
@@ -29860,7 +29988,6 @@ impl View for Workspace {
                 &new_tab_keys,
                 &self.local_workspace_search_query,
                 self.local_workspace_project_sidebar_scroll.clone(),
-                &unassigned_tabs,
                 &available_workspace_tabs,
                 &workspace_tab_titles,
                 self.local_workspace_home_scroll.clone(),
@@ -29872,6 +29999,9 @@ impl View for Workspace {
                 },
                 git_status,
                 source_control,
+                *TabSettings::as_ref(app).local_workspace_tabs_in_sidebar,
+                self.local_workspace_rename_editor(app),
+                self.is_settings_tab(self.active_tab_index, app),
             )
         };
         let mut stack = Stack::new();
@@ -29928,12 +30058,54 @@ impl View for Workspace {
                 .finish(),
         );
 
-        if !use_simplified_wasm_tab_bar
-            && FeatureFlag::VerticalTabs.is_enabled()
-            && *TabSettings::as_ref(app).use_vertical_tabs
-            && self.vertical_tabs_panel_open
-            && self.vertical_tabs_panel.show_settings_popup
-        {
+        if !use_simplified_wasm_tab_bar {
+            let has_unread = AgentNotificationsModel::as_ref(app)
+                .notifications()
+                .filtered_count(NotificationFilter::Unread)
+                > 0;
+            stack.add_positioned_child(
+                SavePosition::new(
+                    local_workspace::window_buttons(appearance, has_unread),
+                    NOTIFICATIONS_MAILBOX_POSITION_ID,
+                )
+                .finish(),
+                OffsetPositioning::offset_from_parent(
+                    vec2f(-local_workspace::WINDOW_BUTTONS_RIGHT_INSET, 5.),
+                    ParentOffsetBounds::WindowByPosition,
+                    ParentAnchor::TopRight,
+                    ChildAnchor::TopRight,
+                ),
+            );
+        }
+        if let Some((tab_id, position)) = self.local_workspace_tab_menu {
+            stack.add_positioned_overlay_child(
+                local_workspace::tab_menu(self.local_workspace.as_ref(app), tab_id, appearance),
+                OffsetPositioning::offset_from_parent(
+                    position,
+                    ParentOffsetBounds::WindowByPosition,
+                    ParentAnchor::TopLeft,
+                    ChildAnchor::TopLeft,
+                ),
+            );
+        }
+        if let Some(position) = self.local_workspace_tabs_layout_menu {
+            stack.add_positioned_overlay_child(
+                local_workspace::tabs_layout_menu(
+                    *TabSettings::as_ref(app).local_workspace_tabs_in_sidebar,
+                    appearance,
+                ),
+                OffsetPositioning::offset_from_parent(
+                    position,
+                    ParentOffsetBounds::WindowByPosition,
+                    ParentAnchor::TopLeft,
+                    ChildAnchor::TopRight,
+                ),
+            );
+        }
+
+        // The local workspace opens view options from its project bar or its tabs sidebar, so
+        // the popup doesn't depend on the vertical tabs setting.
+        if !use_simplified_wasm_tab_bar && self.vertical_tabs_panel.show_settings_popup {
             stack.add_positioned_overlay_child(
                 Dismiss::new(render_settings_popup(&self.vertical_tabs_panel, app))
                     .prevent_interaction_with_other_elements()
@@ -32821,7 +32993,10 @@ fn local_workspace_context_actions(
             WorkspaceAction::RemoveLocalWorkspaceOrganization(id),
         ],
         ContextMenuTarget::Project(id) => vec![
-            WorkspaceAction::AddLocalWorkspaceTerminalToProject(id),
+            WorkspaceAction::OpenLocalWorkspaceNewTabMenu {
+                project_id: id,
+                position: None,
+            },
             WorkspaceAction::ToggleLocalWorkspaceSourceControlForProject(id),
             WorkspaceAction::RemoveLocalWorkspaceProject(id),
         ],
@@ -32944,4 +33119,31 @@ fn set_opencode_warp_plugin(new_entry: &str) -> String {
         },
         Err(e) => format!("Failed to serialize opencode.json: {e}"),
     }
+}
+
+/// Drops "close other tabs" entries: the window's tabs span every local project, so they would
+/// close tabs of projects the user isn't looking at.
+fn without_cross_project_close_items(
+    items: Vec<MenuItem<WorkspaceAction>>,
+) -> Vec<MenuItem<WorkspaceAction>> {
+    let mut kept: Vec<MenuItem<WorkspaceAction>> = Vec::with_capacity(items.len());
+    for item in items {
+        let closes_other_tabs = matches!(
+            item.item_on_select_action(),
+            Some(
+                WorkspaceAction::CloseOtherTabs(_)
+                    | WorkspaceAction::CloseTabsRight(_)
+                    | WorkspaceAction::CloseTabsRightActiveTab
+            )
+        );
+        let doubled_separator = matches!(item, MenuItem::Separator)
+            && matches!(kept.last(), None | Some(MenuItem::Separator));
+        if !closes_other_tabs && !doubled_separator {
+            kept.push(item);
+        }
+    }
+    if matches!(kept.last(), Some(MenuItem::Separator)) {
+        kept.pop();
+    }
+    kept
 }

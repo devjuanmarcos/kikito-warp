@@ -250,9 +250,10 @@ pub(super) async fn execute_bytes(
     let output = warp_util::git::run_git_command_output(repository, &argument_refs, &env)
         .await
         .map_err(|_| GitError::GitUnavailable)?;
-    if !output.status.success()
-        && !(matches!(operation, GitOperation::Diff { .. }) && output.status.code() == Some(1))
-    {
+    // `git diff` exits with 1 when it finds differences.
+    let diff_found =
+        matches!(operation, GitOperation::Diff { .. }) && output.status.code() == Some(1);
+    if !output.status.success() && !diff_found {
         return Err(GitError::CommandFailed {
             operation: operation.label(),
             code: output.status.code(),

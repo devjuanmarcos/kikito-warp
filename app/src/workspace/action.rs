@@ -98,6 +98,22 @@ pub enum NewSessionMenuAnchor {
     Pointer(Vector2F),
 }
 
+impl WorkspaceAction {
+    /// Fills in the click position of actions that open a menu where the user clicked; other
+    /// actions are returned unchanged.
+    pub fn at_position(self, position: Vector2F) -> Self {
+        match self {
+            WorkspaceAction::OpenLocalWorkspaceNewTabMenu { project_id, .. } => {
+                WorkspaceAction::OpenLocalWorkspaceNewTabMenu {
+                    project_id,
+                    position: Some(position),
+                }
+            }
+            other => other,
+        }
+    }
+}
+
 impl NewSessionMenuAnchor {
     pub fn position(&self) -> Vector2F {
         match self {
@@ -196,6 +212,24 @@ pub enum WorkspaceAction {
     OpenLocalGitRenameBranch(String),
     RenameLocalGitBranch(String),
     CancelLocalGitCreateBranch,
+    /// Selects the project and opens the new-session menu (shells, tab configs) at `position`,
+    /// or under the project bar's `+` when there is no click position.
+    OpenLocalWorkspaceNewTabMenu {
+        project_id: crate::local_workspace::model::ProjectId,
+        position: Option<Vector2F>,
+    },
+    /// Opens a project tab's context menu at the click position.
+    OpenLocalWorkspaceTabMenu {
+        tab_id: i32,
+        position: Vector2F,
+    },
+    /// Opens the menu that picks where project tabs are listed, at the click position.
+    OpenLocalWorkspaceTabsLayoutMenu(Vector2F),
+    DismissLocalWorkspaceMenus,
+    RenameLocalWorkspaceTab(i32),
+    /// Lists project tabs in a sidebar beside the projects (`true`) or in the project bar.
+    SetLocalWorkspaceTabsInSidebar(bool),
+    ToggleLocalWorkspaceTabsInSidebar,
     ToggleLocalGitPanelSection(crate::workspace::view::LocalGitPanelSection),
     ToggleLocalGitGraphFilter,
     ToggleLocalGitCommitMenu,
@@ -1342,6 +1376,13 @@ impl WorkspaceAction {
             | OpenLocalGitRenameBranch(_)
             | RenameLocalGitBranch(_)
             | CancelLocalGitCreateBranch
+            | OpenLocalWorkspaceNewTabMenu { .. }
+            | OpenLocalWorkspaceTabMenu { .. }
+            | OpenLocalWorkspaceTabsLayoutMenu(_)
+            | DismissLocalWorkspaceMenus
+            | RenameLocalWorkspaceTab(_)
+            | SetLocalWorkspaceTabsInSidebar(_)
+            | ToggleLocalWorkspaceTabsInSidebar
             | ToggleLocalGitPanelSection(_)
             | ToggleLocalGitGraphFilter
             | ToggleLocalGitCommitMenu

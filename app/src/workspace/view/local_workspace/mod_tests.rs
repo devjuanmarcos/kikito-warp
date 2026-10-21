@@ -73,7 +73,7 @@ fn project_navigation_rejects_foreign_and_unassigned_tabs() {
 }
 
 #[test]
-fn tab_activation_routes_to_its_project_or_home() {
+fn tab_activation_routes_to_its_project_and_keeps_the_view_for_unassigned_tabs() {
     let mut model = WorkspaceModel::new();
     let organization = model.add_organization("Equipe").unwrap();
     let first = model
@@ -102,12 +102,12 @@ fn tab_activation_routes_to_its_project_or_home() {
     );
     assert_eq!(
         tab_activation_route(&model, "unassigned-tab"),
-        TabActivationRoute::Home
+        TabActivationRoute::KeepSelection
     );
     model.select_organization(organization).unwrap();
     assert_eq!(
         tab_activation_route(&model, "unassigned-tab"),
-        TabActivationRoute::Home
+        TabActivationRoute::KeepSelection
     );
 }
 

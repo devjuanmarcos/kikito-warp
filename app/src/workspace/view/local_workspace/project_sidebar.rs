@@ -209,7 +209,10 @@ pub(super) fn render(
                         Icon::Plus,
                         theme.foreground(),
                         None,
-                        WorkspaceAction::AddLocalWorkspaceTerminalToProject(project_id),
+                        WorkspaceAction::OpenLocalWorkspaceNewTabMenu {
+                            project_id,
+                            position: None,
+                        },
                         ("row-plus", project_id as i64),
                         Some(("Nova aba", TooltipSide::AboveRight)),
                     ));

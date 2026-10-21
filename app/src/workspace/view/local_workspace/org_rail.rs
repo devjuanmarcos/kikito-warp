@@ -230,6 +230,7 @@ fn rail_action(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn rail_item(
     icon: Option<Icon>,
     label: String,
@@ -246,6 +247,7 @@ fn rail_item(
     let theme = appearance.theme();
     let hover_state = mouse_state(hover_key.0, hover_key.1);
     let hovered = hover_state.lock().unwrap().is_mouse_over_element();
+    let has_image = !brand_home && image_data.is_some();
     let child = if brand_home {
         ConstrainedBox::new(
             Image::new(
@@ -264,7 +266,18 @@ fn rail_item(
         .with_height(ORGANIZATION_TILE_SIZE)
         .finish()
     } else if let Some(image_data) = image_data {
-        Image::new(organization_image_source(image_data), CacheOption::BySize).finish()
+        // Without an explicit size the image collapses to nothing inside the centering row.
+        ConstrainedBox::new(
+            Image::new(organization_image_source(image_data), CacheOption::BySize)
+                .with_opacity(if active { 1. } else { 0.85 })
+                .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                    warpui::elements::Radius::Pixels(if active { 10. } else { 8. }),
+                ))
+                .finish(),
+        )
+        .with_width(ORGANIZATION_TILE_SIZE)
+        .with_height(ORGANIZATION_TILE_SIZE)
+        .finish()
     } else if let Some(icon) = icon {
         icon.to_warpui_icon(theme.font_color(theme.surface_2()))
             .finish()
@@ -289,6 +302,22 @@ fn rail_item(
         .finish();
     let tile = if brand_home {
         Container::new(tile_contents).finish()
+    } else if has_image {
+        // The kit rings an image tile instead of tinting it: the outline color at rest, the
+        // organization's color (1.5px) when active.
+        Container::new(tile_contents)
+            .with_border(if active {
+                warpui::elements::Border::all(1.5).with_border_fill(accent_color.map_or_else(
+                    || theme.accent(),
+                    |accent| organization_accent_with_alpha(theme, accent, 255),
+                ))
+            } else {
+                warpui::elements::Border::all(1.).with_border_fill(theme.outline())
+            })
+            .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                warpui::elements::Radius::Pixels(if active { 10. } else { 8. }),
+            ))
+            .finish()
     } else {
         Container::new(tile_contents)
             .with_background(accent_color.map_or_else(

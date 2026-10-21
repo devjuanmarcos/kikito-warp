@@ -853,11 +853,11 @@ impl CreateDialog {
             for third in [1., 2.] {
                 let offset = (CROP_VIEW_SIZE * third / 3.).round();
                 viewport.add_positioned_child(
-                    block(line.clone(), 1., CROP_VIEW_SIZE),
+                    block(line, 1., CROP_VIEW_SIZE),
                     unbounded_at(offset, 0.),
                 );
                 viewport.add_positioned_child(
-                    block(line.clone(), CROP_VIEW_SIZE, 1.),
+                    block(line, CROP_VIEW_SIZE, 1.),
                     unbounded_at(0., offset),
                 );
             }
@@ -953,7 +953,7 @@ impl CreateDialog {
                 ButtonVariant::Secondary,
                 true,
                 ("crop-back", 0),
-                |ctx| ctx.dispatch_typed_action(CreateDialogAction::CancelCrop),
+                |ctx, _| ctx.dispatch_typed_action(CreateDialogAction::CancelCrop),
             ))
             .with_child(dialog_button(
                 appearance,
@@ -963,7 +963,7 @@ impl CreateDialog {
                 ButtonVariant::Primary,
                 self.source_image_data.is_some(),
                 ("crop-apply", 0),
-                |ctx| ctx.dispatch_typed_action(CreateDialogAction::ApplyCrop),
+                |ctx, _| ctx.dispatch_typed_action(CreateDialogAction::ApplyCrop),
             ))
             .finish();
 
@@ -1214,7 +1214,7 @@ impl View for CreateDialog {
             ButtonVariant::Secondary,
             true,
             ("dialog-cancel", 0),
-            |ctx| ctx.dispatch_typed_action(CreateDialogAction::Cancel),
+            |ctx, _| ctx.dispatch_typed_action(CreateDialogAction::Cancel),
         ));
         footer.add_child(dialog_button(
             appearance,
@@ -1238,7 +1238,7 @@ impl View for CreateDialog {
             },
             name_filled,
             ("dialog-submit", 0),
-            |ctx| ctx.dispatch_typed_action(CreateDialogAction::Submit),
+            |ctx, _| ctx.dispatch_typed_action(CreateDialogAction::Submit),
         ));
         let body = Container::new(Shrinkable::new(1., body.finish()).finish())
             .with_padding_left(24.)

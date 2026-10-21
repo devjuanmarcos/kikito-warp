@@ -234,6 +234,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             },
             danger: false,
             separator_before: false,
+            checked: false,
         },
         MenuItem {
             label: "Commit e push",
@@ -241,6 +242,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             action: WorkspaceAction::CommitAndPushLocalGit,
             danger: false,
             separator_before: false,
+            checked: false,
         },
         MenuItem {
             label: "Preparar tudo",
@@ -248,6 +250,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             action: WorkspaceAction::StageAllLocalGit,
             danger: false,
             separator_before: true,
+            checked: false,
         },
         MenuItem {
             label: "Remover tudo da preparação",
@@ -255,6 +258,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             action: WorkspaceAction::UnstageAllLocalGit,
             danger: false,
             separator_before: false,
+            checked: false,
         },
     ];
     let has_commit = status.head_oid.is_some() && !matches!(status.head, HeadState::Unborn);
@@ -266,6 +270,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
                 action: WorkspaceAction::RequestLocalGitAmend,
                 danger: false,
                 separator_before: true,
+                checked: false,
             },
             MenuItem {
                 label: "Desfazer último commit",
@@ -273,6 +278,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
                 action: WorkspaceAction::RequestUndoLocalGitCommit,
                 danger: false,
                 separator_before: false,
+                checked: false,
             },
             MenuItem {
                 label: "Reverter último commit",
@@ -280,6 +286,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
                 action: WorkspaceAction::RequestRevertLocalGitCommit,
                 danger: true,
                 separator_before: false,
+                checked: false,
             },
         ]);
     }

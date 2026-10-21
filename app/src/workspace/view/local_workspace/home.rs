@@ -8,8 +8,8 @@ use warpui::assets::asset_cache::AssetSource;
 use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
 use warpui::elements::{
     Border, CacheOption, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment,
-    DispatchEventResult, Element, Empty, EventHandler, Expanded, Fill, Flex, Hoverable, Image,
-    MainAxisAlignment, MainAxisSize, ParentElement, ScrollbarWidth, Shrinkable, Text,
+    Element, Empty, Expanded, Fill, Flex, Hoverable, Image, MainAxisAlignment, MainAxisSize,
+    ParentElement, ScrollbarWidth, Shrinkable, Text,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::platform::Cursor;
@@ -576,7 +576,6 @@ fn recent_tab_row(
 pub(super) fn render(
     model: &WorkspaceModel,
     appearance: &Appearance,
-    unassigned_tabs: &[(usize, String)],
     workspace_tab_titles: &HashMap<String, String>,
     scroll_state: ClippedScrollStateHandle,
     ask: &HomeAsk,
@@ -639,7 +638,7 @@ pub(super) fn render(
     if let Some(error) = model.status_error() {
         content.add_child(
             Text::new_inline(error.to_owned(), appearance.ui_font_family(), 12.)
-                .with_color(theme.ui_error_color().into())
+                .with_color(theme.ui_error_color())
                 .finish(),
         );
     }
@@ -730,62 +729,6 @@ pub(super) fn render(
             );
             content.add_child(tabs_section.finish());
         }
-    }
-
-    if !unassigned_tabs.is_empty() {
-        let mut list = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
-        for (index, title) in unassigned_tabs {
-            let action = WorkspaceAction::ActivateTab(*index);
-            let mut row = Flex::row()
-                .with_main_axis_size(MainAxisSize::Max)
-                .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                .with_spacing(12.);
-            row.add_child(sized_icon(
-                Icon::Terminal,
-                theme.sub_text_color(background),
-                16.,
-            ));
-            row.add_child(
-                Shrinkable::new(
-                    1.,
-                    ellipsized(
-                        title.clone(),
-                        appearance.ui_font_family(),
-                        13.,
-                        theme.main_text_color(background),
-                    ),
-                )
-                .finish(),
-            );
-            list.add_child(
-                EventHandler::new(
-                    ConstrainedBox::new(
-                        Container::new(row.finish())
-                            .with_padding_left(12.)
-                            .with_padding_right(12.)
-                            .with_corner_radius(radius(4.))
-                            .finish(),
-                    )
-                    .with_height(40.)
-                    .finish(),
-                )
-                .on_left_mouse_up(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(action.clone());
-                    DispatchEventResult::StopPropagation
-                })
-                .finish(),
-            );
-        }
-        let mut section = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
-        section.add_child(section_title("Terminais sem projeto", None, appearance));
-        section.add_child(
-            Container::new(list.finish())
-                .with_uniform_padding(4.)
-                .with_border(Border::all(1.).with_border_fill(theme.outline()))
-                .with_corner_radius(radius(8.))
-                .finish(),
-        );
-        content.add_child(section.finish());
     }
 
     let padded = Container::new(content.finish())

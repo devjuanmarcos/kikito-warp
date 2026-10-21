@@ -20,16 +20,15 @@ use warp_core::ui::theme::{AnsiColorIdentifier, Fill as WarpThemeFill, WarpTheme
 use warpui::elements::{
     Border, ChildAnchor, Clipped, ClippedScrollStateHandle, ClippedScrollable, ConstrainedBox,
     Container, CornerRadius, CrossAxisAlignment, DispatchEventResult, DragAxis, DragBarSide,
-    Draggable, DropShadow, DropTarget, Element, Empty, EventHandler, Expanded, Fill as ElementFill,
-    Flex, Highlight, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
-    OffsetPositioning, Padding, ParentAnchor, ParentElement, ParentOffsetBounds,
-    PositionedElementAnchor, PositionedElementOffsetBounds, Radius, Resizable,
-    ResizableStateHandle, SavePosition, ScrollTarget, ScrollToPositionMode, ScrollbarWidth,
-    Shrinkable, Stack, Text, resizable_state_handle,
+    Draggable, DropShadow, DropTarget, Element, Empty, EventHandler, Fill as ElementFill, Flex,
+    Highlight, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning,
+    Padding, ParentAnchor, ParentElement, ParentOffsetBounds, PositionedElementAnchor,
+    PositionedElementOffsetBounds, Radius, Resizable, ResizableStateHandle, SavePosition,
+    ScrollTarget, ScrollToPositionMode, ScrollbarWidth, Shrinkable, Stack, Text,
+    resizable_state_handle,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::platform::Cursor;
-use warpui::prelude::Align;
 use warpui::text_layout::ClipConfig;
 use warpui::ui_components::components::{UiComponent, UiComponentStyles};
 use warpui::ui_components::text_input::TextInput;
@@ -713,12 +712,8 @@ pub(super) struct VerticalTabsPanelState {
     new_tab_button_state: MouseStateHandle,
     pub(super) search_query: String,
     settings_button_mouse_state: MouseStateHandle,
-    panes_segment_mouse_state: MouseStateHandle,
-    tabs_segment_mouse_state: MouseStateHandle,
     focused_session_option_mouse_state: MouseStateHandle,
     summary_option_mouse_state: MouseStateHandle,
-    compact_segment_mouse_state: MouseStateHandle,
-    expanded_segment_mouse_state: MouseStateHandle,
     command_option_mouse_state: MouseStateHandle,
     directory_option_mouse_state: MouseStateHandle,
     branch_option_mouse_state: MouseStateHandle,
@@ -751,12 +746,8 @@ impl Default for VerticalTabsPanelState {
             new_tab_button_state: Default::default(),
             search_query: String::new(),
             settings_button_mouse_state: Default::default(),
-            panes_segment_mouse_state: Default::default(),
-            tabs_segment_mouse_state: Default::default(),
             focused_session_option_mouse_state: Default::default(),
             summary_option_mouse_state: Default::default(),
-            compact_segment_mouse_state: Default::default(),
-            expanded_segment_mouse_state: Default::default(),
             command_option_mouse_state: Default::default(),
             directory_option_mouse_state: Default::default(),
             branch_option_mouse_state: Default::default(),
@@ -1276,7 +1267,6 @@ pub(super) const VERTICAL_TABS_SETTINGS_BUTTON_POSITION_ID: &str = "vertical_tab
 pub(super) fn vtab_action_buttons_position_id(tab_index: usize) -> String {
     format!("vtab_action_buttons_{tab_index}")
 }
-const COMPACT_ICON_SIZE: f32 = 16.;
 const GROUP_INSERTION_TARGET_HEIGHT: f32 = 6.;
 const GROUP_INSERTION_INDICATOR_HEIGHT: f32 = 3.;
 
@@ -1912,6 +1902,11 @@ fn render_groups(
 
         merge_group_name_matches(&tab_group_ids, &matched_groups, own_matches)
     };
+
+    let visible_tabs: Vec<(usize, Option<Vec<PaneId>>)> = visible_tabs
+        .into_iter()
+        .filter(|(tab_index, _)| workspace.local_workspace_lists_tab(*tab_index, app))
+        .collect();
 
     if visible_tabs.is_empty() {
         if query.is_empty() {
@@ -5928,65 +5923,6 @@ pub(super) fn render_settings_popup(
         VerticalTabsResolvedMode::Summary
     );
     let sub_text = theme.sub_text_color(theme.background());
-    let view_as_header = Container::new(
-        Text::new_inline(
-            "Exibir como".to_string(),
-            appearance.ui_font_family(),
-            SETTINGS_POPUP_MENU_ITEM_FONT_SIZE,
-        )
-        .with_color(sub_text.into())
-        .finish(),
-    )
-    .with_horizontal_padding(16.)
-    .with_margin_bottom(4.)
-    .finish();
-
-    let view_as_segmented_control = Container::new(
-        Flex::row()
-            .with_main_axis_size(MainAxisSize::Max)
-            .with_cross_axis_alignment(CrossAxisAlignment::Center)
-            .with_child(
-                Expanded::new(
-                    1.,
-                    render_popup_text_segment(
-                        "Painéis",
-                        matches!(current_granularity, VerticalTabsDisplayGranularity::Panes),
-                        state.panes_segment_mouse_state.clone(),
-                        VerticalTabsDisplayGranularity::Panes,
-                        appearance,
-                        theme,
-                    ),
-                )
-                .finish(),
-            )
-            .with_child(
-                Expanded::new(
-                    1.,
-                    render_popup_text_segment(
-                        "Abas",
-                        matches!(current_granularity, VerticalTabsDisplayGranularity::Tabs),
-                        state.tabs_segment_mouse_state.clone(),
-                        VerticalTabsDisplayGranularity::Tabs,
-                        appearance,
-                        theme,
-                    ),
-                )
-                .finish(),
-            )
-            .finish(),
-    )
-    .with_uniform_padding(4.)
-    .with_background(internal_colors::fg_overlay_2(theme))
-    .with_corner_radius(CornerRadius::with_all(Radius::Pixels(
-        SETTINGS_POPUP_CORNER_RADIUS,
-    )))
-    .finish();
-
-    let view_as_segmented_control_row = Container::new(view_as_segmented_control)
-        .with_horizontal_padding(16.)
-        .with_padding_bottom(4.)
-        .finish();
-
     let tab_item_header = Container::new(
         Text::new_inline(
             "Item da aba".to_string(),
@@ -6024,67 +5960,6 @@ pub(super) fn render_settings_popup(
     } else {
         None
     };
-
-    let density_header = Container::new(
-        Text::new_inline(
-            "Densidade".to_string(),
-            appearance.ui_font_family(),
-            SETTINGS_POPUP_MENU_ITEM_FONT_SIZE,
-        )
-        .with_color(sub_text.into())
-        .finish(),
-    )
-    .with_horizontal_padding(16.)
-    .with_margin_bottom(4.)
-    .finish();
-
-    // Segmented control row (compact/expanded toggle)
-    // Segmented control row (compact/expanded toggle) — always at the top
-    let segmented_control = Container::new(
-        Flex::row()
-            .with_main_axis_size(MainAxisSize::Max)
-            .with_cross_axis_alignment(CrossAxisAlignment::Center)
-            .with_child(
-                Expanded::new(
-                    1.,
-                    render_popup_segment(
-                        WarpIcon::Menu01,
-                        matches!(current_mode, VerticalTabsViewMode::Compact),
-                        state.compact_segment_mouse_state.clone(),
-                        VerticalTabsViewMode::Compact,
-                        theme,
-                        sub_text,
-                    ),
-                )
-                .finish(),
-            )
-            .with_child(
-                Expanded::new(
-                    1.,
-                    render_popup_segment(
-                        WarpIcon::Grid,
-                        matches!(current_mode, VerticalTabsViewMode::Expanded),
-                        state.expanded_segment_mouse_state.clone(),
-                        VerticalTabsViewMode::Expanded,
-                        theme,
-                        sub_text,
-                    ),
-                )
-                .finish(),
-            )
-            .finish(),
-    )
-    .with_uniform_padding(4.)
-    .with_background(internal_colors::fg_overlay_2(theme))
-    .with_corner_radius(CornerRadius::with_all(Radius::Pixels(
-        SETTINGS_POPUP_CORNER_RADIUS,
-    )))
-    .finish();
-
-    let segmented_control_row = Container::new(segmented_control)
-        .with_horizontal_padding(16.)
-        .with_padding_bottom(4.)
-        .finish();
 
     // Divider between toggle and "Pane title as" section
     let make_divider = |theme: &WarpTheme| {
@@ -6149,8 +6024,8 @@ pub(super) fn render_settings_popup(
     let mut popup_col = Flex::column()
         .with_main_axis_size(MainAxisSize::Min)
         .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
-    popup_col.add_child(view_as_header);
-    popup_col.add_child(view_as_segmented_control_row);
+    // The project bar shows one row of tabs, so there is no "Exibir como" (panes vs. tabs) or
+    // "Densidade" choice; the remaining options shape each tab's title.
     if show_tab_item_section {
         popup_col.add_child(make_divider(theme));
         popup_col.add_child(tab_item_header);
@@ -6161,10 +6036,9 @@ pub(super) fn render_settings_popup(
     }
 
     if show_focused_session_controls {
-        popup_col.add_child(make_divider(theme));
-        popup_col.add_child(density_header);
-        popup_col.add_child(segmented_control_row);
-        popup_col.add_child(make_divider(theme));
+        if show_tab_item_section {
+            popup_col.add_child(make_divider(theme));
+        }
         popup_col.add_child(pane_title_header);
         popup_col.add_child(command_option);
         popup_col.add_child(directory_option);
@@ -6535,86 +6409,6 @@ fn render_show_toggle_option(
     })
     .on_click(move |ctx, _, _| {
         ctx.dispatch_typed_action(action.clone());
-    })
-    .with_cursor(Cursor::PointingHand)
-    .finish()
-}
-
-fn render_popup_segment(
-    icon: WarpIcon,
-    is_selected: bool,
-    mouse_state: MouseStateHandle,
-    mode: VerticalTabsViewMode,
-    theme: &WarpTheme,
-    icon_color: WarpThemeFill,
-) -> Box<dyn Element> {
-    Hoverable::new(mouse_state, move |hover_state| {
-        let background = if is_selected {
-            internal_colors::fg_overlay_3(theme)
-        } else if hover_state.is_hovered() {
-            internal_colors::fg_overlay_1(theme)
-        } else {
-            ThemeFill::Solid(ColorU::transparent_black())
-        };
-
-        Container::new(
-            Align::new(
-                ConstrainedBox::new(icon.to_warpui_icon(icon_color).finish())
-                    .with_width(COMPACT_ICON_SIZE)
-                    .with_height(COMPACT_ICON_SIZE)
-                    .finish(),
-            )
-            .finish(),
-        )
-        .with_background(background)
-        .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
-        .with_vertical_padding(2.)
-        .finish()
-    })
-    .on_click(move |ctx, _, _| {
-        ctx.dispatch_typed_action(WorkspaceAction::SetVerticalTabsViewMode(mode));
-    })
-    .with_cursor(Cursor::PointingHand)
-    .finish()
-}
-
-fn render_popup_text_segment(
-    label: &str,
-    is_selected: bool,
-    mouse_state: MouseStateHandle,
-    granularity: VerticalTabsDisplayGranularity,
-    appearance: &Appearance,
-    theme: &WarpTheme,
-) -> Box<dyn Element> {
-    let label = label.to_string();
-    let main_text = theme.main_text_color(theme.background());
-    let sub_text = theme.sub_text_color(theme.background());
-    Hoverable::new(mouse_state, move |hover_state| {
-        let background = if is_selected {
-            internal_colors::fg_overlay_3(theme)
-        } else if hover_state.is_hovered() {
-            internal_colors::fg_overlay_1(theme)
-        } else {
-            ThemeFill::Solid(ColorU::transparent_black())
-        };
-
-        Container::new(
-            Align::new(
-                Text::new_inline(label.clone(), appearance.ui_font_family(), 14.)
-                    .with_color(if is_selected { main_text } else { sub_text }.into())
-                    .finish(),
-            )
-            .finish(),
-        )
-        .with_background(background)
-        .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
-        .with_vertical_padding(2.)
-        .finish()
-    })
-    .on_click(move |ctx, _, _| {
-        ctx.dispatch_typed_action(WorkspaceAction::SetVerticalTabsDisplayGranularity(
-            granularity,
-        ));
     })
     .with_cursor(Cursor::PointingHand)
     .finish()

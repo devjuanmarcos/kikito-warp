@@ -45,6 +45,16 @@ impl Workspace {
             .flatten()
     }
 
+    /// The selected local project's folder, when it still exists.
+    pub(super) fn selected_local_project_directory(&self, ctx: &AppContext) -> Option<PathBuf> {
+        let model = self.local_workspace.as_ref(ctx);
+        model
+            .selected_project()
+            .and_then(|project_id| model.project(project_id))
+            .map(|project| PathBuf::from(&project.path))
+            .and_then(existing_project_startup_directory)
+    }
+
     /// Helper function to compute the initial directory for a new session.
     /// Returns Some(path) if inheriting the initial directory from an active
     /// session or using the user's custom path setting,
@@ -93,6 +103,11 @@ impl Workspace {
             } else {
                 let is_wsl = false;
             }
+        }
+
+        // Tabs open inside the selected project; WSL shells can't use its Windows path.
+        if !is_wsl && let Some(directory) = self.selected_local_project_directory(ctx) {
+            return Some(directory);
         }
 
         let is_same_system = same_system(prev_session_shell.as_ref(), chosen_shell, ctx);

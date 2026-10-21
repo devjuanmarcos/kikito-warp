@@ -154,3 +154,35 @@ Commits enviados nesta parte: recorte "Ajustar imagem" (`cc58481fc`, 97,8%), cor
 **Harness — segurança:** `native.ps1` agora recusa qualquer ação de mouse/teclado se o `warp-oss.exe` do projeto não estiver em primeiro plano e sob o ponteiro (`Assert-AppAt`; ação `keys` para digitar). Antes disso, numa rodada, cliques caíram na janela do Warp do Marcos, porque o app de teste não estava na frente.
 
 Outras pendências vistas: o estado "organização selecionada sem projeto selecionado" mostra "Nada aqui ainda…" mesmo quando há projetos (deveria abrir o mais recente ou pedir para escolher); avisos repetidos `Position not set for "workspace_view:tab_bar"` no log depois de remover a barra empilhada (algo ainda se posiciona relativo a ela).
+
+## 12. Fila de ajustes pedida pelo Marcos (21/10/2026, após testar a versão instalada)
+
+Instalado: `v0.2026.10.21.09.03.oss_00` (commit `17ca14277`) em `D:\Program Files\KikitoTerminal`, via `script\windows\bundle.ps1 -CHANNEL oss` (worktree `D:\DEVJUANMARCOS\PROJETOS\KIKITO-WARP-release`). O build de release leva ~1 h e não pode rodar junto com outro build (falta memória).
+
+1. [feito, sem build] Abas novas falhavam com "Falha ao salvar as abas do projeto" e iam para a Home. Causa (log do Kikito instalado): `UNIQUE constraint failed: local_workspace_tab_identities.id` — o snapshot cria identidades com id do banco para todas as abas abertas, e o modelo escolhe `maior id conhecido + 1`, que já pode existir. `claim_tab_identity` (persistence/local_workspace.rs) renumera essas linhas do snapshot (nunca associadas a projeto). Teste `new_project_tab_takes_its_model_id_over_snapshot_created_identities`.
+2. [feito, sem build] Painel de abas verticais escondido no workspace (`render_panels(..., true)`): só trilho + sidebar de projetos.
+3. [feito, sem build] X da aba no cabeçalho alinhado (vaga fixa na linha, não overlay).
+4. [feito, sem build] "+" e "Opções de visualização" no cabeçalho do projeto; o "+" abre o menu de nova sessão (shells, configurações de aba) ancorado nele; o popup perdeu "Exibir como" e "Densidade".
+5. [feito, sem build] Todo "nova aba" abre o menu: "+" da linha na sidebar, "⋯ → Nova aba", botão do projeto vazio (`OpenLocalWorkspaceNewTabMenu`, `WorkspaceAction::at_position`).
+6. [feito, sem build] Imagem da organização não aparecia no trilho: o `Image` ficava 0×0 dentro da linha; agora 36px com anel do kit.
+7. [pendente] Abas criadas pelo menu de sessões devem abrir na pasta do projeto selecionado.
+8. [pendente] Tela de Configurações sumiu (abre como aba sem projeto e a ativação manda para a Home): mostrar como tela principal.
+9. [pendente] Botões de notificações e de configurações no canto direito do cabeçalho, ao lado dos controles da janela.
+10. [pendente] Remover "Terminais sem projeto" da Home (fluxo deixa de existir).
+11. [pendente] Testes completos do fluxo de nova aba (cabeçalho, sidebar, menu ⋯, projeto vazio, clique na aba, reabrir o app) com o perfil `parity` usando as configurações do Marcos (abas verticais ligadas, `default_session_mode = "agent"`). A automação precisa da máquina parada (trava de primeiro plano).
+12. [pendente] Títulos das abas do cabeçalho seguindo "Título do painel como" (comando/diretório/branch) para o popup de opções ter efeito.
+
+## 13. Fila do dia 21/10 — implementado (compila; falta teste no app)
+
+- Abas novas abrem na pasta do projeto selecionado (`selected_local_project_directory` em `startup_directory.rs`; WSL fica de fora).
+- Toda aba nova que não é restauração entra no projeto selecionado (antes só `SingleTerminal`; configs de aba e agente caíam sem dono e a rota mandava para a Home).
+- Aba sem projeto não muda mais a tela (`TabActivationRoute::Home` removido).
+- Fechar a última aba não fecha a janela: `remove_tab` cria uma aba reserva oculta, fora de qualquer projeto (`add_local_workspace_stand_in_tab`).
+- Setting `appearance.local_workspace.tabs_in_sidebar` + botão "Layout das abas" ao lado do Git + comando na paleta. No modo sidebar o painel vertical lista só as abas do projeto selecionado (`local_workspace_lists_tab`).
+- Clique direito na aba do header: Renomear (editor inline), mover esquerda/direita, fechar.
+- Menus do workspace (`context_menu::menu`) no estilo do `Menu` do app (menu de nova aba).
+- Configurações: quando a aba de Configurações está ativa, vira a tela principal com barra própria e botão fechar.
+- Botões de notificações e configurações à esquerda dos controles da janela, em todas as telas.
+- "Terminais sem projeto" removido da Home.
+
+Pendências: teste completo do fluxo no app (perfil `parity`), menu de clique direito do painel vertical ainda é o do Warp ("Fechar outras abas" afeta outros projetos), clippy, format, commit, push, novo instalador.

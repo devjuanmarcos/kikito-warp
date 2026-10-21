@@ -233,15 +233,7 @@ pub(super) fn apply(
         } => connection.transaction(|connection| {
             ensure_project_exists(connection, project_id)?;
             for (id, workspace_tab_id) in new_tab_identities {
-                diesel::insert_into(local_workspace_tab_identities::table)
-                    .values((
-                        local_workspace_tab_identities::id.eq(id),
-                        local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id),
-                        local_workspace_tab_identities::session_tab_id.eq(None::<i32>),
-                    ))
-                    .on_conflict(local_workspace_tab_identities::workspace_tab_id)
-                    .do_nothing()
-                    .execute(connection)?;
+                claim_tab_identity(connection, id, &workspace_tab_id)?;
             }
             let mut seen = HashSet::new();
             for (tab_id, _) in &tabs {
@@ -496,6 +488,77 @@ fn ensure_organization_exists(connection: &mut SqliteConnection, id: i32) -> Res
         bail!("organization {id} does not exist");
     }
     Ok(())
+}
+
+/// Gives `workspace_tab_id` the identity row `id` chosen by the workspace model.
+///
+/// App-state snapshots create identity rows for every open tab with database-assigned ids the
+/// model never loaded, so the model's next id can already belong to such a row, and the tab
+/// itself may already have one under another id. Those snapshot rows are never part of a
+/// project, so they are renumbered instead of rejecting the model's id.
+fn claim_tab_identity(
+    connection: &mut SqliteConnection,
+    id: i32,
+    workspace_tab_id: &str,
+) -> Result<()> {
+    let holder = local_workspace_tab_identities::table
+        .find(id)
+        .select(local_workspace_tab_identities::workspace_tab_id)
+        .first::<String>(connection)
+        .optional()?;
+    match holder {
+        Some(holder) if holder == workspace_tab_id => return Ok(()),
+        Some(_) => {
+            ensure_identity_unassigned(connection, id)?;
+            let free_id = next_free_identity_id(connection)?;
+            diesel::update(local_workspace_tab_identities::table.find(id))
+                .set(local_workspace_tab_identities::id.eq(free_id))
+                .execute(connection)?;
+        }
+        None => {}
+    }
+    let existing = local_workspace_tab_identities::table
+        .filter(local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id))
+        .select(local_workspace_tab_identities::id)
+        .first::<i32>(connection)
+        .optional()?;
+    match existing {
+        Some(existing) => {
+            ensure_identity_unassigned(connection, existing)?;
+            diesel::update(local_workspace_tab_identities::table.find(existing))
+                .set(local_workspace_tab_identities::id.eq(id))
+                .execute(connection)?;
+        }
+        None => {
+            diesel::insert_into(local_workspace_tab_identities::table)
+                .values((
+                    local_workspace_tab_identities::id.eq(id),
+                    local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id),
+                    local_workspace_tab_identities::session_tab_id.eq(None::<i32>),
+                ))
+                .execute(connection)?;
+        }
+    }
+    Ok(())
+}
+
+fn ensure_identity_unassigned(connection: &mut SqliteConnection, id: i32) -> Result<()> {
+    let assigned = diesel::select(diesel::dsl::exists(
+        local_workspace_project_tabs::table.filter(local_workspace_project_tabs::tab_id.eq(id)),
+    ))
+    .get_result::<bool>(connection)?;
+    if assigned {
+        bail!("tab identity {id} already belongs to a project");
+    }
+    Ok(())
+}
+
+fn next_free_identity_id(connection: &mut SqliteConnection) -> Result<i32> {
+    let max = local_workspace_tab_identities::table
+        .select(diesel::dsl::max(local_workspace_tab_identities::id))
+        .first::<Option<i32>>(connection)?
+        .unwrap_or(0);
+    Ok(max + 1)
 }
 
 /// Fails when `tab_id` has no identity row. An identity whose session tab is still unsaved is

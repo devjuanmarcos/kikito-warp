@@ -3,26 +3,36 @@ use std::collections::HashMap;
 use warp_core::ui::Icon;
 use warpui::elements::{
     Border, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult, Element,
-    EventHandler, Expanded, Flex, Hoverable, MainAxisSize, ParentElement, Shrinkable, Stack, Text,
+    EventHandler, Expanded, Flex, Hoverable, MainAxisSize, ParentElement, Shrinkable, Text,
 };
 use warpui::platform::Cursor;
 use warpui::text_layout::ClipConfig;
 
+use super::super::vertical_tabs::{
+    VERTICAL_TABS_ADD_TAB_POSITION_ID, VERTICAL_TABS_SETTINGS_BUTTON_POSITION_ID,
+};
 use super::ws_style::{
-    TooltipSide, fg_overlay, mouse_state, naked_icon_button, radius, sized_icon,
+    TooltipSide, fg_overlay, mouse_state, naked_icon_button, radius, sized_icon, with_tooltip,
 };
 use crate::appearance::Appearance;
 use crate::local_workspace::model::{ProjectId, WorkspaceModel};
+use crate::workspace::action::NewSessionMenuAnchor;
 use crate::workspace::action::WorkspaceAction;
+use warpui::elements::SavePosition;
+use warpui::geometry::vector::Vector2F;
 
 const BAR_HEIGHT: f32 = 34.;
+const CLOSE_SLOT: f32 = 16.;
 const TAB_HEIGHT: f32 = 26.;
 const TAB_MIN_WIDTH: f32 = 72.;
 const TAB_MAX_WIDTH: f32 = 220.;
 const SEARCH_WIDTH: f32 = 240.;
 /// Space the native window controls occupy at the top-right of the client area.
-const WINDOW_CONTROLS_INSET: f32 = 138.;
+pub(super) const WINDOW_CONTROLS_INSET: f32 = 138.;
+/// Width of the notifications and settings buttons left of the window controls.
+pub(super) const WINDOW_BUTTONS_WIDTH: f32 = 52.;
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn render(
     model: &WorkspaceModel,
     appearance: &Appearance,
@@ -30,6 +40,8 @@ pub(super) fn render(
     available_workspace_tabs: &[String],
     tab_titles: &HashMap<String, String>,
     source_control_open: bool,
+    tabs_in_sidebar: bool,
+    mut rename_editor: Option<(i32, Box<dyn Element>)>,
 ) -> Option<Box<dyn Element>> {
     let project = model.project(project_id)?;
     let theme = appearance.theme();
@@ -41,7 +53,8 @@ pub(super) fn render(
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(4.);
-    for tab_id in &project.tabs {
+    let header_tabs: &[i32] = if tabs_in_sidebar { &[] } else { &project.tabs };
+    for tab_id in header_tabs {
         let Some(workspace_tab_id) = model.workspace_tab_id(*tab_id) else {
             continue;
         };
@@ -66,16 +79,41 @@ pub(super) fn render(
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_spacing(6.);
         content.add_child(sized_icon(Icon::Terminal, sub_text, 12.));
+        let label = match rename_editor.take_if(|(renaming, _)| *renaming == tab_id) {
+            Some((_, editor)) => editor,
+            None => Text::new_inline(title, appearance.ui_font_family(), 12.)
+                .with_color((if active { main_text } else { sub_text }).into())
+                .soft_wrap(false)
+                .with_clip(ClipConfig::ellipsis())
+                .finish(),
+        };
+        content.add_child(Expanded::new(1., label).finish());
+        // The close button sits in a fixed slot inside the row so it stays centered on the title
+        // and the tab doesn't change width when it appears.
+        let close: Box<dyn Element> = if hovered || active {
+            let close_state = mouse_state("project-tab-close", tab_id as i64);
+            Hoverable::new(close_state, move |mouse| {
+                let mut button = Container::new(sized_icon(Icon::X, sub_text, 12.))
+                    .with_uniform_padding(2.)
+                    .with_corner_radius(radius(3.));
+                if mouse.is_mouse_over_element() {
+                    button = button.with_background(fg_overlay(theme, 10));
+                }
+                button.finish()
+            })
+            .with_cursor(Cursor::PointingHand)
+            .on_click(move |ctx, _, _| {
+                ctx.dispatch_typed_action(WorkspaceAction::CloseLocalWorkspaceTab(tab_id))
+            })
+            .finish()
+        } else {
+            Flex::row().finish()
+        };
         content.add_child(
-            Shrinkable::new(
-                1.,
-                Text::new_inline(title, appearance.ui_font_family(), 12.)
-                    .with_color((if active { main_text } else { sub_text }).into())
-                    .soft_wrap(false)
-                    .with_clip(ClipConfig::ellipsis())
-                    .finish(),
-            )
-            .finish(),
+            ConstrainedBox::new(close)
+                .with_width(CLOSE_SLOT)
+                .with_height(CLOSE_SLOT)
+                .finish(),
         );
 
         let background = if active {
@@ -94,7 +132,7 @@ pub(super) fn render(
         };
         let mut body = Container::new(content.finish())
             .with_padding_left(10.)
-            .with_padding_right(24.)
+            .with_padding_right(4.)
             .with_corner_radius(radius(4.));
         if let Some(background) = background {
             body = body.with_background(background);
@@ -109,48 +147,61 @@ pub(super) fn render(
             .with_max_width(TAB_MAX_WIDTH)
             .finish();
 
-        let mut tab = Stack::new().with_child(
-            Hoverable::new(tab_state, |_| body)
-                .with_cursor(Cursor::PointingHand)
-                .with_defer_events_to_children()
-                .on_click(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(WorkspaceAction::SelectLocalWorkspaceTab(tab_id))
-                })
-                .finish(),
-        );
-        if hovered || active {
-            let close = EventHandler::new(
-                Container::new(sized_icon(Icon::X, sub_text, 12.))
-                    .with_uniform_padding(2.)
-                    .with_corner_radius(radius(3.))
-                    .finish(),
-            )
-            .on_left_mouse_up(move |ctx, _, _| {
-                ctx.dispatch_typed_action(WorkspaceAction::CloseLocalWorkspaceTab(tab_id));
+        let tab = Hoverable::new(tab_state, |_| body)
+            .with_cursor(Cursor::PointingHand)
+            .with_defer_events_to_children()
+            .on_click(move |ctx, _, _| {
+                ctx.dispatch_typed_action(WorkspaceAction::SelectLocalWorkspaceTab(tab_id))
+            })
+            .finish();
+        let tab = EventHandler::new(tab)
+            .on_right_mouse_down(move |ctx, _, position, _| {
+                ctx.dispatch_typed_action(WorkspaceAction::OpenLocalWorkspaceTabMenu {
+                    tab_id,
+                    position,
+                });
                 DispatchEventResult::StopPropagation
             })
             .finish();
-            tab.add_positioned_overlay_child(
-                close,
-                warpui::elements::OffsetPositioning::offset_from_parent(
-                    pathfinder_geometry::vector::vec2f(-4., 0.),
-                    warpui::elements::ParentOffsetBounds::ParentByPosition,
-                    warpui::elements::ParentAnchor::MiddleRight,
-                    warpui::elements::ChildAnchor::MiddleRight,
-                ),
-            );
-        }
-        tabs.add_child(Shrinkable::new(1., tab.finish()).finish());
+        tabs.add_child(Shrinkable::new(1., tab).finish());
     }
-    tabs.add_child(naked_icon_button(
-        appearance,
-        Icon::Plus,
-        theme.foreground(),
-        None,
-        WorkspaceAction::AddLocalWorkspaceTerminal,
-        ("tab-plus", 0),
-        Some(("Nova aba", TooltipSide::BelowRight)),
-    ));
+    // In sidebar mode the vertical tabs panel hosts these buttons and their position ids.
+    if !tabs_in_sidebar {
+        // `+` opens the session menu (shells, tab configs) the vertical tabs panel used to host; its
+        // position id lets that menu anchor below this button.
+        tabs.add_child(
+            SavePosition::new(
+                header_button(
+                    appearance,
+                    Icon::Plus,
+                    ("tab-plus", 0),
+                    "Nova aba",
+                    |ctx, position| {
+                        ctx.dispatch_typed_action(WorkspaceAction::ToggleNewSessionMenu {
+                            anchor: NewSessionMenuAnchor::AddTabButton(position),
+                        })
+                    },
+                ),
+                VERTICAL_TABS_ADD_TAB_POSITION_ID,
+            )
+            .finish(),
+        );
+        tabs.add_child(
+            SavePosition::new(
+                header_button(
+                    appearance,
+                    Icon::Sliders,
+                    ("tab-view-options", 0),
+                    "Opções de visualização",
+                    |ctx, _| {
+                        ctx.dispatch_typed_action(WorkspaceAction::ToggleVerticalTabsSettingsPopup)
+                    },
+                ),
+                VERTICAL_TABS_SETTINGS_BUTTON_POSITION_ID,
+            )
+            .finish(),
+        );
+    }
 
     let organization_name = model
         .organization(project.organization_id)
@@ -176,6 +227,15 @@ pub(super) fn render(
         WorkspaceAction::ToggleLocalWorkspaceSourceControl,
         ("tab-git", 0),
         Some(("Controle de versão", TooltipSide::BelowRight)),
+    ));
+    bar.add_child(header_button(
+        appearance,
+        Icon::LayoutAlt01,
+        ("tab-layout", 0),
+        "Layout das abas",
+        |ctx, position| {
+            ctx.dispatch_typed_action(WorkspaceAction::OpenLocalWorkspaceTabsLayoutMenu(position))
+        },
     ));
 
     Some(bar_frame(appearance, bar.finish()))
@@ -213,6 +273,37 @@ pub(super) fn render_title_bar(appearance: &Appearance, title: &str) -> Box<dyn 
     bar_frame(appearance, bar.finish())
 }
 
+/// Header of the settings screen: its title and a button that closes it.
+pub(super) fn render_settings_bar(appearance: &Appearance) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    let mut bar = Flex::row()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(8.);
+    bar.add_child(
+        Expanded::new(
+            1.,
+            Container::new(
+                Text::new_inline("Configurações", appearance.ui_font_family(), 12.)
+                    .with_color(theme.main_text_color(theme.surface_1()).into())
+                    .soft_wrap(false)
+                    .finish(),
+            )
+            .with_padding_left(8.)
+            .finish(),
+        )
+        .finish(),
+    );
+    bar.add_child(header_button(
+        appearance,
+        Icon::X,
+        ("settings-close", 0),
+        "Fechar configurações",
+        |ctx, _| ctx.dispatch_typed_action(WorkspaceAction::CloseActiveTab),
+    ));
+    bar_frame(appearance, bar.finish())
+}
+
 fn bar_frame(appearance: &Appearance, bar: Box<dyn Element>) -> Box<dyn Element> {
     let theme = appearance.theme();
     ConstrainedBox::new(
@@ -220,7 +311,7 @@ fn bar_frame(appearance: &Appearance, bar: Box<dyn Element>) -> Box<dyn Element>
             .with_background(theme.surface_1())
             .with_padding_top(1.)
             .with_padding_left(8.)
-            .with_padding_right(8. + WINDOW_CONTROLS_INSET)
+            .with_padding_right(16. + WINDOW_CONTROLS_INSET + WINDOW_BUTTONS_WIDTH)
             .with_border(Border::bottom(1.).with_border_fill(theme.outline()))
             .finish(),
     )
@@ -273,4 +364,40 @@ fn search_pill(
         DispatchEventResult::StopPropagation
     })
     .finish()
+}
+
+/// Naked 24px header button that hands the click position to `on_click`, with a tooltip below.
+pub(super) fn header_button(
+    appearance: &Appearance,
+    icon: Icon,
+    key: (&'static str, i64),
+    label: &'static str,
+    on_click: impl Fn(&mut warpui::EventContext, Vector2F) + 'static,
+) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    let state = mouse_state(key.0, key.1);
+    let hovered = state.lock().unwrap().is_mouse_over_element();
+    let button = Hoverable::new(state, move |mouse| {
+        let mut button = Container::new(sized_icon(icon, theme.foreground(), 14.))
+            .with_uniform_padding(5.)
+            .with_corner_radius(radius(4.));
+        if mouse.is_clicked() {
+            button = button.with_background(fg_overlay(theme, 15));
+        } else if mouse.is_mouse_over_element() {
+            button = button.with_background(fg_overlay(theme, 10));
+        }
+        button.finish()
+    })
+    .with_cursor(Cursor::PointingHand)
+    .on_click(move |ctx, _, position| on_click(ctx, position))
+    .finish();
+    if hovered {
+        with_tooltip(
+            button,
+            super::ws_style::tooltip(appearance, label),
+            TooltipSide::BelowRight,
+        )
+    } else {
+        button
+    }
 }

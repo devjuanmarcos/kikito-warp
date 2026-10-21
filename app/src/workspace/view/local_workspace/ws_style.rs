@@ -164,7 +164,9 @@ pub(super) fn naked_icon_button(
         button.finish()
     })
     .with_cursor(Cursor::PointingHand)
-    .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
+    .on_click(move |ctx, _, position| {
+        ctx.dispatch_typed_action(action.clone().at_position(position))
+    })
     .finish();
     match tooltip_label {
         Some((label, side)) if hovered => with_tooltip(button, tooltip(appearance, label), side),
@@ -194,6 +196,8 @@ pub(super) fn secondary_button(
         button.finish()
     })
     .with_cursor(Cursor::PointingHand)
-    .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
+    .on_click(move |ctx, _, position| {
+        ctx.dispatch_typed_action(action.clone().at_position(position))
+    })
     .finish()
 }

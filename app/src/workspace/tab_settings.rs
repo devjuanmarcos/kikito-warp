@@ -507,6 +507,16 @@ define_settings_group!(TabSettings, settings: [
         toml_path: "appearance.vertical_tabs.enabled",
         description: "Exibe as abas na vertical em vez de na horizontal.",
     },
+    local_workspace_tabs_in_sidebar: LocalWorkspaceTabsInSidebar {
+        type: bool,
+        default: false,
+        supported_platforms: SupportedPlatforms::ALL,
+        sync_to_cloud: SyncToCloud::Never,
+        surface: settings::SettingSurfaces::GUI,
+        private: false,
+        toml_path: "appearance.local_workspace.tabs_in_sidebar",
+        description: "Lista as abas do projeto numa barra lateral ao lado dos projetos em vez do             cabeçalho.",
+    },
     show_vertical_tab_panel_in_restored_windows: ShowVerticalTabPanelInRestoredWindows {
         type: bool,
         default: false,

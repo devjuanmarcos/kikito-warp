@@ -26,7 +26,7 @@ pub(super) fn render(
     } else if let Some(error) = &preview.error {
         panel.add_child(
             Text::new_inline(error.clone(), appearance.ui_font_family(), 10.)
-                .with_color(theme.ui_error_color().into())
+                .with_color(theme.ui_error_color())
                 .finish(),
         );
     } else if preview.binary {
@@ -68,6 +68,7 @@ pub(super) fn render(
         .finish()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn hunk_action(
     header: &str,
     index: usize,
@@ -167,13 +168,13 @@ fn diff_cell(
         _ => String::new(),
     };
     let color: pathfinder_color::ColorU = match (kind, is_old) {
-        (DiffLineKind::Changed, true) => theme.ui_error_color().into(),
+        (DiffLineKind::Changed, true) => theme.ui_error_color(),
         (DiffLineKind::Changed, false) => theme.font_color(theme.surface_1()).into(),
         (DiffLineKind::Context, _) => theme.sub_text_color(theme.surface_1()).into(),
     };
     Container::new(
         Text::new_inline(content, appearance.ui_font_family(), 9.)
-            .with_color(color.into())
+            .with_color(color)
             .finish(),
     )
     .with_background(if kind == DiffLineKind::Changed {

@@ -322,6 +322,14 @@ pub fn init(app: &mut AppContext) {
         }
     }
 
+    app.register_editable_bindings([EditableBinding::new(
+        "workspace:toggle_local_workspace_tabs_in_sidebar",
+        "Alternar abas do projeto entre o cabeçalho e a barra lateral",
+        WorkspaceAction::ToggleLocalWorkspaceTabsInSidebar,
+    )
+    .with_group(bindings::BindingGroup::Navigation.as_str())
+    .with_context_predicate(id!("Workspace"))]);
+
     #[cfg(target_os = "macos")]
     app.register_editable_bindings([EditableBinding::new(
         "workspace:sample_process",

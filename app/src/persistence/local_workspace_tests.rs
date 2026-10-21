@@ -599,3 +599,54 @@ fn replacing_project_tabs_again_before_the_session_snapshot_keeps_pending_identi
     assert_eq!(restored.tabs.len(), 1);
     assert_eq!(restored.tabs[0].tab_id, 6);
 }
+
+#[test]
+fn new_project_tab_takes_its_model_id_over_snapshot_created_identities() {
+    let mut connection = connection();
+    create_organization(&mut connection, 1, "Equipe");
+    let root = tempfile::tempdir().unwrap();
+    create_project(
+        &mut connection,
+        1,
+        1,
+        &root.path().join("Projeto").display().to_string(),
+    );
+    // Rows an app-state snapshot created for open tabs, unknown to the workspace model: id 5 is
+    // another tab, and the new tab already has a row under id 6.
+    for (id, workspace_tab_id) in [(5, "other-tab"), (6, "new-tab")] {
+        diesel::insert_into(local_workspace_tab_identities::table)
+            .values((
+                local_workspace_tab_identities::id.eq(id),
+                local_workspace_tab_identities::workspace_tab_id.eq(workspace_tab_id),
+                local_workspace_tab_identities::session_tab_id.eq(None::<i32>),
+            ))
+            .execute(&mut connection)
+            .unwrap();
+    }
+
+    local_workspace::apply(
+        &mut connection,
+        Operation::ReplaceProjectTabs {
+            project_id: 1,
+            tabs: vec![(5, 0)],
+            active_tab_id: Some(5),
+            new_tab_identities: vec![(5, "new-tab".to_string())],
+        },
+    )
+    .unwrap();
+
+    let identities: Vec<(i32, String)> = local_workspace_tab_identities::table
+        .select((
+            local_workspace_tab_identities::id,
+            local_workspace_tab_identities::workspace_tab_id,
+        ))
+        .order(local_workspace_tab_identities::id.asc())
+        .load(&mut connection)
+        .unwrap();
+    assert_eq!(identities[0], (5, "new-tab".to_string()));
+    assert!(identities.iter().any(|(_, tab)| tab == "other-tab"));
+    assert_eq!(identities.len(), 2);
+    let restored = local_workspace::read(&mut connection).unwrap();
+    assert_eq!(restored.tabs.len(), 1);
+    assert_eq!(restored.tabs[0].tab_id, 5);
+}

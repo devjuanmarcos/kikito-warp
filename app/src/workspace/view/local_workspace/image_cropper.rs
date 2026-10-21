@@ -118,10 +118,12 @@ pub(crate) struct CroppedImage {
     pub source_height: u32,
 }
 
+#[cfg(test)]
 pub(crate) fn crop_image_to_png(bytes: &[u8]) -> Result<Vec<u8>, ImageCropError> {
     crop_image_to_png_with_zoom(bytes, 1.)
 }
 
+#[cfg(test)]
 pub(crate) fn crop_image_to_png_with_zoom(
     bytes: &[u8],
     zoom: f32,
@@ -129,6 +131,7 @@ pub(crate) fn crop_image_to_png_with_zoom(
     crop_image_to_png_with_view(bytes, zoom, 0., 0.)
 }
 
+#[cfg(test)]
 pub(crate) fn crop_image_to_png_with_view(
     bytes: &[u8],
     zoom: f32,

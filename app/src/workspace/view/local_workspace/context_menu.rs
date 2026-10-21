@@ -1,10 +1,14 @@
 use super::ws_style::{mouse_state, radius, sized_icon};
 use crate::appearance::Appearance;
 use crate::local_workspace::model::ContextMenuTarget;
+use crate::menu::{
+    MENU_ITEM_HORIZONTAL_PADDING, MENU_ITEM_VERTICAL_PADDING, MENU_VERTICAL_PADDING,
+    SEPARATOR_VERTICAL_MARGIN,
+};
 use crate::workspace::action::WorkspaceAction;
 use pathfinder_color::ColorU;
-use pathfinder_geometry::vector::vec2f;
 use warp_core::ui::Icon;
+use warp_core::ui::color::blend::Blend;
 use warp_core::ui::theme::Fill;
 use warpui::elements::{
     Border, ConstrainedBox, Container, CrossAxisAlignment, Dismiss, DispatchEventResult,
@@ -19,6 +23,7 @@ pub(super) struct MenuItem {
     pub action: WorkspaceAction,
     pub danger: bool,
     pub separator_before: bool,
+    pub checked: bool,
 }
 
 pub(super) fn render(
@@ -38,8 +43,8 @@ pub(super) fn render(
 
 const CONTEXT_MENU_WIDTH: f32 = 186.;
 
-/// Kit `Menu`: accent hover, danger items in the theme's red, dismissed by Escape or an outside
-/// click through `dismiss`.
+/// Same look as the app's `Menu` (the new-session menu): accent hover, danger items in the
+/// theme's red, dismissed by Escape or an outside click through `dismiss`.
 pub(super) fn menu(
     items: Vec<MenuItem>,
     keyboard_selection: Option<usize>,
@@ -48,9 +53,10 @@ pub(super) fn menu(
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
+    let menu_background = theme.surface_2();
+    let font_size = appearance.ui_font_size();
     let mut menu = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
-    let mut action_index = 0;
-    for item in items {
+    for (action_index, item) in items.into_iter().enumerate() {
         if item.separator_before {
             menu.add_child(
                 Container::new(
@@ -58,65 +64,74 @@ pub(super) fn menu(
                         .with_height(1.)
                         .finish(),
                 )
-                .with_margin_top(4.)
-                .with_margin_bottom(4.)
+                .with_margin_top(SEPARATOR_VERTICAL_MARGIN)
+                .with_margin_bottom(SEPARATOR_VERTICAL_MARGIN)
                 .finish(),
             );
         }
         let keyboard_selected = keyboard_selection == Some(action_index);
         let state = mouse_state("menu-item", action_index as i64);
-        action_index += 1;
         let hovered = state.lock().unwrap().is_mouse_over_element();
+        let highlight = (hovered || keyboard_selected).then(|| theme.accent_button_color());
+        let text_background = match highlight {
+            Some(overlay) => menu_background.blend(&overlay),
+            None => menu_background,
+        };
         let item_color: Fill = if item.danger {
             Fill::Solid(theme.terminal_colors().normal.red.into())
         } else {
-            theme.main_text_color(theme.surface_2())
+            theme.main_text_color(text_background)
         };
         let mut row = Flex::row()
             .with_main_axis_size(MainAxisSize::Max)
-            .with_cross_axis_alignment(CrossAxisAlignment::Center)
-            .with_spacing(8.);
-        row.add_child(sized_icon(item.icon, item_color, 14.));
+            .with_cross_axis_alignment(CrossAxisAlignment::Center);
+        row.add_child(
+            Container::new(sized_icon(item.icon, item_color, font_size))
+                .with_margin_right(font_size / 2.)
+                .finish(),
+        );
         row.add_child(
             Expanded::new(
                 1.,
-                Text::new_inline(item.label, appearance.ui_font_family(), 12.)
+                Text::new_inline(item.label, appearance.ui_font_family(), font_size)
                     .with_color(item_color.into())
                     .soft_wrap(false)
                     .finish(),
             )
             .finish(),
         );
+        if item.checked {
+            row.add_child(sized_icon(Icon::Check, item_color, font_size));
+        }
         let mut body = Container::new(row.finish())
-            .with_padding_left(14.)
-            .with_padding_right(14.)
-            .with_padding_top(5.)
-            .with_padding_bottom(5.);
-        if hovered || keyboard_selected {
-            body = body.with_background(theme.accent());
+            .with_padding_left(MENU_ITEM_HORIZONTAL_PADDING)
+            .with_padding_right(MENU_ITEM_HORIZONTAL_PADDING)
+            .with_padding_top(MENU_ITEM_VERTICAL_PADDING)
+            .with_padding_bottom(MENU_ITEM_VERTICAL_PADDING);
+        if let Some(highlight) = highlight {
+            body = body.with_background(highlight);
         }
         let action = item.action;
         menu.add_child(
             Hoverable::new(state, |_| body.finish())
                 .with_cursor(Cursor::PointingHand)
-                .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
+                .on_click(move |ctx, _, position| {
+                    ctx.dispatch_typed_action(action.clone().at_position(position))
+                })
                 .finish(),
         );
     }
     let menu = EventHandler::new(
         ConstrainedBox::new(
             Container::new(menu.finish())
-                .with_background(theme.surface_2())
+                .with_background(menu_background)
                 .with_border(Border::all(1.).with_border_fill(theme.outline()))
                 .with_corner_radius(radius(5.))
-                .with_padding_top(9.)
-                .with_padding_bottom(9.)
-                .with_drop_shadow(DropShadow {
-                    color: ColorU::new(0, 0, 0, 102),
-                    offset: vec2f(0., 8.),
-                    blur_radius: 24.,
-                    spread_radius: 0.,
-                })
+                .with_padding_top(MENU_VERTICAL_PADDING)
+                .with_padding_bottom(MENU_VERTICAL_PADDING)
+                .with_drop_shadow(DropShadow::new_with_standard_offset_and_spread(
+                    ColorU::new(0, 0, 0, 48),
+                ))
                 .finish(),
         )
         .with_width(width)
@@ -152,6 +167,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 action: WorkspaceAction::EditLocalWorkspaceOrganization(id),
                 danger: false,
                 separator_before: false,
+                checked: false,
             },
             MenuItem {
                 label: "Remover organização",
@@ -159,15 +175,20 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 action: WorkspaceAction::RemoveLocalWorkspaceOrganization(id),
                 danger: true,
                 separator_before: true,
+                checked: false,
             },
         ],
         ContextMenuTarget::Project(id) => vec![
             MenuItem {
                 label: "Nova aba",
                 icon: Icon::Plus,
-                action: WorkspaceAction::AddLocalWorkspaceTerminalToProject(id),
+                action: WorkspaceAction::OpenLocalWorkspaceNewTabMenu {
+                    project_id: id,
+                    position: None,
+                },
                 danger: false,
                 separator_before: false,
+                checked: false,
             },
             MenuItem {
                 label: "Controle de versão",
@@ -175,6 +196,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 action: WorkspaceAction::ToggleLocalWorkspaceSourceControlForProject(id),
                 danger: false,
                 separator_before: false,
+                checked: false,
             },
             MenuItem {
                 label: "Remover projeto",
@@ -182,6 +204,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 action: WorkspaceAction::RemoveLocalWorkspaceProject(id),
                 danger: true,
                 separator_before: true,
+                checked: false,
             },
         ],
     }

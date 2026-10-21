@@ -12,7 +12,9 @@ use crate::persistence::model::{
 fn organization_context_menu_selection_wraps_over_its_two_actions() {
     let mut model = WorkspaceModel::new();
     let organization = model.add_organization("Equipe").unwrap();
-    model.set_context_menu(Some(super::model::ContextMenuTarget::Organization(organization)));
+    model.set_context_menu(Some(super::model::ContextMenuTarget::Organization(
+        organization,
+    )));
 
     model.move_context_menu_selection(1);
     assert_eq!(model.context_menu_index(), 1);
@@ -25,7 +27,9 @@ fn organization_context_menu_selection_wraps_over_its_two_actions() {
 fn project_context_menu_selection_wraps_over_its_three_actions() {
     let mut model = WorkspaceModel::new();
     let organization = model.add_organization("Equipe").unwrap();
-    let project = model.add_project(organization, "Projeto", r"C:\projeto").unwrap();
+    let project = model
+        .add_project(organization, "Projeto", r"C:\projeto")
+        .unwrap();
     model.set_context_menu(Some(super::model::ContextMenuTarget::Project(project)));
 
     model.move_context_menu_selection(-1);

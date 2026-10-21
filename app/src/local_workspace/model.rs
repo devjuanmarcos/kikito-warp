@@ -521,7 +521,7 @@ impl WorkspaceModel {
         };
         self.context_menu_keyboard_active = true;
         self.context_menu_index =
-            (self.context_menu_index as i32 + delta).rem_euclid(item_count as i32) as usize;
+            (self.context_menu_index as i32 + delta).rem_euclid(item_count) as usize;
     }
 
     pub fn assign_tab(&mut self, project_id: ProjectId, tab_id: TabId) -> Result<(), ModelError> {
