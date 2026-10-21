@@ -1,47 +1,91 @@
+/// Side of the square viewport of the "Ajustar imagem" dialog, in pixels.
+pub(super) const CROP_VIEW_SIZE: f32 = 240.;
+const MIN_ZOOM: f32 = 1.;
+const MAX_ZOOM: f32 = 4.;
+
+/// Placement of the source image inside the crop viewport, in viewport pixels. At zoom 1 the
+/// image's short side fills the viewport; `x` and `y` are the image's top-left corner and never
+/// leave the viewport uncovered.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub(super) struct CropViewport {
-    pub width: f32,
-    pub height: f32,
+pub(super) struct CropView {
     pub zoom: f32,
-    pub offset_x: f32,
-    pub offset_y: f32,
+    pub x: f32,
+    pub y: f32,
+    source_width: f32,
+    source_height: f32,
 }
 
-impl CropViewport {
+impl CropView {
+    pub fn centered(source_width: u32, source_height: u32) -> Self {
+        let view = Self {
+            zoom: MIN_ZOOM,
+            x: 0.,
+            y: 0.,
+            source_width: source_width.max(1) as f32,
+            source_height: source_height.max(1) as f32,
+        };
+        let (width, height) = view.displayed_size();
+        view.moved_to(
+            (CROP_VIEW_SIZE - width) / 2.,
+            (CROP_VIEW_SIZE - height) / 2.,
+        )
+    }
+
+    fn scale(&self) -> f32 {
+        CROP_VIEW_SIZE / self.source_width.min(self.source_height) * self.zoom
+    }
+
+    /// Size of the scaled source image inside the viewport.
+    pub fn displayed_size(&self) -> (f32, f32) {
+        (
+            self.source_width * self.scale(),
+            self.source_height * self.scale(),
+        )
+    }
+
+    pub fn moved_to(self, x: f32, y: f32) -> Self {
+        let (width, height) = self.displayed_size();
+        Self {
+            x: x.clamp(CROP_VIEW_SIZE - width, 0.),
+            y: y.clamp(CROP_VIEW_SIZE - height, 0.),
+            ..self
+        }
+    }
+
+    /// Zooms keeping the viewport point (`anchor_x`, `anchor_y`) over the same image point.
+    pub fn zoomed_at(self, zoom: f32, anchor_x: f32, anchor_y: f32) -> Self {
+        let zoom = zoom.clamp(MIN_ZOOM, MAX_ZOOM);
+        let ratio = zoom / self.zoom;
+        Self { zoom, ..self }.moved_to(
+            anchor_x - (anchor_x - self.x) * ratio,
+            anchor_y - (anchor_y - self.y) * ratio,
+        )
+    }
+
     pub fn zoomed(self, zoom: f32) -> Self {
-        Self {
-            zoom: zoom.clamp(1., 4.),
-            offset_x: self.offset_x.clamp(-1., 1.),
-            offset_y: self.offset_y.clamp(-1., 1.),
-            ..self
-        }
+        self.zoomed_at(zoom, CROP_VIEW_SIZE / 2., CROP_VIEW_SIZE / 2.)
     }
 
-    pub fn panned(self, delta_x: f32, delta_y: f32, image_width: f32, image_height: f32) -> Self {
-        if image_width <= 0. || image_height <= 0. {
-            return Self {
-                offset_x: 0.,
-                offset_y: 0.,
-                ..self
-            };
-        }
-        let crop_side = image_width.min(image_height) / self.zoom;
-        let available_pan_x = (image_width - crop_side).max(0.) * self.width / crop_side;
-        let available_pan_y = (image_height - crop_side).max(0.) * self.height / crop_side;
-        Self {
-            offset_x: pan_offset(self.offset_x, delta_x, available_pan_x),
-            offset_y: pan_offset(self.offset_y, delta_y, available_pan_y),
-            ..self
-        }
+    /// `(zoom, pan_x, pan_y)` for [`crop_image_to_png_with_view_and_dimensions`], where each pan
+    /// runs from -1 (start edge) to 1 (end edge) of the room the crop square has to move.
+    pub fn crop_parameters(&self) -> (f32, f32, f32) {
+        let side = self.source_width.min(self.source_height) / self.zoom;
+        let pan = |offset: f32, length: f32| {
+            let room = length - side;
+            if room <= 0. {
+                0.
+            } else {
+                (2. * (-offset / self.scale()) / room - 1.).clamp(-1., 1.)
+            }
+        };
+        (
+            self.zoom,
+            pan(self.x, self.source_width),
+            pan(self.y, self.source_height),
+        )
     }
 }
 
-fn pan_offset(current: f32, delta: f32, available_pan: f32) -> f32 {
-    if available_pan <= 0. {
-        return 0.;
-    }
-    (current - 2. * delta / available_pan).clamp(-1., 1.)
-}
 use std::io::Cursor;
 
 use image::{

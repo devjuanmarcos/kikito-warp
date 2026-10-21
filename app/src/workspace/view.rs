@@ -702,6 +702,8 @@ pub(crate) const OPEN_GLOBAL_SEARCH_BINDING_NAME: &str = "workspace:open_global_
 pub(crate) const TOGGLE_CONVERSATION_LIST_VIEW_BINDING_NAME: &str =
     "workspace:toggle_conversation_list_view";
 pub(crate) const NEW_TAB_BINDING_NAME: &str = "workspace:new_tab";
+/// Upper bound for workspace dialogs, which size themselves to their content.
+const LOCAL_WORKSPACE_DIALOG_MAX_HEIGHT: f32 = 480.;
 pub(crate) const NEW_TERMINAL_TAB_BINDING_NAME: &str = "workspace:new_terminal_tab";
 pub(crate) const NEW_FILE_BINDING_NAME: &str = "workspace:new_file";
 pub(crate) const NEW_WINDOW_BINDING_NAME: &str = "workspace:new_window";
@@ -1474,14 +1476,6 @@ impl Workspace {
         image_data: Option<Vec<u8>>,
         ctx: &mut ViewContext<Self>,
     ) {
-        let dialog_height = match &kind {
-            local_workspace::create_dialog::CreateDialogKind::CreateOrganization
-            | local_workspace::create_dialog::CreateDialogKind::EditOrganization(_) => 395.,
-            local_workspace::create_dialog::CreateDialogKind::CreateProject(_) => 318.,
-            local_workspace::create_dialog::CreateDialogKind::EditProject(_) => 243.,
-            local_workspace::create_dialog::CreateDialogKind::RemoveOrganization(_)
-            | local_workspace::create_dialog::CreateDialogKind::RemoveProject(_) => 190.,
-        };
         let body = ctx.add_typed_action_view(|ctx| {
             local_workspace::create_dialog::CreateDialog::new(
                 kind,
@@ -1584,7 +1578,7 @@ impl Workspace {
                 })
                 .with_body_style(UiComponentStyles {
                     padding: Some(Coords::uniform(0.)),
-                    height: Some(dialog_height),
+                    height: Some(LOCAL_WORKSPACE_DIALOG_MAX_HEIGHT),
                     ..Default::default()
                 })
         });

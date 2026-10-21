@@ -128,6 +128,7 @@ switch ($Action) {
     [Win]::mouse_event(8, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 120
     [Win]::mouse_event(16, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 600
   }
+  "wheel" { [Win]::SetCursorPos($X, $Y) | Out-Null; Start-Sleep -Milliseconds 200; [Win]::mouse_event(0x0800, 0, 0, [uint32]120, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300 }
   "list" { Get-Process warp-oss | Where-Object { $_.Path -eq $exe } | ForEach-Object { [Win]::Windows([uint32]$_.Id) } }
   "kill" { Get-Process warp-oss -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe } | Stop-Process -Force }
 }

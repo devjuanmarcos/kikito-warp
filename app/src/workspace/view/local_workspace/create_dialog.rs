@@ -23,16 +23,30 @@ use super::dialog_ui::{
     ButtonVariant, PixelAligned, color_dot, dialog_button, dialog_close, small_naked,
     small_secondary,
 };
-use super::ws_style::{mouse_state, neutral, sized_icon};
+use super::ws_style::{mouse_state, neutral, radius, sized_icon};
 use crate::appearance::Appearance;
 use crate::editor::{EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions};
 use crate::local_workspace::model::{OrganizationId, ProjectId};
+use pathfinder_color::ColorU;
 use warp_core::ui::Icon;
+use warp_core::ui::theme::Fill;
+use warpui::elements::Clipped;
 use warpui::elements::Hoverable;
 use warpui::geometry::vector::vec2f;
+use warpui::ui_components::slider::SliderStateHandle;
+
+use super::image_cropper::{CROP_VIEW_SIZE, CropView};
 use warpui::platform::Cursor;
 use warpui::ui_components::components::Coords;
 
+/// Corner radius of the kit's crop square (22% of the viewport, the org tile's 8/36).
+const CROP_SQUARE_RADIUS: f32 = CROP_VIEW_SIZE * 0.22;
+/// Thickness of the dimming border; it only has to cover the corners outside the crop square.
+const CROP_MASK_WIDTH: f32 = 60.;
+const CROP_ZOOM_STEP: f32 = 0.25;
+/// Height of the kit's slider (18px thumb), which sets the zoom row height.
+const CROP_SLIDER_HEIGHT: f32 = 18.;
+const CROP_WHEEL_FACTOR: f32 = 1.08;
 /// Kit mono inputs use 13px text, which makes them 37px tall instead of 36px.
 const PATH_FONT_SIZE: f32 = 13.;
 const PATH_INPUT_HEIGHT: f32 = 37.;
@@ -113,11 +127,31 @@ pub(crate) enum CreateDialogAction {
     PickProjectPath,
     PickOrganizationImage,
     SelectAccent(String),
-    ZoomIn,
-    ZoomOut,
-    PanCropTo(f32, f32),
-    EndCropPan,
     DiscardImage,
+    CropDragStart(f32, f32),
+    CropDragTo(f32, f32),
+    CropDragEnd,
+    /// Zoom factor change, positive to zoom in.
+    CropZoomBy(f32),
+    CropZoomTo(f32),
+    ApplyCrop,
+    CancelCrop,
+}
+
+/// Image state to restore when "Voltar" leaves the crop step.
+struct ImageBeforeCrop {
+    image_data: Option<Vec<u8>>,
+    source_image_data: Option<Vec<u8>>,
+    source_dimensions: Option<(u32, u32)>,
+}
+
+/// Pointer and image position where the current crop drag started.
+#[derive(Clone, Copy)]
+struct CropDrag {
+    pointer_x: f32,
+    pointer_y: f32,
+    image_x: f32,
+    image_y: f32,
 }
 
 pub(crate) struct CreateDialog {
@@ -130,9 +164,13 @@ pub(crate) struct CreateDialog {
     image_data: Option<Vec<u8>>,
     source_image_data: Option<Vec<u8>>,
     source_dimensions: Option<(u32, u32)>,
-    crop_zoom: f32,
-    crop_viewport: super::image_cropper::CropViewport,
-    crop_drag_position: Option<(f32, f32)>,
+    /// `(zoom, pan_x, pan_y)` of the applied crop.
+    crop_parameters: (f32, f32, f32),
+    /// Present while the "Ajustar imagem" step is shown.
+    crop_view: Option<CropView>,
+    crop_drag: Option<CropDrag>,
+    image_before_crop: Option<ImageBeforeCrop>,
+    crop_zoom_slider: SliderStateHandle,
     status: Option<String>,
     error: Option<String>,
     active: bool,
@@ -184,7 +222,8 @@ impl CreateDialog {
             }
         });
         ctx.subscribe_to_view(&name_editor, |me, _, event, ctx| match event {
-            EditorEvent::Enter => me.try_submit(ctx),
+            EditorEvent::Enter if me.crop_view.is_none() => me.try_submit(ctx),
+            EditorEvent::Escape if me.crop_view.is_some() => me.cancel_crop(ctx),
             EditorEvent::Escape => ctx.emit(CreateDialogEvent::Close),
             EditorEvent::Edited(_) => {
                 me.error = None;
@@ -236,15 +275,11 @@ impl CreateDialog {
             source_image_data: image_data.clone(),
             source_dimensions: image_data.as_ref().map(|_| (128, 128)),
             image_data,
-            crop_zoom: 1.,
-            crop_viewport: super::image_cropper::CropViewport {
-                width: 128.,
-                height: 128.,
-                zoom: 1.,
-                offset_x: 0.,
-                offset_y: 0.,
-            },
-            crop_drag_position: None,
+            crop_parameters: (1., 0., 0.),
+            crop_view: None,
+            crop_drag: None,
+            image_before_crop: None,
+            crop_zoom_slider: SliderStateHandle::default(),
             status: None,
             error: None,
             active: true,
@@ -404,18 +439,22 @@ impl CreateDialog {
         cropped: super::image_cropper::CroppedImage,
         ctx: &mut ViewContext<Self>,
     ) {
+        self.image_before_crop = Some(ImageBeforeCrop {
+            image_data: self.image_data.take(),
+            source_image_data: self.source_image_data.take(),
+            source_dimensions: self.source_dimensions.take(),
+        });
         self.source_image_data = Some(source_bytes);
         self.source_dimensions = Some((cropped.source_width, cropped.source_height));
         self.image_data = Some(cropped.png);
         self.image_selection_error = false;
-        self.crop_zoom = 1.;
-        self.crop_viewport = super::image_cropper::CropViewport {
-            width: 128.,
-            height: 128.,
-            zoom: 1.,
-            offset_x: 0.,
-            offset_y: 0.,
-        };
+        self.crop_parameters = (1., 0., 0.);
+        self.crop_view = Some(CropView::centered(
+            cropped.source_width,
+            cropped.source_height,
+        ));
+        self.crop_drag = None;
+        self.crop_zoom_slider.reset_offset();
         self.error = None;
         self.status = None;
         ctx.notify();
@@ -484,7 +523,7 @@ impl CreateDialog {
         self.image_data = None;
         self.source_image_data = None;
         self.source_dimensions = None;
-        self.crop_zoom = 1.;
+        self.crop_parameters = (1., 0., 0.);
         self.image_selection_error = false;
         self.error = None;
         self.status = None;
@@ -500,7 +539,45 @@ impl CreateDialog {
         ctx.notify();
     }
 
+    fn apply_crop(&mut self, ctx: &mut ViewContext<Self>) {
+        let Some(view) = self.crop_view.take() else {
+            return;
+        };
+        self.crop_drag = None;
+        self.image_before_crop = None;
+        self.crop_parameters = view.crop_parameters();
+        self.request_crop_preview(ctx);
+        ctx.notify();
+    }
+
+    fn cancel_crop(&mut self, ctx: &mut ViewContext<Self>) {
+        if self.crop_view.take().is_none() {
+            return;
+        }
+        self.crop_drag = None;
+        if let Some(before) = self.image_before_crop.take() {
+            self.image_data = before.image_data;
+            self.source_image_data = before.source_image_data;
+            self.source_dimensions = before.source_dimensions;
+        }
+        ctx.notify();
+    }
+
+    fn update_crop_view(
+        &mut self,
+        update: impl FnOnce(CropView) -> CropView,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        if let Some(view) = self.crop_view {
+            self.crop_view = Some(update(view));
+            ctx.notify();
+        }
+    }
+
     fn try_submit(&mut self, ctx: &mut ViewContext<Self>) {
+        if self.crop_view.is_some() {
+            return;
+        }
         if let Some(status) = submit_blocking_status(
             self.image_job.is_some(),
             self.pending_image_path.is_some(),
@@ -704,6 +781,217 @@ impl CreateDialog {
     }
 }
 
+impl CreateDialog {
+    /// "Ajustar imagem" step: drag to position, slider or wheel to zoom, 128px output.
+    fn crop_step(&self, view: &CropView, appearance: &Appearance) -> Box<dyn Element> {
+        let theme = appearance.theme();
+        let (width, height) = view.displayed_size();
+        let unbounded_at = |x: f32, y: f32| {
+            OffsetPositioning::offset_from_parent(
+                vec2f(x, y),
+                ParentOffsetBounds::Unbounded,
+                ParentAnchor::TopLeft,
+                ChildAnchor::TopLeft,
+            )
+        };
+        let block = |fill: Fill, width: f32, height: f32| {
+            ConstrainedBox::new(
+                Container::new(Flex::row().finish())
+                    .with_background(fill)
+                    .finish(),
+            )
+            .with_width(width)
+            .with_height(height)
+            .finish()
+        };
+        let mut viewport = Stack::new();
+        viewport.add_child(block(neutral(theme, 10), CROP_VIEW_SIZE, CROP_VIEW_SIZE));
+        if let Some(bytes) = &self.source_image_data {
+            viewport.add_positioned_child(
+                ConstrainedBox::new(
+                    Image::new(image_preview_source(bytes.clone()), CacheOption::BySize).finish(),
+                )
+                .with_width(width)
+                .with_height(height)
+                .finish(),
+                unbounded_at(view.x, view.y),
+            );
+        }
+        // The kit dims everything outside the rounded crop square; a border thick enough to
+        // reach the viewport corners, whose inner edge follows that square, paints the same mask.
+        viewport.add_positioned_child(
+            ConstrainedBox::new(
+                Container::new(Flex::row().finish())
+                    .with_border(
+                        Border::all(CROP_MASK_WIDTH)
+                            .with_border_fill(Fill::Solid(ColorU::new(0, 0, 0, 140))),
+                    )
+                    .with_corner_radius(radius(CROP_SQUARE_RADIUS + CROP_MASK_WIDTH))
+                    .finish(),
+            )
+            .with_width(CROP_VIEW_SIZE + 2. * CROP_MASK_WIDTH)
+            .with_height(CROP_VIEW_SIZE + 2. * CROP_MASK_WIDTH)
+            .finish(),
+            unbounded_at(-CROP_MASK_WIDTH, -CROP_MASK_WIDTH),
+        );
+        viewport.add_child(
+            ConstrainedBox::new(
+                Container::new(Flex::row().finish())
+                    .with_border(
+                        Border::all(1.)
+                            .with_border_fill(Fill::Solid(ColorU::new(255, 255, 255, 179))),
+                    )
+                    .with_corner_radius(radius(CROP_SQUARE_RADIUS))
+                    .finish(),
+            )
+            .with_width(CROP_VIEW_SIZE)
+            .with_height(CROP_VIEW_SIZE)
+            .finish(),
+        );
+        if self.crop_drag.is_some() {
+            let line = Fill::Solid(ColorU::new(255, 255, 255, 89));
+            for third in [1., 2.] {
+                let offset = (CROP_VIEW_SIZE * third / 3.).round();
+                viewport.add_positioned_child(
+                    block(line.clone(), 1., CROP_VIEW_SIZE),
+                    unbounded_at(offset, 0.),
+                );
+                viewport.add_positioned_child(
+                    block(line.clone(), CROP_VIEW_SIZE, 1.),
+                    unbounded_at(0., offset),
+                );
+            }
+        }
+        let viewport = Clipped::new(
+            ConstrainedBox::new(viewport.finish())
+                .with_width(CROP_VIEW_SIZE)
+                .with_height(CROP_VIEW_SIZE)
+                .finish(),
+        )
+        .finish();
+        let dragging = self.crop_drag.is_some();
+        let zoom = view.zoom;
+        let viewport = EventHandler::new(
+            Hoverable::new(mouse_state("crop-viewport", 0), |_| viewport)
+                .with_cursor(if dragging {
+                    Cursor::ClosedHand
+                } else {
+                    Cursor::OpenHand
+                })
+                .finish(),
+        )
+        .on_left_mouse_down(|ctx, _, position| {
+            ctx.dispatch_typed_action(CreateDialogAction::CropDragStart(
+                position.x(),
+                position.y(),
+            ));
+            DispatchEventResult::StopPropagation
+        })
+        .on_mouse_dragged(|ctx, _, position| {
+            ctx.dispatch_typed_action(CreateDialogAction::CropDragTo(position.x(), position.y()));
+            DispatchEventResult::StopPropagation
+        })
+        .on_left_mouse_up(|ctx, _, _| {
+            ctx.dispatch_typed_action(CreateDialogAction::CropDragEnd);
+            DispatchEventResult::StopPropagation
+        })
+        .on_scroll_wheel(move |ctx, _, delta, _| {
+            let factor = if delta.y() > 0. {
+                CROP_WHEEL_FACTOR
+            } else {
+                1. / CROP_WHEEL_FACTOR
+            };
+            ctx.dispatch_typed_action(CreateDialogAction::CropZoomBy(zoom * factor - zoom));
+            DispatchEventResult::StopPropagation
+        })
+        .finish();
+
+        let sub = theme.sub_text_color(theme.surface_1());
+        let zoom_button = |icon: Icon, key: i64, step: f32| {
+            Hoverable::new(mouse_state("crop-zoom-step", key), move |_| {
+                sized_icon(icon, sub, 14.)
+            })
+            .with_cursor(Cursor::PointingHand)
+            .on_click(move |ctx, _, _| {
+                ctx.dispatch_typed_action(CreateDialogAction::CropZoomBy(step))
+            })
+            .finish()
+        };
+        let slider = appearance
+            .ui_builder()
+            .slider(self.crop_zoom_slider.clone())
+            .with_range(1.0..4.0)
+            .with_default_value(view.zoom)
+            .with_style(UiComponentStyles {
+                width: Some(160.),
+                ..Default::default()
+            })
+            .on_drag(|ctx, _, zoom| ctx.dispatch_typed_action(CreateDialogAction::CropZoomTo(zoom)))
+            .on_change(|ctx, _, zoom| {
+                ctx.dispatch_typed_action(CreateDialogAction::CropZoomTo(zoom))
+            })
+            .build()
+            .finish();
+        let zoom_row = Flex::row()
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_spacing(10.)
+            .with_child(zoom_button(Icon::Minus, 0, -CROP_ZOOM_STEP))
+            .with_child(slider)
+            .with_child(zoom_button(Icon::Plus, 1, CROP_ZOOM_STEP))
+            .finish();
+
+        let buttons = Flex::row()
+            .with_main_axis_size(MainAxisSize::Max)
+            .with_main_axis_alignment(MainAxisAlignment::End)
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_spacing(8.)
+            .with_child(dialog_button(
+                appearance,
+                None,
+                "Voltar",
+                &[],
+                ButtonVariant::Secondary,
+                true,
+                ("crop-back", 0),
+                |ctx| ctx.dispatch_typed_action(CreateDialogAction::CancelCrop),
+            ))
+            .with_child(dialog_button(
+                appearance,
+                None,
+                "Aplicar recorte",
+                &[],
+                ButtonVariant::Primary,
+                self.source_image_data.is_some(),
+                ("crop-apply", 0),
+                |ctx| ctx.dispatch_typed_action(CreateDialogAction::ApplyCrop),
+            ))
+            .finish();
+
+        Flex::column()
+            .with_main_axis_size(MainAxisSize::Min)
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_spacing(14.)
+            .with_child(viewport)
+            .with_child(
+                ConstrainedBox::new(zoom_row)
+                    .with_height(CROP_SLIDER_HEIGHT)
+                    .finish(),
+            )
+            .with_child(
+                Text::new_inline(
+                    "Arraste para posicionar · role para dar zoom",
+                    appearance.ui_font_family(),
+                    11.,
+                )
+                .with_line_height_ratio(BODY_LINE_HEIGHT / 11.)
+                .with_color(theme.hint_text_color(theme.surface_1()).into())
+                .finish(),
+            )
+            .with_child(buttons)
+            .finish()
+    }
+}
+
 impl Entity for CreateDialog {
     type Event = CreateDialogEvent;
 }
@@ -727,6 +1015,7 @@ impl View for CreateDialog {
             CreateDialogKind::RemoveOrganization(_) | CreateDialogKind::RemoveProject(_)
         );
         let title = match &self.kind {
+            _ if self.crop_view.is_some() => "Ajustar imagem".to_owned(),
             CreateDialogKind::CreateOrganization => "Nova organização".to_owned(),
             CreateDialogKind::EditOrganization(_) => "Editar organização".to_owned(),
             CreateDialogKind::RemoveOrganization(_) => "Remover organização".to_owned(),
@@ -737,8 +1026,13 @@ impl View for CreateDialog {
             CreateDialogKind::EditProject(_) => "Editar projeto".to_owned(),
             CreateDialogKind::RemoveProject(_) => "Remover projeto".to_owned(),
         };
-        let close_button = dialog_close(appearance, ("dialog-close", 0), |ctx| {
-            ctx.dispatch_typed_action(CreateDialogAction::Cancel)
+        let cropping = self.crop_view.is_some();
+        let close_button = dialog_close(appearance, ("dialog-close", 0), move |ctx| {
+            ctx.dispatch_typed_action(if cropping {
+                CreateDialogAction::CancelCrop
+            } else {
+                CreateDialogAction::Cancel
+            })
         });
         let mut header = Flex::row()
             .with_main_axis_size(MainAxisSize::Max)
@@ -761,6 +1055,14 @@ impl View for CreateDialog {
         .with_padding_top(24.)
         .with_padding_bottom(12.)
         .finish();
+        if let Some(view) = &self.crop_view {
+            let body = Container::new(self.crop_step(view, appearance))
+                .with_padding_left(24.)
+                .with_padding_right(24.)
+                .with_padding_bottom(24.)
+                .finish();
+            return dialog_frame(theme, vec![header, body]);
+        }
         let mut body = Flex::column()
             .with_main_axis_size(MainAxisSize::Min)
             .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
@@ -846,50 +1148,6 @@ impl View for CreateDialog {
                     CreateDialogAction::DiscardImage,
                     appearance,
                 ));
-            }
-            if let Some(bytes) = &self.image_data {
-                let mut crop_preview = Flex::row()
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_spacing(12.);
-                crop_preview.add_child(
-                    ConstrainedBox::new(
-                        EventHandler::new(
-                            Image::new(image_preview_source(bytes.clone()), CacheOption::BySize)
-                                .finish(),
-                        )
-                        .on_mouse_dragged(|ctx, _, position| {
-                            ctx.dispatch_typed_action(CreateDialogAction::PanCropTo(
-                                position.x(),
-                                position.y(),
-                            ));
-                            DispatchEventResult::StopPropagation
-                        })
-                        .on_left_mouse_up(|ctx, _, _| {
-                            ctx.dispatch_typed_action(CreateDialogAction::EndCropPan);
-                            DispatchEventResult::StopPropagation
-                        })
-                        .finish(),
-                    )
-                    .with_width(128.)
-                    .with_height(128.)
-                    .finish(),
-                );
-                let mut zoom_controls = Flex::column()
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_spacing(6.);
-                zoom_controls.add_child(Self::button("−", CreateDialogAction::ZoomOut, appearance));
-                zoom_controls.add_child(
-                    Text::new_inline(
-                        format!("{:.2}×", self.crop_zoom),
-                        appearance.ui_font_family(),
-                        11.,
-                    )
-                    .with_color(theme.sub_text_color(theme.background()).into())
-                    .finish(),
-                );
-                zoom_controls.add_child(Self::button("+", CreateDialogAction::ZoomIn, appearance));
-                crop_preview.add_child(zoom_controls.finish());
-                body.add_child(crop_preview.finish());
             }
         }
         if let Some(path_editor) = &self.path_editor {
@@ -994,23 +1252,31 @@ impl View for CreateDialog {
             .with_padding_bottom(12.)
             .with_border(Border::top(1.).with_border_fill(neutral(theme, 20)))
             .finish();
-        let mut dialog = Flex::column()
-            .with_main_axis_size(MainAxisSize::Max)
-            .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
-        dialog.add_child(header);
-        dialog.add_child(body);
-        dialog.add_child(footer);
-        PixelAligned::new(
-            Container::new(dialog.finish())
-                .with_background(theme.surface_1())
-                .with_border(Border::all(1.).with_border_fill(neutral(theme, 20)))
-                .with_corner_radius(warpui::elements::CornerRadius::with_all(
-                    warpui::elements::Radius::Pixels(8.),
-                ))
-                .finish(),
-        )
-        .finish()
+        dialog_frame(theme, vec![header, body, footer])
     }
+}
+
+/// Kit `Dialog` frame sized to its content: surface-1, 1px neutral-4 border, 8px radius.
+fn dialog_frame(
+    theme: &warp_core::ui::theme::WarpTheme,
+    sections: Vec<Box<dyn Element>>,
+) -> Box<dyn Element> {
+    let mut dialog = Flex::column()
+        .with_main_axis_size(MainAxisSize::Min)
+        .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
+    for section in sections {
+        dialog.add_child(section);
+    }
+    PixelAligned::new(
+        Container::new(dialog.finish())
+            .with_background(theme.surface_1())
+            .with_border(Border::all(1.).with_border_fill(neutral(theme, 20)))
+            .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                warpui::elements::Radius::Pixels(8.),
+            ))
+            .finish(),
+    )
+    .finish()
 }
 
 /// Kit `TextInput`: 10px padding, 1px border at 20% foreground, accent border while focused.
@@ -1111,42 +1377,45 @@ impl TypedActionView for CreateDialog {
                 self.accent_color = color.clone();
                 ctx.notify();
             }
-            CreateDialogAction::ZoomIn | CreateDialogAction::ZoomOut => {
-                let zoom = if matches!(action, CreateDialogAction::ZoomIn) {
-                    (self.crop_zoom + 0.25).min(4.)
-                } else {
-                    (self.crop_zoom - 0.25).max(1.)
-                };
-                if self.source_image_data.is_some() {
-                    self.crop_viewport = self.crop_viewport.zoomed(zoom);
-                    self.crop_zoom = zoom;
-                    self.request_crop_preview(ctx);
+            CreateDialogAction::DiscardImage => self.discard_image(ctx),
+            CreateDialogAction::CropDragStart(x, y) => {
+                if let Some(view) = self.crop_view {
+                    self.crop_drag = Some(CropDrag {
+                        pointer_x: *x,
+                        pointer_y: *y,
+                        image_x: view.x,
+                        image_y: view.y,
+                    });
                     ctx.notify();
                 }
             }
-            CreateDialogAction::PanCropTo(x, y) => {
-                if let Some((last_x, last_y)) = self.crop_drag_position {
-                    let (width, height) = self.source_dimensions.unwrap_or((128, 128));
-                    self.crop_viewport = self.crop_viewport.panned(
-                        x - last_x,
-                        y - last_y,
-                        width as f32,
-                        height as f32,
+            CreateDialogAction::CropDragTo(x, y) => {
+                if let Some(drag) = self.crop_drag {
+                    self.update_crop_view(
+                        |view| {
+                            view.moved_to(
+                                drag.image_x + x - drag.pointer_x,
+                                drag.image_y + y - drag.pointer_y,
+                            )
+                        },
+                        ctx,
                     );
-                    if self.source_image_data.is_some() {
-                        self.status = Some("Solte para atualizar o recorte.".to_owned());
-                    }
-                }
-                self.crop_drag_position = Some((*x, *y));
-                ctx.notify();
-            }
-            CreateDialogAction::EndCropPan => {
-                self.crop_drag_position = None;
-                if self.source_image_data.is_some() {
-                    self.request_crop_preview(ctx);
                 }
             }
-            CreateDialogAction::DiscardImage => self.discard_image(ctx),
+            CreateDialogAction::CropDragEnd => {
+                if self.crop_drag.take().is_some() {
+                    ctx.notify();
+                }
+            }
+            CreateDialogAction::CropZoomBy(delta) => {
+                self.crop_zoom_slider.reset_offset();
+                self.update_crop_view(|view| view.zoomed(view.zoom + delta), ctx);
+            }
+            CreateDialogAction::CropZoomTo(zoom) => {
+                self.update_crop_view(|view| view.zoomed(*zoom), ctx);
+            }
+            CreateDialogAction::ApplyCrop => self.apply_crop(ctx),
+            CreateDialogAction::CancelCrop => self.cancel_crop(ctx),
         }
     }
 }
@@ -1159,9 +1428,7 @@ impl CreateDialog {
         let Some((width, height)) = self.source_dimensions else {
             return;
         };
-        let zoom = self.crop_zoom;
-        let pan_x = self.crop_viewport.offset_x;
-        let pan_y = self.crop_viewport.offset_y;
+        let (zoom, pan_x, pan_y) = self.crop_parameters;
         if self.image_job.is_some() && self.image_job_is_load {
             return;
         }
