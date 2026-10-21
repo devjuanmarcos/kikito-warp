@@ -132,4 +132,9 @@ Também nesta sessão:
 - Log do app no perfil de paridade: `%LOCALAPPDATA%\warp\WarpOss-parity\data\logs\warp-oss.log` (o stderr fica vazio).
 - Artefato visto em várias capturas: uma linha de texto apagado em y≈798, na borda inferior da área do terminal. Não investigado.
 
-Próximos passos: (1) Home (campo "Jarvis" com Cmd+K, saudação com nome, status de agentes, branch e hover nos cards); (2) ícones do kit via `Icon` (procurar em `bundled/svg` primeiro); (3) decisões com o Marcos: de onde vem o nome da saudação ("Juan"), dados de agente (badge/status e contagem de abas), botão "vincular aba", arrastar arquivo para a imagem (o terminal sob o modal também recebe `DragAndDropFiles`).
+Decisões do Marcos (20/10, fim da sessão): saudação sem nome ("Boa noite. Tudo pronto."), status/badge de agente fora por enquanto, botão "vincular aba" removido por enquanto.
+
+- **Home** (`a34d9a731`, `58a41e218`): barra "Início", campo "O que vamos fazer?" que filtra projetos e abas (ignora "abrir/ir para"), setas + Enter ou clique abrem o resultado (testado no app real), placeholder com o projeto mais recente, cards com hover/caminho com `~`/branch, hover nas abas recentes. Medição contra o kit alimentado com os mesmos dados (`match_kit.py` gera `kit_matched` com o seed nativo e as decisões acima, servido na porta 8766): conteúdo 95,1%, campo 96,4%, cards 96,1%, barra 97,9%. Diferenças: sem tecla ⌘K no campo (não há atalho ligado); logo 1px à esquerda (o conteúdo centra em x=192,5 e o WarpUI arredonda para baixo); a linha "Ver Codex / Retomar" do kit depende de agentes (fora).
+- **Ícones**: todos os SVGs usados pelo kit já existem idênticos em `app/assets/bundled/svg`, e as variantes `Icon` usadas no workspace já apontam para eles (`GitBranch` → `git-branch-02.svg`, `X` → `x-close.svg`, etc.). Item fechado sem mudança.
+
+Próximos passos: (1) recorte de imagem ("Ajustar imagem", janela de 240px no kit); (2) painel de controle de versão (`GitPanel.jsx`); (3) diálogo de remoção (o kit remove direto, sem confirmação; decidir com o Marcos se mantém a confirmação); (4) quando houver dados de agente: badge do trilho, glifos nas abas e linha de ações da Home.
