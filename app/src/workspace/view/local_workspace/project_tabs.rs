@@ -167,15 +167,6 @@ pub(super) fn render(
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(8.);
     bar.add_child(Expanded::new(1., tabs.finish()).finish());
-    bar.add_child(naked_icon_button(
-        appearance,
-        Icon::Link,
-        theme.foreground(),
-        None,
-        WorkspaceAction::AssignActiveTabToLocalWorkspaceProject,
-        ("tab-link", 0),
-        Some(("Vincular aba ativa", TooltipSide::BelowRight)),
-    ));
     bar.add_child(search);
     bar.add_child(naked_icon_button(
         appearance,

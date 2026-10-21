@@ -13,9 +13,11 @@ pub(crate) use source_control::DiffPreview;
 use crate::workspace::action::WorkspaceAction;
 use warpui::ViewHandle;
 use warpui::elements::{
-    Align, ClippedScrollStateHandle, Container, CrossAxisAlignment, Element, Flex, MainAxisSize,
-    ParentElement, Shrinkable, Text,
+    Align, ClippedScrollStateHandle, Container, CrossAxisAlignment, Element, Empty, Flex,
+    MainAxisSize, ParentElement, Shrinkable, Text,
 };
+
+pub(crate) use home::{HomeAsk, ask_placeholder, ask_results};
 
 pub(super) fn preferred_open_project_tab(
     model: &WorkspaceModel,
@@ -121,6 +123,7 @@ pub(crate) fn render(
     available_workspace_tabs: &[String],
     workspace_tab_titles: &std::collections::HashMap<String, String>,
     home_scroll: ClippedScrollStateHandle,
+    home_ask: home::HomeAsk<'_>,
     git_status_error: Option<&str>,
     git_status: Option<&RepositoryStatus>,
     git_branches: &[LocalBranch],
@@ -240,10 +243,11 @@ pub(crate) fn render(
                 unassigned_tabs,
                 workspace_tab_titles,
                 home_scroll,
+                &home_ask,
             )
         }
     } else if should_render_empty_organization_state(model) {
-        empty_organization_state(model, appearance, workspace_tab_titles, home_scroll)
+        empty_organization_state(model, appearance)
     } else {
         home::render(
             model,
@@ -251,24 +255,21 @@ pub(crate) fn render(
             unassigned_tabs,
             workspace_tab_titles,
             home_scroll,
+            &home_ask,
         )
     };
     workspace.add_child(Shrinkable::new(1., main_content).finish());
     workspace.finish()
 }
 
-fn empty_organization_state(
-    model: &WorkspaceModel,
-    appearance: &Appearance,
-    workspace_tab_titles: &std::collections::HashMap<String, String>,
-    home_scroll: ClippedScrollStateHandle,
-) -> Box<dyn Element> {
-    let Some(organization_id) = model.selected_organization() else {
-        return home::render(model, appearance, &[], workspace_tab_titles, home_scroll);
+fn empty_organization_state(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn Element> {
+    let Some(organization) = model
+        .selected_organization()
+        .and_then(|organization_id| model.organization(organization_id))
+    else {
+        return Empty::new().finish();
     };
-    let Some(organization) = model.organization(organization_id) else {
-        return home::render(model, appearance, &[], workspace_tab_titles, home_scroll);
-    };
+    let organization_id = organization.id;
     let theme = appearance.theme();
     let mut empty = Flex::column()
         .with_main_axis_size(MainAxisSize::Min)

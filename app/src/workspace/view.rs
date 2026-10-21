@@ -1151,6 +1151,9 @@ pub struct Workspace {
     local_workspace_dialog: Option<ViewHandle<Modal<local_workspace::create_dialog::CreateDialog>>>,
     local_workspace_search_input: ViewHandle<EditorView>,
     local_workspace_search_query: String,
+    local_workspace_home_ask_input: ViewHandle<EditorView>,
+    local_workspace_home_query: String,
+    local_workspace_home_selection: usize,
     local_workspace_commit_input: ViewHandle<EditorView>,
     local_workspace_git_branch_name_input: ViewHandle<EditorView>,
     local_workspace_project_sidebar_scroll: ClippedScrollStateHandle,
@@ -1331,6 +1334,99 @@ impl Workspace {
             _ => {}
         });
         editor
+    }
+
+    fn local_workspace_home_ask_input(ctx: &mut ViewContext<Self>) -> ViewHandle<EditorView> {
+        let editor = ctx.add_typed_action_view(|ctx| {
+            let appearance = Appearance::as_ref(ctx);
+            EditorView::single_line(
+                SingleLineEditorOptions {
+                    text: TextOptions::ui_text(Some(14.), appearance),
+                    propagate_and_no_op_vertical_navigation_keys:
+                        PropagateAndNoOpNavigationKeys::Always,
+                    ..Default::default()
+                },
+                ctx,
+            )
+        });
+        editor.update(ctx, |editor, ctx| {
+            editor.set_placeholder_text("O que vamos fazer?", ctx)
+        });
+        ctx.subscribe_to_view(&editor, |me, editor_view, event, ctx| match event {
+            EditorEvent::Edited(_) => {
+                me.local_workspace_home_query = editor_view.as_ref(ctx).buffer_text(ctx);
+                me.local_workspace_home_selection = 0;
+                ctx.notify();
+            }
+            EditorEvent::Navigate(NavigationKey::Up) => {
+                me.local_workspace_home_selection =
+                    me.local_workspace_home_selection.saturating_sub(1);
+                ctx.notify();
+            }
+            EditorEvent::Navigate(NavigationKey::Down) => {
+                me.local_workspace_home_selection += 1;
+                ctx.notify();
+            }
+            EditorEvent::Enter => me.open_local_workspace_home_result(ctx),
+            EditorEvent::Escape => me.clear_local_workspace_home_query(ctx),
+            EditorEvent::Focused | EditorEvent::Blurred => {
+                me.refresh_local_workspace_home_placeholder(ctx);
+                ctx.notify();
+            }
+            _ => {}
+        });
+        editor
+    }
+
+    fn local_workspace_tab_titles(
+        &self,
+        app: &AppContext,
+    ) -> std::collections::HashMap<String, String> {
+        self.tabs
+            .iter()
+            .map(|tab| {
+                (
+                    tab.workspace_tab_id.clone(),
+                    tab.pane_group.as_ref(app).display_title(app),
+                )
+            })
+            .collect()
+    }
+
+    fn open_local_workspace_home_result(&mut self, ctx: &mut ViewContext<Self>) {
+        let titles = self.local_workspace_tab_titles(ctx);
+        let results = local_workspace::ask_results(
+            self.local_workspace.as_ref(ctx),
+            &self.local_workspace_home_query,
+            &titles,
+        );
+        let Some(result) = results.get(
+            self.local_workspace_home_selection
+                .min(results.len().saturating_sub(1)),
+        ) else {
+            return;
+        };
+        let action = result.target.action();
+        self.clear_local_workspace_home_query(ctx);
+        ctx.dispatch_typed_action(&action);
+    }
+
+    fn clear_local_workspace_home_query(&mut self, ctx: &mut ViewContext<Self>) {
+        self.local_workspace_home_query.clear();
+        self.local_workspace_home_selection = 0;
+        self.local_workspace_home_ask_input
+            .update(ctx, |editor, ctx| {
+                editor.set_buffer_text_ignoring_undo("", ctx)
+            });
+        ctx.notify();
+    }
+
+    fn refresh_local_workspace_home_placeholder(&mut self, ctx: &mut ViewContext<Self>) {
+        let placeholder = local_workspace::ask_placeholder(self.local_workspace.as_ref(ctx));
+        self.local_workspace_home_ask_input
+            .update(ctx, |editor, ctx| {
+                editor.set_placeholder_text(placeholder, ctx)
+            });
     }
 
     fn local_workspace_commit_input(ctx: &mut ViewContext<Self>) -> ViewHandle<EditorView> {
@@ -5300,6 +5396,9 @@ impl Workspace {
             local_workspace_dialog: None,
             local_workspace_search_input: Self::local_workspace_search_input(ctx),
             local_workspace_search_query: String::new(),
+            local_workspace_home_ask_input: Self::local_workspace_home_ask_input(ctx),
+            local_workspace_home_query: String::new(),
+            local_workspace_home_selection: 0,
             local_workspace_commit_input: Self::local_workspace_commit_input(ctx),
             local_workspace_git_branch_name_input: Self::local_workspace_git_branch_name_input(ctx),
             local_workspace_project_sidebar_scroll: ClippedScrollStateHandle::default(),
@@ -26201,7 +26300,10 @@ impl TypedActionView for Workspace {
         }
 
         match action {
-            SelectLocalWorkspaceHome => self.select_local_workspace(None, None, ctx),
+            SelectLocalWorkspaceHome => {
+                self.select_local_workspace(None, None, ctx);
+                self.refresh_local_workspace_home_placeholder(ctx);
+            }
             CreateLocalWorkspaceOrganization => self.open_local_workspace_dialog(
                 local_workspace::create_dialog::CreateDialogKind::CreateOrganization,
                 None,
@@ -29403,16 +29505,7 @@ impl View for Workspace {
                 .iter()
                 .map(|tab| tab.workspace_tab_id.clone())
                 .collect();
-            let workspace_tab_titles: std::collections::HashMap<String, String> = self
-                .tabs
-                .iter()
-                .map(|tab| {
-                    (
-                        tab.workspace_tab_id.clone(),
-                        tab.pane_group.as_ref(app).display_title(app),
-                    )
-                })
-                .collect();
+            let workspace_tab_titles = self.local_workspace_tab_titles(app);
             let unassigned_tabs: Vec<(usize, String)> = self
                 .tabs
                 .iter()
@@ -29462,6 +29555,12 @@ impl View for Workspace {
                 &available_workspace_tabs,
                 &workspace_tab_titles,
                 self.local_workspace_home_scroll.clone(),
+                local_workspace::HomeAsk {
+                    input: self.local_workspace_home_ask_input.clone(),
+                    query: &self.local_workspace_home_query,
+                    selection: self.local_workspace_home_selection,
+                    focused: self.local_workspace_home_ask_input.is_focused(app),
+                },
                 git_status_error,
                 git_status,
                 git_branches,
