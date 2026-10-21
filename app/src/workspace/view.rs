@@ -1460,7 +1460,9 @@ impl Workspace {
                 ctx,
             )
         });
-        editor.update(ctx, |editor, ctx| editor.set_placeholder_text("Mensagem", ctx));
+        editor.update(ctx, |editor, ctx| {
+            editor.set_placeholder_text("Mensagem", ctx)
+        });
         ctx.subscribe_to_view(&editor, |me, _, event, ctx| match event {
             EditorEvent::CtrlEnter => {
                 let action = if me.local_workspace_has_staged_changes() {
@@ -1488,14 +1490,20 @@ impl Workspace {
 
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     fn refresh_local_workspace_commit_placeholder(&mut self, ctx: &mut ViewContext<Self>) {
-        let placeholder = match self.local_workspace_git_status.as_ref().map(|status| &status.head) {
+        let placeholder = match self
+            .local_workspace_git_status
+            .as_ref()
+            .map(|status| &status.head)
+        {
             Some(HeadState::Branch(branch)) => {
                 format!("Mensagem (Ctrl+Enter para commitar em \"{branch}\")")
             }
             _ => "Mensagem (Ctrl+Enter para commitar)".to_owned(),
         };
         self.local_workspace_commit_input
-            .update(ctx, |editor, ctx| editor.set_placeholder_text(placeholder, ctx));
+            .update(ctx, |editor, ctx| {
+                editor.set_placeholder_text(placeholder, ctx)
+            });
     }
 
     /// Remote of the checked-out branch's upstream, `origin` when it has none yet.
@@ -1523,7 +1531,11 @@ impl Workspace {
         if self.local_workspace_git_operation_pending {
             return;
         }
-        let branch = match self.local_workspace_git_status.as_ref().map(|status| &status.head) {
+        let branch = match self
+            .local_workspace_git_status
+            .as_ref()
+            .map(|status| &status.head)
+        {
             Some(HeadState::Branch(branch)) => Some(branch.clone()),
             _ => None,
         };
@@ -1554,7 +1566,8 @@ impl Workspace {
                         crate::local_git::push_branch(&repository_path, &remote, branch).await?
                     }
                     (
-                        local_workspace::GitRemoteAction::Pull | local_workspace::GitRemoteAction::Push,
+                        local_workspace::GitRemoteAction::Pull
+                        | local_workspace::GitRemoteAction::Push,
                         None,
                     ) => return Ok(None),
                 }
@@ -2411,14 +2424,21 @@ impl Workspace {
             .local_workspace_commit_input
             .as_ref(ctx)
             .buffer_text(ctx);
-        let committed_files = self.local_workspace_git_status.as_ref().map_or(0, |status| {
-            if all {
-                status.changed_path_count()
-            } else {
-                status.staged_path_count()
-            }
-        });
-        let push_target = match self.local_workspace_git_status.as_ref().map(|status| &status.head) {
+        let committed_files = self
+            .local_workspace_git_status
+            .as_ref()
+            .map_or(0, |status| {
+                if all {
+                    status.changed_path_count()
+                } else {
+                    status.staged_path_count()
+                }
+            });
+        let push_target = match self
+            .local_workspace_git_status
+            .as_ref()
+            .map(|status| &status.head)
+        {
             Some(HeadState::Branch(branch)) if push => {
                 Some((self.local_workspace_git_remote(), branch.clone()))
             }
@@ -2471,11 +2491,14 @@ impl Workspace {
                                 editor.set_buffer_text_ignoring_undo("", ctx);
                             });
                         workspace.local_workspace_git_amend_confirmation = false;
-                        workspace.local_workspace_git_panel.note = Some(match (&push_target, committed_files) {
-                            (Some((remote, branch)), _) => format!("Commit enviado para {remote}/{branch}"),
-                            (None, 1) => "1 arquivo commitado".to_owned(),
-                            (None, count) => format!("{count} arquivos commitados"),
-                        });
+                        workspace.local_workspace_git_panel.note =
+                            Some(match (&push_target, committed_files) {
+                                (Some((remote, branch)), _) => {
+                                    format!("Commit enviado para {remote}/{branch}")
+                                }
+                                (None, 1) => "1 arquivo commitado".to_owned(),
+                                (None, count) => format!("{count} arquivos commitados"),
+                            });
                     }
                     Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
                 }
@@ -29791,38 +29814,43 @@ impl View for Workspace {
                 .and_then(|project_id| local_workspace_model.project(project_id))
                 .map(|project| project.name.as_str())
                 .unwrap_or_default();
-            let source_control = self.local_workspace_source_control_open.then(|| {
-                local_workspace::SourceControl {
-                    project_name,
-                    status: git_status,
-                    history: git_history,
-                    branches: git_branches,
-                    branch_menu: self.local_workspace_git_branch_menu.as_deref(),
-                    create_branch_from: self.local_workspace_git_create_branch_from.as_deref(),
-                    rename_branch: self.local_workspace_git_rename_branch.as_deref(),
-                    branch_name_input: self.local_workspace_git_branch_name_input.clone(),
-                    error: git_status_error,
-                    commit_input: self.local_workspace_commit_input.clone(),
-                    commit_message_empty: self
-                        .local_workspace_commit_input
-                        .as_ref(app)
-                        .buffer_text(app)
-                        .trim()
-                        .is_empty(),
-                    commit_focused: self.local_workspace_commit_input.is_focused(app),
-                    diff_preview: git_diff_preview,
-                    amend_confirmation: self.local_workspace_git_amend_confirmation,
-                    undo_confirmation: self.local_workspace_git_undo_confirmation,
-                    revert_confirmation: self.local_workspace_git_revert_confirmation,
-                    discard_confirmation: self
-                        .local_workspace_git_discard_confirmation
-                        .as_ref()
-                        .map(|(path, untracked)| (path.as_str(), *untracked)),
-                    operation_pending: git_operation_pending,
-                    panel: &self.local_workspace_git_panel,
-                    scroll_state: self.local_workspace_source_control_scroll.clone(),
-                }
-            });
+            let source_control =
+                self.local_workspace_source_control_open
+                    .then(|| local_workspace::SourceControl {
+                        project_name,
+                        status: git_status,
+                        history: git_history,
+                        branches: git_branches,
+                        branch_menu: self.local_workspace_git_branch_menu.as_deref(),
+                        create_branch_from: self.local_workspace_git_create_branch_from.as_deref(),
+                        rename_branch: self.local_workspace_git_rename_branch.as_deref(),
+                        branch_name_input: self.local_workspace_git_branch_name_input.clone(),
+                        error: git_status_error,
+                        commit_input: self.local_workspace_commit_input.clone(),
+                        commit_message_empty: self
+                            .local_workspace_commit_input
+                            .as_ref(app)
+                            .buffer_text(app)
+                            .trim()
+                            .is_empty(),
+                        commit_focused: self.local_workspace_commit_input.is_focused(app),
+                        diff_preview: git_diff_preview,
+                        amend_confirmation: self.local_workspace_git_amend_confirmation,
+                        undo_confirmation: self.local_workspace_git_undo_confirmation,
+                        revert_confirmation: self.local_workspace_git_revert_confirmation,
+                        discard_confirmation: self
+                            .local_workspace_git_discard_confirmation
+                            .as_ref()
+                            .map(|(path, untracked)| (path.as_str(), *untracked)),
+                        operation_pending: git_operation_pending,
+                        panel: &self.local_workspace_git_panel,
+                        scroll_state: self.local_workspace_source_control_scroll.clone(),
+                        width: local_workspace::source_control_width(
+                            local_workspace_model,
+                            app.window_bounds(&self.window_id)
+                                .map_or(1280., |bounds| bounds.width()),
+                        ),
+                    });
             local_workspace::render(
                 local_workspace_model,
                 appearance,

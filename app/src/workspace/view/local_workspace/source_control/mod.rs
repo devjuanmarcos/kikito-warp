@@ -74,8 +74,18 @@ pub(crate) struct SourceControl<'a> {
     pub operation_pending: bool,
     pub panel: &'a GitPanelState,
     pub scroll_state: ClippedScrollStateHandle,
+    /// Panel width, see [`panel_width`].
+    pub width: f32,
 }
 
-pub(super) fn render(source_control: SourceControl<'_>, appearance: &Appearance) -> Box<dyn Element> {
+/// The kit sizes the panel to 34% of the main area, clamped to 300–380px.
+pub(crate) fn panel_width(main_area_width: f32) -> f32 {
+    (main_area_width * 0.34).clamp(300., 380.)
+}
+
+pub(super) fn render(
+    source_control: SourceControl<'_>,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
     changes::render(source_control, appearance)
 }

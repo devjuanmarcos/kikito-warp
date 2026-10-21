@@ -6,12 +6,12 @@ use warp_core::ui::theme::Fill;
 use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
 use warpui::elements::{
     Axis, Border, ConstrainedBox, Container, CrossAxisAlignment, Element, Expanded, Flex,
-    Hoverable, MainAxisAlignment, MainAxisSize, ParentElement, Percentage, ScrollbarWidth,
-    Shrinkable, Text, Wrap,
+    Hoverable, MainAxisAlignment, MainAxisSize, ParentElement, ScrollbarWidth, Shrinkable, Text,
+    Wrap,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::platform::Cursor;
-use warpui::text_layout::{ClipConfig, ClipDirection, ClipStyle};
+use warpui::text_layout::ClipConfig;
 
 use super::graph::{self, GraphColors, GraphRow};
 use super::{GitPanelSection, GitRemoteAction, SourceControl};
@@ -22,15 +22,13 @@ use crate::workspace::view::local_workspace::ws_style::{
     TooltipSide, fg_overlay, mouse_state, naked_icon_button, neutral, radius, sized_icon,
 };
 
-const HEADER_HEIGHT: f32 = 34.;
-const SECTION_HEADER_HEIGHT: f32 = 26.;
+// The kit's heights exclude their 1px borders (CSS content-box), so each bordered bar is one
+// pixel taller here.
+const HEADER_HEIGHT: f32 = 35.;
+const SECTION_HEADER_HEIGHT: f32 = 27.;
 const LIST_HEADER_HEIGHT: f32 = 22.;
 const FILE_ROW_HEIGHT: f32 = 24.;
-const FOOTER_HEIGHT: f32 = 28.;
-/// The kit sizes the panel to 34% of the main area, clamped to 300–380px.
-const PANEL_WIDTH_FRACTION: f32 = 0.34;
-const PANEL_MIN_WIDTH: f32 = 300.;
-const PANEL_MAX_WIDTH: f32 = 380.;
+const FOOTER_HEIGHT: f32 = 29.;
 const VISIBLE_REFS: usize = 2;
 
 struct ChangeGroup {
@@ -115,7 +113,10 @@ fn head_name(status: &RepositoryStatus) -> &str {
     }
 }
 
-pub(super) fn render(source_control: SourceControl<'_>, appearance: &Appearance) -> Box<dyn Element> {
+pub(super) fn render(
+    source_control: SourceControl<'_>,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
     let theme = appearance.theme();
     let background = theme.surface_1();
     let mut sections = Flex::column()
@@ -142,18 +143,13 @@ pub(super) fn render(source_control: SourceControl<'_>, appearance: &Appearance)
         .with_child(Expanded::new(1., scrollable).finish())
         .with_child(footer(&source_control, appearance))
         .finish();
-    Percentage::width(
-        PANEL_WIDTH_FRACTION,
-        ConstrainedBox::new(
-            Container::new(panel)
-                .with_background(background)
-                .with_border(Border::left(1.).with_border_fill(theme.outline()))
-                .finish(),
-        )
-        .with_min_width(PANEL_MIN_WIDTH)
-        .with_max_width(PANEL_MAX_WIDTH)
-        .finish(),
+    ConstrainedBox::new(
+        Container::new(panel)
+            .with_background(background)
+            .with_border(Border::left(1.).with_border_fill(theme.outline()))
+            .finish(),
     )
+    .with_width(source_control.width)
     .finish()
 }
 
@@ -290,12 +286,11 @@ fn icon_button(
                     .finish(),
             );
         }
-        let mut button = Container::new(
-            ConstrainedBox::new(row.finish()).with_height(20.).finish(),
-        )
-        .with_padding_left(3.)
-        .with_padding_right(3.)
-        .with_corner_radius(radius(4.));
+        let mut button =
+            Container::new(ConstrainedBox::new(row.finish()).with_height(20.).finish())
+                .with_padding_left(3.)
+                .with_padding_right(3.)
+                .with_corner_radius(radius(4.));
         if hovered || busy {
             button = button.with_background(fg_overlay(theme, 10));
         }
@@ -306,7 +301,10 @@ fn icon_button(
     .finish()
 }
 
-fn changes_section(source_control: &SourceControl<'_>, appearance: &Appearance) -> Box<dyn Element> {
+fn changes_section(
+    source_control: &SourceControl<'_>,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
     let theme = appearance.theme();
     let background = theme.surface_1();
     let sub = theme.sub_text_color(background);
@@ -350,7 +348,10 @@ fn changes_section(source_control: &SourceControl<'_>, appearance: &Appearance) 
             .with_margin_right(4.)
             .finish(),
         );
-        let ahead = status.upstream.map(|upstream| upstream.ahead).filter(|ahead| *ahead > 0);
+        let ahead = status
+            .upstream
+            .map(|upstream| upstream.ahead)
+            .filter(|ahead| *ahead > 0);
         right.add_child(icon_button(
             Icon::Refresh,
             None,
@@ -409,7 +410,9 @@ fn changes_section(source_control: &SourceControl<'_>, appearance: &Appearance) 
     }
     let Some(status) = source_control.status else {
         section.add_child(message(
-            source_control.error.unwrap_or("Detectando repositório Git…"),
+            source_control
+                .error
+                .unwrap_or("Detectando repositório Git…"),
             appearance,
             source_control.error.is_some(),
         ));
@@ -473,7 +476,11 @@ fn changes_section(source_control: &SourceControl<'_>, appearance: &Appearance) 
             .finish(),
         );
     }
-    section.add_child(Container::new(changes.finish()).with_padding_bottom(8.).finish());
+    section.add_child(
+        Container::new(changes.finish())
+            .with_padding_bottom(8.)
+            .finish(),
+    );
     if let Some(preview) = source_control.diff_preview {
         section.add_child(super::diff::render(preview, pending, appearance));
     }
@@ -576,7 +583,11 @@ fn file_row(
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(6.)
-        .with_child(sized_icon(Icon::File, theme.sub_text_color(background), 13.))
+        .with_child(sized_icon(
+            Icon::File,
+            theme.sub_text_color(background),
+            13.,
+        ))
         .with_child(
             Text::new_inline(name, appearance.ui_font_family(), 12.)
                 .with_color(if deleted {
@@ -593,10 +604,7 @@ fn file_row(
                 Text::new_inline(dir, appearance.ui_font_family(), 11.)
                     .with_color(theme.hint_text_color(background).into())
                     .soft_wrap(false)
-                    .with_clip(ClipConfig {
-                        direction: ClipDirection::Start,
-                        style: ClipStyle::Ellipsis,
-                    })
+                    .with_clip(ClipConfig::ellipsis())
                     .finish(),
             )
             .finish(),
@@ -618,10 +626,13 @@ fn file_row(
         }
         if let Some(action) = action {
             let (icon, action) = match action {
-                ChangeAction::Stage => (Icon::Plus, WorkspaceAction::StageLocalGitPath(path.clone())),
-                ChangeAction::Unstage => {
-                    (Icon::Minus, WorkspaceAction::UnstageLocalGitPath(path.clone()))
+                ChangeAction::Stage => {
+                    (Icon::Plus, WorkspaceAction::StageLocalGitPath(path.clone()))
                 }
+                ChangeAction::Unstage => (
+                    Icon::Minus,
+                    WorkspaceAction::UnstageLocalGitPath(path.clone()),
+                ),
             };
             actions.add_child(icon_button(
                 icon,
@@ -794,7 +805,11 @@ fn graph_section(source_control: &SourceControl<'_>, appearance: &Appearance) ->
             appearance,
         ));
     }
-    section.add_child(Container::new(list.finish()).with_padding_bottom(6.).finish());
+    section.add_child(
+        Container::new(list.finish())
+            .with_padding_bottom(6.)
+            .finish(),
+    );
     section.finish()
 }
 
@@ -970,17 +985,20 @@ fn graph_row(
         line.add_child(Container::new(pills.finish()).with_margin_left(6.).finish());
     }
     let hash = commit.hash.clone();
-    let line = Hoverable::new(mouse_state("git-graph-row", stable_key(&hash, LocalGitDiffKind::Staged)), move |mouse| {
-        let mut container = Container::new(line.finish()).with_padding_right(8.);
-        if expanded {
-            container = container.with_background(theme.accent().with_opacity(25));
-        } else if mouse.is_mouse_over_element() {
-            container = container.with_background(fg_overlay(theme, 5));
-        }
-        ConstrainedBox::new(container.finish())
-            .with_height(graph::ROW_HEIGHT)
-            .finish()
-    })
+    let line = Hoverable::new(
+        mouse_state("git-graph-row", stable_key(&hash, LocalGitDiffKind::Staged)),
+        move |mouse| {
+            let mut container = Container::new(line.finish()).with_padding_right(8.);
+            if expanded {
+                container = container.with_background(theme.accent().with_opacity(25));
+            } else if mouse.is_mouse_over_element() {
+                container = container.with_background(fg_overlay(theme, 5));
+            }
+            ConstrainedBox::new(container.finish())
+                .with_height(graph::ROW_HEIGHT)
+                .finish()
+        },
+    )
     .with_cursor(Cursor::PointingHand)
     .on_click(move |ctx, _, _| {
         ctx.dispatch_typed_action(WorkspaceAction::ToggleLocalGitCommitDetails(hash.clone()))
@@ -1124,7 +1142,8 @@ fn footer(source_control: &SourceControl<'_>, appearance: &Appearance) -> Box<dy
                         .with_color(theme.ui_yellow_color())
                         .finish(),
                 );
-                matches!(status.head, HeadState::Branch(_)).then_some(("Publicar", GitRemoteAction::Push))
+                matches!(status.head, HeadState::Branch(_))
+                    .then_some(("Publicar", GitRemoteAction::Push))
             }
         };
         row.add_child(Expanded::new(1., Flex::row().finish()).finish());

@@ -12,6 +12,21 @@ pub(crate) use source_control::{
     DiffPreview, GitPanelSection, GitPanelState, GitRemoteAction, SourceControl,
 };
 
+/// Window border (both sides), organization rail and project sidebar, in pixels.
+const WINDOW_BORDERS_WIDTH: f32 = 2.;
+const RAIL_TOTAL_WIDTH: f32 = 65.;
+const SIDEBAR_TOTAL_WIDTH: f32 = 249.;
+
+/// Width of the source control panel for a window `window_width` pixels wide.
+pub(crate) fn source_control_width(model: &WorkspaceModel, window_width: f32) -> f32 {
+    let sidebar = if should_render_project_sidebar(model) {
+        SIDEBAR_TOTAL_WIDTH
+    } else {
+        0.
+    };
+    source_control::panel_width(window_width - WINDOW_BORDERS_WIDTH - RAIL_TOTAL_WIDTH - sidebar)
+}
+
 use crate::workspace::action::WorkspaceAction;
 use warpui::ViewHandle;
 use warpui::elements::{

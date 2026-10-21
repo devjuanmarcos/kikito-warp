@@ -8,7 +8,10 @@ fn commit(hash: &str, parents: &[&str], refs: &[&str]) -> LocalCommit {
         author: "Juan".to_owned(),
         authored_at: "2026-10-20T10:00:00-03:00".to_owned(),
         subject: hash.to_owned(),
-        refs: refs.iter().map(|reference| (*reference).to_owned()).collect(),
+        refs: refs
+            .iter()
+            .map(|reference| (*reference).to_owned())
+            .collect(),
     }
 }
 

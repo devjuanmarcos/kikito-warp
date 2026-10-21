@@ -99,7 +99,11 @@ pub(super) fn reachable_from_head(commits: &[LocalCommit]) -> Vec<LocalCommit> {
         .map(|commit| (commit.hash.as_str(), commit))
         .collect();
     let mut keep = HashSet::new();
-    let mut stack: Vec<&LocalCommit> = commits.iter().find(|commit| is_head(commit)).into_iter().collect();
+    let mut stack: Vec<&LocalCommit> = commits
+        .iter()
+        .find(|commit| is_head(commit))
+        .into_iter()
+        .collect();
     while let Some(commit) = stack.pop() {
         if !keep.insert(commit.hash.as_str()) {
             continue;
