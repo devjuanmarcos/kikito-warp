@@ -14,8 +14,9 @@ pub(super) fn render(
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
+    // Lives inside a vertical scrollable, whose unbounded height a max-sized column can't fill.
     let mut panel = Flex::column()
-        .with_main_axis_size(MainAxisSize::Max)
+        .with_main_axis_size(MainAxisSize::Min)
         .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
     if let Some(path) = &preview.path {
         panel.add_child(label(path, appearance));

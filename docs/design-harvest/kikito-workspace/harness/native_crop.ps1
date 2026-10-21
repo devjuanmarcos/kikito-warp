@@ -20,9 +20,9 @@ Start-Sleep -Milliseconds 600
 N shot 0 0 "$s\$Tag`_modal.png"
 Click 586 417
 Start-Sleep 2
-[System.Windows.Forms.SendKeys]::SendWait("C:\Users\Marcos\AppData\Local\Temp\claude\D--DEVJUANMARCOS-PROJETOS-KIKITO-WARP\594f3941-77bf-483a-a5e1-364a7ec5d42c\scratchpad\kit\assets\logo\kikito-terminal-icon.png")
+N keys 0 0 "C:\Users\Marcos\AppData\Local\Temp\claude\D--DEVJUANMARCOS-PROJETOS-KIKITO-WARP\594f3941-77bf-483a-a5e1-364a7ec5d42c\scratchpad\kit\assets\logo\kikito-terminal-icon.png"
 Start-Sleep -Milliseconds 500
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+N keys 0 0 "{ENTER}"
 Start-Sleep 3
 N front
 N move 900 700

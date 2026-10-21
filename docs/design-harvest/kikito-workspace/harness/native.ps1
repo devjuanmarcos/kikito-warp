@@ -13,6 +13,11 @@ public class Win {
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
   [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr h, int x, int y, int w, int hh, bool repaint);
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern void SwitchToThisWindow(IntPtr h, bool altTab);
+  [DllImport("user32.dll")] public static extern IntPtr WindowFromPoint(POINT p);
+  [DllImport("user32.dll")] public static extern IntPtr GetAncestor(IntPtr h, uint flags);
+  [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X, Y; }
   [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
   [DllImport("user32.dll")] public static extern void mouse_event(uint f, uint dx, uint dy, uint d, UIntPtr e);
   [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int w, int hh, uint f);
@@ -51,6 +56,22 @@ function Get-AppWindow {
   return $null
 }
 
+# Every input action must land on the project's warp-oss.exe: never on the user's own windows.
+function Assert-AppAt([int]$px, [int]$py, [bool]$checkPoint) {
+  $app = Get-AppWindow
+  if (-not $app) { Write-Output "ABORT: app window not found"; exit 3 }
+  $fgPid = [uint32]0
+  [Win]::GetWindowThreadProcessId([Win]::GetForegroundWindow(), [ref]$fgPid) | Out-Null
+  if ($fgPid -ne [uint32]$app.Id) { Write-Output "ABORT: foreground is not the app"; exit 3 }
+  if ($checkPoint) {
+    $pt = New-Object Win+POINT; $pt.X = $px; $pt.Y = $py
+    $root = [Win]::GetAncestor([Win]::WindowFromPoint($pt), 2)
+    $ptPid = [uint32]0
+    [Win]::GetWindowThreadProcessId($root, [ref]$ptPid) | Out-Null
+    if ($ptPid -ne [uint32]$app.Id) { Write-Output "ABORT: point ($px,$py) is not over the app"; exit 3 }
+  }
+}
+
 switch ($Action) {
   "launch" {
     Get-Process warp-oss -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe } | Stop-Process -Force
@@ -80,12 +101,13 @@ switch ($Action) {
     Start-Sleep -Milliseconds 400
   }
   "click" {
+    Assert-AppAt $X $Y $true
     [Win]::SetCursorPos($X, $Y) | Out-Null; Start-Sleep -Milliseconds 200
     [Win]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 80
     [Win]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 500
   }
-  "down" { [Win]::SetCursorPos($X, $Y) | Out-Null; Start-Sleep -Milliseconds 200; [Win]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300 }
-  "up" { [Win]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300 }
+  "down" { Assert-AppAt $X $Y $true; [Win]::SetCursorPos($X, $Y) | Out-Null; Start-Sleep -Milliseconds 200; [Win]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300 }
+  "up" { Assert-AppAt 0 0 $false; [Win]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300 }
   "shot" {
     $p = Get-AppWindow
     $r = New-Object Win+RECT
@@ -121,14 +143,16 @@ switch ($Action) {
     Write-Output "pshot $w x $h -> $Out"
   }
   "place" { $p = Get-AppWindow; [Win]::SetWindowPos($p.MainWindowHandle, [IntPtr](-2), $X, $Y, $W, $H, 0x40) | Out-Null }
-  "front" { $p = Get-AppWindow; [Win]::ShowWindow($p.MainWindowHandle, 9) | Out-Null; [Win]::SetWindowPos($p.MainWindowHandle, [IntPtr](-1), $X, $Y, $W, $H, 0x40) | Out-Null; [Win]::SetForegroundWindow($p.MainWindowHandle) | Out-Null; Start-Sleep -Milliseconds 800 }
+  "front" { $p = Get-AppWindow; [Win]::ShowWindow($p.MainWindowHandle, 9) | Out-Null; [Win]::SetWindowPos($p.MainWindowHandle, [IntPtr](-1), $X, $Y, $W, $H, 0x40) | Out-Null; [Win]::SwitchToThisWindow($p.MainWindowHandle, $true); [Win]::SetForegroundWindow($p.MainWindowHandle) | Out-Null; Start-Sleep -Milliseconds 800 }
   "back" { $p = Get-AppWindow; [Win]::SetWindowPos($p.MainWindowHandle, [IntPtr](-2), $X, $Y, $W, $H, 0x40) | Out-Null }
   "rclick" {
+    Assert-AppAt $X $Y $true
     [Win]::SetCursorPos($X, $Y) | Out-Null; Start-Sleep -Milliseconds 300
     [Win]::mouse_event(8, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 120
     [Win]::mouse_event(16, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 600
   }
-  "wheel" { [Win]::SetCursorPos($X, $Y) | Out-Null; Start-Sleep -Milliseconds 200; [Win]::mouse_event(0x0800, 0, 0, [uint32]120, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300 }
+  "wheel" { Assert-AppAt $X $Y $true; [Win]::SetCursorPos($X, $Y) | Out-Null; Start-Sleep -Milliseconds 200; [Win]::mouse_event(0x0800, 0, 0, [uint32]120, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300 }
+  "keys" { Assert-AppAt 0 0 $false; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait($Out); Start-Sleep -Milliseconds 300 }
   "list" { Get-Process warp-oss | Where-Object { $_.Path -eq $exe } | ForEach-Object { [Win]::Windows([uint32]$_.Id) } }
   "kill" { Get-Process warp-oss -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe } | Stop-Process -Force }
 }

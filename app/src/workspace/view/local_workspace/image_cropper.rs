@@ -45,9 +45,12 @@ impl CropView {
 
     pub fn moved_to(self, x: f32, y: f32) -> Self {
         let (width, height) = self.displayed_size();
+        // Positions are snapped to 1/1000 px so float noise in the scale never leaves the image a
+        // hair off an edge (e.g. -0.0000076 instead of 0).
+        let snap = |value: f32| (value * 1000.).round() / 1000.;
         Self {
-            x: x.clamp(CROP_VIEW_SIZE - width, 0.),
-            y: y.clamp(CROP_VIEW_SIZE - height, 0.),
+            x: snap(x.clamp((CROP_VIEW_SIZE - width).min(0.), 0.)),
+            y: snap(y.clamp((CROP_VIEW_SIZE - height).min(0.), 0.)),
             ..self
         }
     }

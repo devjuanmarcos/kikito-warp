@@ -21,10 +21,10 @@ N down 672 169
 Start-Sleep -Milliseconds 150
 N up
 Start-Sleep -Milliseconds 600
-[System.Windows.Forms.SendKeys]::SendWait("abrir infra")
+N keys 0 0 "abrir infra"
 Start-Sleep -Milliseconds 800
 N shot 0 0 "$s\$Tag`_ask.png"
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+N keys 0 0 "{ENTER}"
 Start-Sleep -Milliseconds 1500
 N shot 0 0 "$s\$Tag`_ask_open.png"
 N move 32 60
@@ -39,7 +39,7 @@ N down 672 169
 Start-Sleep -Milliseconds 150
 N up
 Start-Sleep -Milliseconds 600
-[System.Windows.Forms.SendKeys]::SendWait("loja")
+N keys 0 0 "loja"
 Start-Sleep -Milliseconds 800
 N move 250 219
 Start-Sleep -Milliseconds 600
