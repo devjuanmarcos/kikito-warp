@@ -28,12 +28,15 @@ pub(crate) struct LocalBranch {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct LocalCommit {
+pub(crate) struct LocalCommit {
     pub hash: String,
     pub parents: Vec<String>,
     pub author: String,
     pub authored_at: String,
     pub subject: String,
+    /// Decorations as `git log --format=%D` prints them, e.g. `HEAD -> main`, `origin/main`,
+    /// `tag: v1.4.0`.
+    pub refs: Vec<String>,
 }
 
 impl LocalGitService {
@@ -307,6 +310,37 @@ pub(crate) async fn read_local_branches(path: &Path) -> Result<Vec<LocalBranch>,
     LocalGitService::open(path).await?.local_branches().await
 }
 
+/// Newest-first commits of every ref, at most `limit`.
+pub(crate) async fn read_history(path: &Path, limit: usize) -> Result<Vec<LocalCommit>, GitError> {
+    LocalGitService::open(path).await?.history(limit).await
+}
+
+pub(crate) async fn fetch_remote(repository: &Path, remote: &str) -> Result<(), GitError> {
+    LocalGitService::open(repository).await?.fetch(remote).await
+}
+
+pub(crate) async fn pull_branch(
+    repository: &Path,
+    remote: &str,
+    branch: &str,
+) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .pull(remote, branch)
+        .await
+}
+
+pub(crate) async fn push_branch(
+    repository: &Path,
+    remote: &str,
+    branch: &str,
+) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .push(remote, branch)
+        .await
+}
+
 pub(crate) async fn checkout_local_branch(repository: &Path, branch: &str) -> Result<(), GitError> {
     LocalGitService::open(repository)
         .await?
@@ -452,7 +486,7 @@ fn parse_history(output: &str) -> Result<Vec<LocalCommit>, GitError> {
         .filter(|line| !line.is_empty())
         .map(|line| {
             let fields: Vec<&str> = line.split('\0').collect();
-            if fields.len() != 5 || fields[0].is_empty() {
+            if fields.len() != 6 || fields[0].is_empty() {
                 return Err(GitError::InvalidOutput);
             }
             Ok(LocalCommit {
@@ -461,6 +495,12 @@ fn parse_history(output: &str) -> Result<Vec<LocalCommit>, GitError> {
                 author: fields[2].to_owned(),
                 authored_at: fields[3].to_owned(),
                 subject: fields[4].to_owned(),
+                refs: fields[5]
+                    .split(", ")
+                    .map(str::trim)
+                    .filter(|decoration| !decoration.is_empty())
+                    .map(str::to_owned)
+                    .collect(),
             })
         })
         .collect()

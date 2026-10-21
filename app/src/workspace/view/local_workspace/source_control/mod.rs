@@ -1,11 +1,12 @@
 mod changes;
 mod commit;
 mod diff;
+mod graph;
 mod refs;
 
 use crate::appearance::Appearance;
 use crate::editor::EditorView;
-use crate::local_git::{LocalBranch, RepositoryStatus};
+use crate::local_git::{LocalBranch, LocalCommit, RepositoryStatus};
 use warpui::ViewHandle;
 use warpui::elements::{ClippedScrollStateHandle, Element};
 
@@ -21,40 +22,60 @@ pub(crate) struct DiffPreview {
     pub error: Option<String>,
 }
 
-pub(super) fn render(
-    status: Option<&RepositoryStatus>,
-    branches: &[LocalBranch],
-    branch_menu: Option<&str>,
-    create_branch_from: Option<&str>,
-    rename_branch: Option<&str>,
-    branch_name_input: ViewHandle<EditorView>,
-    error: Option<&str>,
-    commit_input: ViewHandle<EditorView>,
-    diff_preview: Option<&DiffPreview>,
-    amend_confirmation: bool,
-    undo_confirmation: bool,
-    revert_confirmation: bool,
-    discard_confirmation: Option<(&str, bool)>,
-    operation_pending: bool,
-    scroll_state: ClippedScrollStateHandle,
-    appearance: &Appearance,
-) -> Box<dyn Element> {
-    changes::render(
-        status,
-        branches,
-        branch_menu,
-        create_branch_from,
-        rename_branch,
-        branch_name_input,
-        error,
-        commit_input,
-        diff_preview,
-        amend_confirmation,
-        undo_confirmation,
-        revert_confirmation,
-        discard_confirmation,
-        operation_pending,
-        scroll_state,
-        appearance,
-    )
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GitPanelSection {
+    Changes,
+    Graph,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GitRemoteAction {
+    Fetch,
+    Pull,
+    Push,
+}
+
+/// Presentation state of the panel, kept apart from the repository data.
+#[derive(Clone, Default)]
+pub(crate) struct GitPanelState {
+    pub changes_collapsed: bool,
+    pub graph_collapsed: bool,
+    /// "Só a atual": only commits reachable from HEAD.
+    pub graph_current_only: bool,
+    pub commit_menu_open: bool,
+    pub branches_open: bool,
+    pub expanded_commit: Option<String>,
+    pub remote_busy: Option<GitRemoteAction>,
+    /// Confirmation shown under the commit button after an operation succeeds.
+    pub note: Option<String>,
+    /// Unix time in milliseconds of the last successful fetch.
+    pub last_fetch_ms: Option<i64>,
+}
+
+/// Everything the "Controle de versão" panel shows.
+pub(crate) struct SourceControl<'a> {
+    pub project_name: &'a str,
+    pub status: Option<&'a RepositoryStatus>,
+    pub history: &'a [LocalCommit],
+    pub branches: &'a [LocalBranch],
+    pub branch_menu: Option<&'a str>,
+    pub create_branch_from: Option<&'a str>,
+    pub rename_branch: Option<&'a str>,
+    pub branch_name_input: ViewHandle<EditorView>,
+    pub error: Option<&'a str>,
+    pub commit_input: ViewHandle<EditorView>,
+    pub commit_message_empty: bool,
+    pub commit_focused: bool,
+    pub diff_preview: Option<&'a DiffPreview>,
+    pub amend_confirmation: bool,
+    pub undo_confirmation: bool,
+    pub revert_confirmation: bool,
+    pub discard_confirmation: Option<(&'a str, bool)>,
+    pub operation_pending: bool,
+    pub panel: &'a GitPanelState,
+    pub scroll_state: ClippedScrollStateHandle,
+}
+
+pub(super) fn render(source_control: SourceControl<'_>, appearance: &Appearance) -> Box<dyn Element> {
+    changes::render(source_control, appearance)
 }

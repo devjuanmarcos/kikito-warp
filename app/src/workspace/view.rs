@@ -13,6 +13,9 @@ pub mod global_search;
 pub(crate) mod launch_modal;
 pub(crate) mod left_panel;
 mod local_workspace;
+pub(crate) use local_workspace::{
+    GitPanelSection as LocalGitPanelSection, GitRemoteAction as LocalGitRemoteAction,
+};
 pub(crate) mod onboarding;
 pub(crate) mod openwarp_launch_modal;
 pub(crate) mod orchestration_launch_modal;
@@ -287,8 +290,8 @@ use crate::drive::{
     CloudObjectTypeAndId, DriveObjectType, DrivePanel, DrivePanelEvent, OpenWarpDriveObjectSettings,
 };
 use crate::editor::{
-    EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions,
-    TextOptions,
+    EditorOptions, EditorView, EnterAction, EnterSettings, Event as EditorEvent,
+    PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,
 };
 use crate::env_vars::CloudEnvVarCollection;
 use crate::env_vars::manager::{EnvVarCollectionManager, EnvVarCollectionSource};
@@ -296,7 +299,7 @@ use crate::experiments::{BlockOnboarding, Experiment};
 use crate::launch_configs::launch_config::WindowTemplate;
 use crate::launch_configs::save_modal::{LaunchConfigModalEvent, LaunchConfigSaveModal};
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::local_git::{LocalBranch, RepositoryStatus};
+use crate::local_git::{HeadState, LocalBranch, RepositoryStatus};
 use crate::menu::{
     Event as MenuEvent, MENU_VERTICAL_PADDING, Menu, MenuItem, MenuItemFields, MenuSelectionSource,
     MenuVariant,
@@ -702,6 +705,9 @@ pub(crate) const OPEN_GLOBAL_SEARCH_BINDING_NAME: &str = "workspace:open_global_
 pub(crate) const TOGGLE_CONVERSATION_LIST_VIEW_BINDING_NAME: &str =
     "workspace:toggle_conversation_list_view";
 pub(crate) const NEW_TAB_BINDING_NAME: &str = "workspace:new_tab";
+/// Commits shown in the source control graph.
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+const GIT_HISTORY_LIMIT: usize = 200;
 /// Upper bound for workspace dialogs, which size themselves to their content.
 const LOCAL_WORKSPACE_DIALOG_MAX_HEIGHT: f32 = 480.;
 pub(crate) const NEW_TERMINAL_TAB_BINDING_NAME: &str = "workspace:new_terminal_tab";
@@ -1150,6 +1156,9 @@ pub struct Workspace {
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     local_workspace_git_operation_pending: bool,
     local_workspace_git_discard_confirmation: Option<(String, bool)>,
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    local_workspace_git_history: Vec<crate::local_git::LocalCommit>,
+    local_workspace_git_panel: local_workspace::GitPanelState,
     local_workspace_dialog: Option<ViewHandle<Modal<local_workspace::create_dialog::CreateDialog>>>,
     local_workspace_search_input: ViewHandle<EditorView>,
     local_workspace_search_query: String,
@@ -1434,18 +1443,166 @@ impl Workspace {
     fn local_workspace_commit_input(ctx: &mut ViewContext<Self>) -> ViewHandle<EditorView> {
         let editor = ctx.add_typed_action_view(|ctx| {
             let appearance = Appearance::as_ref(ctx);
-            EditorView::single_line(
-                SingleLineEditorOptions {
+            EditorView::new(
+                EditorOptions {
                     text: TextOptions::ui_text(Some(12.), appearance),
+                    single_line: false,
+                    soft_wrap: true,
+                    autogrow: true,
+                    enter_settings: EnterSettings {
+                        shift_enter: EnterAction::InsertNewLineIfMultiLine,
+                        enter: EnterAction::InsertNewLineIfMultiLine,
+                        alt_enter: EnterAction::InsertNewLineIfMultiLine,
+                        ctrl_enter: EnterAction::Emit,
+                    },
                     ..Default::default()
                 },
                 ctx,
             )
         });
-        editor.update(ctx, |editor, ctx| {
-            editor.set_placeholder_text("Mensagem do commit", ctx)
+        editor.update(ctx, |editor, ctx| editor.set_placeholder_text("Mensagem", ctx));
+        ctx.subscribe_to_view(&editor, |me, _, event, ctx| match event {
+            EditorEvent::CtrlEnter => {
+                let action = if me.local_workspace_has_staged_changes() {
+                    WorkspaceAction::CommitLocalGit
+                } else {
+                    WorkspaceAction::CommitAllLocalGit
+                };
+                me.handle_action(&action, ctx);
+            }
+            EditorEvent::Edited(_) | EditorEvent::Focused | EditorEvent::Blurred => ctx.notify(),
+            _ => {}
         });
         editor
+    }
+
+    fn local_workspace_has_staged_changes(&self) -> bool {
+        #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+        return self
+            .local_workspace_git_status
+            .as_ref()
+            .is_some_and(|status| status.staged_path_count() > 0);
+        #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+        false
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn refresh_local_workspace_commit_placeholder(&mut self, ctx: &mut ViewContext<Self>) {
+        let placeholder = match self.local_workspace_git_status.as_ref().map(|status| &status.head) {
+            Some(HeadState::Branch(branch)) => {
+                format!("Mensagem (Ctrl+Enter para commitar em \"{branch}\")")
+            }
+            _ => "Mensagem (Ctrl+Enter para commitar)".to_owned(),
+        };
+        self.local_workspace_commit_input
+            .update(ctx, |editor, ctx| editor.set_placeholder_text(placeholder, ctx));
+    }
+
+    /// Remote of the checked-out branch's upstream, `origin` when it has none yet.
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn local_workspace_git_remote(&self) -> String {
+        self.local_workspace_git_branches
+            .iter()
+            .find(|branch| branch.is_current)
+            .and_then(|branch| branch.upstream.as_deref())
+            .and_then(|upstream| upstream.split('/').next())
+            .unwrap_or("origin")
+            .to_owned()
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_remote(
+        &mut self,
+        action: local_workspace::GitRemoteAction,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        let branch = match self.local_workspace_git_status.as_ref().map(|status| &status.head) {
+            Some(HeadState::Branch(branch)) => Some(branch.clone()),
+            _ => None,
+        };
+        let published = self
+            .local_workspace_git_status
+            .as_ref()
+            .is_some_and(|status| status.upstream.is_some());
+        let remote = self.local_workspace_git_remote();
+        let generation = self.local_workspace_git_generation;
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        self.local_workspace_git_panel.remote_busy = Some(action);
+        self.local_workspace_git_panel.note = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        ctx.notify();
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                match (action, branch.as_deref()) {
+                    (local_workspace::GitRemoteAction::Fetch, _) => {
+                        crate::local_git::fetch_remote(&repository_path, &remote).await?
+                    }
+                    (local_workspace::GitRemoteAction::Pull, Some(branch)) => {
+                        crate::local_git::pull_branch(&repository_path, &remote, branch).await?
+                    }
+                    (local_workspace::GitRemoteAction::Push, Some(branch)) => {
+                        crate::local_git::push_branch(&repository_path, &remote, branch).await?
+                    }
+                    (
+                        local_workspace::GitRemoteAction::Pull | local_workspace::GitRemoteAction::Push,
+                        None,
+                    ) => return Ok(None),
+                }
+                let status = crate::local_git::read_status(&repository_path).await?;
+                let history = crate::local_git::read_history(&repository_path, GIT_HISTORY_LIMIT)
+                    .await
+                    .unwrap_or_default();
+                Ok::<_, crate::local_git::GitError>(Some((status, history)))
+            },
+            move |workspace, result, ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                workspace.local_workspace_git_panel.remote_busy = None;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                match result {
+                    Ok(Some((status, history))) => {
+                        workspace.local_workspace_git_status = Some(status);
+                        workspace.local_workspace_git_history = history;
+                        workspace.local_workspace_git_panel.note = Some(
+                            match action {
+                                local_workspace::GitRemoteAction::Fetch => "Fetch concluído",
+                                local_workspace::GitRemoteAction::Pull => "Pull concluído",
+                                local_workspace::GitRemoteAction::Push if published => {
+                                    "Push concluído"
+                                }
+                                local_workspace::GitRemoteAction::Push => {
+                                    "Branch publicada no remoto"
+                                }
+                            }
+                            .to_owned(),
+                        );
+                        if action == local_workspace::GitRemoteAction::Fetch {
+                            workspace.local_workspace_git_panel.last_fetch_ms =
+                                Some(chrono::Utc::now().timestamp_millis());
+                        }
+                    }
+                    Ok(None) => {
+                        workspace.local_workspace_git_error =
+                            Some("Faça checkout de uma branch para sincronizar.".to_owned())
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
     }
 
     fn local_workspace_git_branch_name_input(
@@ -2154,7 +2311,10 @@ impl Workspace {
             async move {
                 let status = crate::local_git::read_status(&path).await?;
                 let branches = crate::local_git::read_local_branches(&path).await?;
-                Ok::<_, crate::local_git::GitError>((status, branches))
+                let history = crate::local_git::read_history(&path, GIT_HISTORY_LIMIT)
+                    .await
+                    .unwrap_or_default();
+                Ok::<_, crate::local_git::GitError>((status, branches, history))
             },
             move |workspace, result, ctx| {
                 if workspace.local_workspace_git_generation != generation {
@@ -2162,9 +2322,11 @@ impl Workspace {
                 }
                 workspace.local_workspace_git_refresh = None;
                 match result {
-                    Ok((status, branches)) => {
+                    Ok((status, branches, history)) => {
                         workspace.local_workspace_git_status = Some(status);
                         workspace.local_workspace_git_branches = branches;
+                        workspace.local_workspace_git_history = history;
+                        workspace.refresh_local_workspace_commit_placeholder(ctx);
                         workspace.local_workspace_git_error = None;
                         workspace.local_workspace_git_diff_generation = workspace
                             .local_workspace_git_diff_generation
@@ -2238,6 +2400,7 @@ impl Workspace {
         &mut self,
         amend: bool,
         all: bool,
+        push: bool,
         ctx: &mut ViewContext<Self>,
     ) {
         let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
@@ -2248,21 +2411,39 @@ impl Workspace {
             .local_workspace_commit_input
             .as_ref(ctx)
             .buffer_text(ctx);
+        let committed_files = self.local_workspace_git_status.as_ref().map_or(0, |status| {
+            if all {
+                status.changed_path_count()
+            } else {
+                status.staged_path_count()
+            }
+        });
+        let push_target = match self.local_workspace_git_status.as_ref().map(|status| &status.head) {
+            Some(HeadState::Branch(branch)) if push => {
+                Some((self.local_workspace_git_remote(), branch.clone()))
+            }
+            _ => None,
+        };
         let generation = self.local_workspace_git_generation;
         if self.local_workspace_git_operation_pending {
             return;
         }
+        self.local_workspace_git_panel.note = None;
         self.local_workspace_git_operation_pending = true;
         self.local_workspace_git_error = None;
         if let Some(refresh) = self.local_workspace_git_refresh.take() {
             refresh.abort();
         }
+        let push_for_task = push_target.clone();
         self.local_workspace_git_operation = Some(ctx.spawn(
             async move {
                 if all {
                     crate::local_git::commit_all(&repository_path, &message).await?;
                 } else {
                     crate::local_git::commit(&repository_path, &message, amend).await?;
+                }
+                if let Some((remote, branch)) = &push_for_task {
+                    crate::local_git::push_branch(&repository_path, remote, branch).await?;
                 }
                 crate::local_git::read_status(&repository_path).await
             },
@@ -2290,6 +2471,11 @@ impl Workspace {
                                 editor.set_buffer_text_ignoring_undo("", ctx);
                             });
                         workspace.local_workspace_git_amend_confirmation = false;
+                        workspace.local_workspace_git_panel.note = Some(match (&push_target, committed_files) {
+                            (Some((remote, branch)), _) => format!("Commit enviado para {remote}/{branch}"),
+                            (None, 1) => "1 arquivo commitado".to_owned(),
+                            (None, count) => format!("{count} arquivos commitados"),
+                        });
                     }
                     Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
                 }
@@ -5387,6 +5573,9 @@ impl Workspace {
             #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
             local_workspace_git_operation_pending: false,
             local_workspace_git_discard_confirmation: None,
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            local_workspace_git_history: Vec::new(),
+            local_workspace_git_panel: local_workspace::GitPanelState::default(),
             local_workspace_dialog: None,
             local_workspace_search_input: Self::local_workspace_search_input(ctx),
             local_workspace_search_query: String::new(),
@@ -26281,6 +26470,19 @@ impl TypedActionView for Workspace {
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
         use WorkspaceAction::*;
         let window_id = ctx.window_id();
+        if matches!(
+            action,
+            CommitLocalGit
+                | CommitAllLocalGit
+                | CommitAndPushLocalGit
+                | StageAllLocalGit
+                | UnstageAllLocalGit
+                | RequestLocalGitAmend
+                | RequestUndoLocalGitCommit
+                | RequestRevertLocalGitCommit
+        ) {
+            self.local_workspace_git_panel.commit_menu_open = false;
+        }
 
         if self.auth_state.is_anonymous_or_logged_out() && action.blocked_for_anonymous_user() {
             AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
@@ -26483,17 +26685,62 @@ impl TypedActionView for Workspace {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
                 self.run_local_workspace_git_file_action(".", false, ctx);
             }
+            CommitAndPushLocalGit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                {
+                    let all = !self.local_workspace_has_staged_changes();
+                    self.run_local_workspace_git_commit(false, all, true, ctx);
+                }
+            }
+            ToggleLocalGitPanelSection(section) => {
+                let panel = &mut self.local_workspace_git_panel;
+                match section {
+                    local_workspace::GitPanelSection::Changes => {
+                        panel.changes_collapsed = !panel.changes_collapsed
+                    }
+                    local_workspace::GitPanelSection::Graph => {
+                        panel.graph_collapsed = !panel.graph_collapsed
+                    }
+                }
+                ctx.notify();
+            }
+            ToggleLocalGitGraphFilter => {
+                self.local_workspace_git_panel.graph_current_only =
+                    !self.local_workspace_git_panel.graph_current_only;
+                ctx.notify();
+            }
+            ToggleLocalGitCommitMenu => {
+                self.local_workspace_git_panel.commit_menu_open =
+                    !self.local_workspace_git_panel.commit_menu_open;
+                ctx.notify();
+            }
+            ToggleLocalGitBranches => {
+                self.local_workspace_git_panel.branches_open =
+                    !self.local_workspace_git_panel.branches_open;
+                ctx.notify();
+            }
+            ToggleLocalGitCommitDetails(hash) => {
+                let expanded = &mut self.local_workspace_git_panel.expanded_commit;
+                *expanded = (expanded.as_deref() != Some(hash.as_str())).then(|| hash.clone());
+                ctx.notify();
+            }
+            RunLocalGitRemote(remote_action) => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_remote(*remote_action, ctx);
+                #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+                let _ = remote_action;
+            }
             CommitLocalGit => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-                self.run_local_workspace_git_commit(false, false, ctx);
+                self.run_local_workspace_git_commit(false, false, false, ctx);
             }
             CommitAllLocalGit => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-                self.run_local_workspace_git_commit(false, true, ctx);
+                self.run_local_workspace_git_commit(false, true, false, ctx);
             }
             AmendLocalGitCommit => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-                self.run_local_workspace_git_commit(true, false, ctx);
+                self.run_local_workspace_git_commit(true, false, false, ctx);
             }
             RequestUndoLocalGitCommit => {
                 self.local_workspace_git_amend_confirmation = false;
@@ -29535,6 +29782,47 @@ impl View for Workspace {
             let git_operation_pending = self.local_workspace_git_operation_pending;
             #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
             let git_operation_pending = false;
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_history = self.local_workspace_git_history.as_slice();
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_history: &[crate::local_git::LocalCommit] = &[];
+            let project_name = local_workspace_model
+                .selected_project()
+                .and_then(|project_id| local_workspace_model.project(project_id))
+                .map(|project| project.name.as_str())
+                .unwrap_or_default();
+            let source_control = self.local_workspace_source_control_open.then(|| {
+                local_workspace::SourceControl {
+                    project_name,
+                    status: git_status,
+                    history: git_history,
+                    branches: git_branches,
+                    branch_menu: self.local_workspace_git_branch_menu.as_deref(),
+                    create_branch_from: self.local_workspace_git_create_branch_from.as_deref(),
+                    rename_branch: self.local_workspace_git_rename_branch.as_deref(),
+                    branch_name_input: self.local_workspace_git_branch_name_input.clone(),
+                    error: git_status_error,
+                    commit_input: self.local_workspace_commit_input.clone(),
+                    commit_message_empty: self
+                        .local_workspace_commit_input
+                        .as_ref(app)
+                        .buffer_text(app)
+                        .trim()
+                        .is_empty(),
+                    commit_focused: self.local_workspace_commit_input.is_focused(app),
+                    diff_preview: git_diff_preview,
+                    amend_confirmation: self.local_workspace_git_amend_confirmation,
+                    undo_confirmation: self.local_workspace_git_undo_confirmation,
+                    revert_confirmation: self.local_workspace_git_revert_confirmation,
+                    discard_confirmation: self
+                        .local_workspace_git_discard_confirmation
+                        .as_ref()
+                        .map(|(path, untracked)| (path.as_str(), *untracked)),
+                    operation_pending: git_operation_pending,
+                    panel: &self.local_workspace_git_panel,
+                    scroll_state: self.local_workspace_source_control_scroll.clone(),
+                }
+            });
             local_workspace::render(
                 local_workspace_model,
                 appearance,
@@ -29542,7 +29830,6 @@ impl View for Workspace {
                 self.local_workspace_search_input.clone(),
                 self.local_workspace_search_input.is_focused(app),
                 &new_tab_keys,
-                self.local_workspace_commit_input.clone(),
                 &self.local_workspace_search_query,
                 self.local_workspace_project_sidebar_scroll.clone(),
                 &unassigned_tabs,
@@ -29555,23 +29842,8 @@ impl View for Workspace {
                     selection: self.local_workspace_home_selection,
                     focused: self.local_workspace_home_ask_input.is_focused(app),
                 },
-                git_status_error,
                 git_status,
-                git_branches,
-                self.local_workspace_git_branch_menu.as_deref(),
-                self.local_workspace_git_create_branch_from.as_deref(),
-                self.local_workspace_git_rename_branch.as_deref(),
-                self.local_workspace_git_branch_name_input.clone(),
-                git_diff_preview,
-                self.local_workspace_git_amend_confirmation,
-                self.local_workspace_git_undo_confirmation,
-                self.local_workspace_git_revert_confirmation,
-                self.local_workspace_git_discard_confirmation
-                    .as_ref()
-                    .map(|(path, untracked)| (path.as_str(), *untracked)),
-                git_operation_pending,
-                self.local_workspace_source_control_scroll.clone(),
-                self.local_workspace_source_control_open,
+                source_control,
             )
         };
         let mut stack = Stack::new();

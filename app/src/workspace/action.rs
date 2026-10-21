@@ -196,6 +196,13 @@ pub enum WorkspaceAction {
     OpenLocalGitRenameBranch(String),
     RenameLocalGitBranch(String),
     CancelLocalGitCreateBranch,
+    ToggleLocalGitPanelSection(crate::workspace::view::LocalGitPanelSection),
+    ToggleLocalGitGraphFilter,
+    ToggleLocalGitCommitMenu,
+    ToggleLocalGitBranches,
+    ToggleLocalGitCommitDetails(String),
+    RunLocalGitRemote(crate::workspace::view::LocalGitRemoteAction),
+    CommitAndPushLocalGit,
     ActivateTab(usize),
     ActivatePrevTab,
     ActivateNextTab,
@@ -1334,7 +1341,14 @@ impl WorkspaceAction {
             | CreateLocalGitBranchFrom(_)
             | OpenLocalGitRenameBranch(_)
             | RenameLocalGitBranch(_)
-            | CancelLocalGitCreateBranch => false,
+            | CancelLocalGitCreateBranch
+            | ToggleLocalGitPanelSection(_)
+            | ToggleLocalGitGraphFilter
+            | ToggleLocalGitCommitMenu
+            | ToggleLocalGitBranches
+            | ToggleLocalGitCommitDetails(_)
+            | RunLocalGitRemote(_)
+            | CommitAndPushLocalGit => false,
             #[cfg(debug_assertions)]
             ShowHoaOnboardingFlow => false,
             #[cfg(target_family = "wasm")]

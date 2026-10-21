@@ -389,14 +389,16 @@ fn local_branch_and_history_parsers_preserve_metadata() {
 
     let history = concat!(
         "abc123\0parent1 parent2\0Ada\0",
-        "2026-10-18T10:00:00-03:00\0merge commit\n",
+        "2026-10-18T10:00:00-03:00\0merge commit\0HEAD -> main, origin/main, tag: v1\n",
         "def456\0\0Lin\0",
-        "2026-10-17T09:00:00-03:00\0first commit\n",
+        "2026-10-17T09:00:00-03:00\0first commit\0\n",
     );
     let commits = super::parse_history(history).unwrap();
     assert_eq!(commits.len(), 2);
     assert_eq!(commits[0].parents, ["parent1", "parent2"]);
     assert_eq!(commits[0].subject, "merge commit");
+    assert_eq!(commits[0].refs, ["HEAD -> main", "origin/main", "tag: v1"]);
+    assert!(commits[1].refs.is_empty());
 }
 
 #[tokio::test]

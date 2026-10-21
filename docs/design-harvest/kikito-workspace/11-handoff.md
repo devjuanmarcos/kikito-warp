@@ -138,3 +138,19 @@ Decisões do Marcos (20/10, fim da sessão): saudação sem nome ("Boa noite. Tu
 - **Ícones**: todos os SVGs usados pelo kit já existem idênticos em `app/assets/bundled/svg`, e as variantes `Icon` usadas no workspace já apontam para eles (`GitBranch` → `git-branch-02.svg`, `X` → `x-close.svg`, etc.). Item fechado sem mudança.
 
 Próximos passos: (1) recorte de imagem ("Ajustar imagem", janela de 240px no kit); (2) painel de controle de versão (`GitPanel.jsx`); (3) diálogo de remoção (o kit remove direto, sem confirmação; decidir com o Marcos se mantém a confirmação); (4) quando houver dados de agente: badge do trilho, glifos nas abas e linha de ações da Home.
+
+## 11. Estado ao interromper (20/10/2026, ~23:52, desligamento agendado do Windows)
+
+Commits enviados nesta parte: recorte "Ajustar imagem" (`cc58481fc`, 97,8%), correção do crash do painel Git (`17ca14277`). Decisão do Marcos: **manter a confirmação de remoção** e seguir os itens sem pausas.
+
+**Painel de controle de versão (em andamento, commit local `wip`, NÃO enviado, NÃO medido, testes NÃO rodados):**
+- Reescrito no layout do kit: abre abaixo da barra do projeto (34% da largura, 300–380px), cabeçalho "Controle de versão", seção ALTERAÇÕES (branch clicável abre as branches locais, fetch/pull/push com badge de commits à frente, mensagem multilinha com Ctrl+Enter e placeholder com a branch, botão dividido "Commit"/"Commit de tudo" + menu com Commit e push, Preparar tudo, Remover tudo da preparação e, abaixo de um separador, alterar/desfazer/reverter último commit), listas "Preparadas"/"Alterações" com letra de status colorida, GRAFO (layout de faixas portado do `gitLayout` do kit em `source_control/graph.rs`, cada linha desenhada como SVG gerado, pílulas de ref, filtro "Todas/Só a atual", detalhes ao clicar), rodapé de sincronização (↑↓ ou "não publicada" + Publicar/Sincronizar).
+- `local_git`: `%D` (refs) no histórico, `LocalCommit.refs`, `read_history`, `fetch_remote`, `pull_branch`, `push_branch`; push com `-u` para publicar com upstream.
+- Novas ações: `ToggleLocalGitPanelSection`, `ToggleLocalGitGraphFilter`, `ToggleLocalGitCommitMenu`, `ToggleLocalGitBranches`, `ToggleLocalGitCommitDetails`, `RunLocalGitRemote`, `CommitAndPushLocalGit`.
+- `context_menu::menu(...)` genérico (o menu do commit reutiliza).
+- **Crash achado e corrigido**: `Flex` com `MainAxisSize::Max` em largura infinita (contador de arquivos dentro de uma linha). O processo aborta sem gravar o panic no log; diagnóstico feito por bisseção com uma variável de ambiente temporária (`bisect_git.ps1`, já removida do código). Regra: todo `Flex` Max precisa de um pai com a dimensão limitada.
+- Próximo: capturar (`native_git.ps1`), medir com `git_compare.py` contra `ref/git_matched.png` (kit alimentado por `match_kit.py` + `GitData` do repositório de teste), corrigir até ≥95%, rodar `cargo test -p warp --lib workspace::view::local_workspace` e `local_git`, clippy, formatar, enviar.
+
+**Harness — segurança:** `native.ps1` agora recusa qualquer ação de mouse/teclado se o `warp-oss.exe` do projeto não estiver em primeiro plano e sob o ponteiro (`Assert-AppAt`; ação `keys` para digitar). Antes disso, numa rodada, cliques caíram na janela do Warp do Marcos, porque o app de teste não estava na frente.
+
+Outras pendências vistas: o estado "organização selecionada sem projeto selecionado" mostra "Nada aqui ainda…" mesmo quando há projetos (deveria abrir o mais recente ou pedir para escolher); avisos repetidos `Position not set for "workspace_view:tab_bar"` no log depois de remover a barra empilhada (algo ainda se posiciona relativo a ela).

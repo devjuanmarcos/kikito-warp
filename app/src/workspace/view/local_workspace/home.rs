@@ -283,7 +283,7 @@ fn greeting() -> &'static str {
     }
 }
 
-fn relative_time(timestamp_ms: i64) -> String {
+pub(super) fn relative_time(timestamp_ms: i64) -> String {
     if timestamp_ms <= 0 {
         return "—".to_owned();
     }

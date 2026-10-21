@@ -8,7 +8,9 @@ mod project_sidebar;
 mod project_tabs;
 mod source_control;
 mod ws_style;
-pub(crate) use source_control::DiffPreview;
+pub(crate) use source_control::{
+    DiffPreview, GitPanelSection, GitPanelState, GitRemoteAction, SourceControl,
+};
 
 use crate::workspace::action::WorkspaceAction;
 use warpui::ViewHandle;
@@ -46,7 +48,7 @@ fn project_has_open_terminal(
 
 use crate::appearance::Appearance;
 use crate::editor::EditorView;
-use crate::local_git::{LocalBranch, RepositoryStatus};
+use crate::local_git::RepositoryStatus;
 use crate::local_workspace::model::WorkspaceModel;
 use warp_core::ui::Icon;
 
@@ -116,7 +118,6 @@ pub(crate) fn render(
     search_input: ViewHandle<EditorView>,
     search_focused: bool,
     new_tab_keys: &[String],
-    commit_input: ViewHandle<EditorView>,
     search_query: &str,
     project_sidebar_scroll: ClippedScrollStateHandle,
     unassigned_tabs: &[(usize, String)],
@@ -124,21 +125,8 @@ pub(crate) fn render(
     workspace_tab_titles: &std::collections::HashMap<String, String>,
     home_scroll: ClippedScrollStateHandle,
     home_ask: home::HomeAsk<'_>,
-    git_status_error: Option<&str>,
     git_status: Option<&RepositoryStatus>,
-    git_branches: &[LocalBranch],
-    git_branch_menu: Option<&str>,
-    git_create_branch_from: Option<&str>,
-    git_rename_branch: Option<&str>,
-    git_branch_name_input: ViewHandle<EditorView>,
-    git_diff_preview: Option<&DiffPreview>,
-    git_amend_confirmation: bool,
-    git_undo_confirmation: bool,
-    git_revert_confirmation: bool,
-    git_discard_confirmation: Option<(&str, bool)>,
-    git_operation_pending: bool,
-    source_control_scroll: ClippedScrollStateHandle,
-    source_control_open: bool,
+    source_control: Option<source_control::SourceControl<'_>>,
 ) -> Box<dyn Element> {
     let mut workspace = Flex::row()
         .with_main_axis_size(MainAxisSize::Max)
@@ -164,7 +152,7 @@ pub(crate) fn render(
                 project_id,
                 available_workspace_tabs,
                 workspace_tab_titles,
-                source_control_open,
+                source_control.is_some(),
             )
             .unwrap_or_else(|| Flex::row().finish());
             let has_open_project_tab =
@@ -204,38 +192,22 @@ pub(crate) fn render(
             } else {
                 content
             };
-            let project_view = Flex::column()
-                .with_main_axis_size(MainAxisSize::Max)
-                .with_child(project_bar)
-                .with_child(Shrinkable::new(1., project_content).finish())
-                .finish();
-            if source_control_open {
-                Flex::row()
+            // The kit opens the source control panel beside the project content, under the
+            // project bar.
+            let body = match source_control {
+                Some(source_control) => Flex::row()
                     .with_main_axis_size(MainAxisSize::Max)
                     .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-                    .with_child(Shrinkable::new(1., project_view).finish())
-                    .with_child(source_control::render(
-                        git_status,
-                        git_branches,
-                        git_branch_menu,
-                        git_create_branch_from,
-                        git_rename_branch,
-                        git_branch_name_input,
-                        git_status_error,
-                        commit_input,
-                        git_diff_preview,
-                        git_amend_confirmation,
-                        git_undo_confirmation,
-                        git_revert_confirmation,
-                        git_discard_confirmation,
-                        git_operation_pending,
-                        source_control_scroll,
-                        appearance,
-                    ))
-                    .finish()
-            } else {
-                project_view
-            }
+                    .with_child(Shrinkable::new(1., project_content).finish())
+                    .with_child(source_control::render(source_control, appearance))
+                    .finish(),
+                None => project_content,
+            };
+            Flex::column()
+                .with_main_axis_size(MainAxisSize::Max)
+                .with_child(project_bar)
+                .with_child(Shrinkable::new(1., body).finish())
+                .finish()
         } else {
             home::render(
                 model,

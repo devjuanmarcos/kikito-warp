@@ -13,12 +13,12 @@ use warpui::elements::{
 };
 use warpui::platform::Cursor;
 
-struct MenuItem {
-    label: &'static str,
-    icon: Icon,
-    action: WorkspaceAction,
-    danger: bool,
-    separator_before: bool,
+pub(super) struct MenuItem {
+    pub label: &'static str,
+    pub icon: Icon,
+    pub action: WorkspaceAction,
+    pub danger: bool,
+    pub separator_before: bool,
 }
 
 pub(super) fn render(
@@ -27,8 +27,27 @@ pub(super) fn render(
     keyboard_active: bool,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
+    menu(
+        items(target),
+        Some(selected_index).filter(|_| keyboard_active),
+        CONTEXT_MENU_WIDTH,
+        WorkspaceAction::DismissLocalWorkspaceContextMenu,
+        appearance,
+    )
+}
+
+const CONTEXT_MENU_WIDTH: f32 = 186.;
+
+/// Kit `Menu`: accent hover, danger items in the theme's red, dismissed by Escape or an outside
+/// click through `dismiss`.
+pub(super) fn menu(
+    items: Vec<MenuItem>,
+    keyboard_selection: Option<usize>,
+    width: f32,
+    dismiss: WorkspaceAction,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
     let theme = appearance.theme();
-    let items = items(target);
     let mut menu = Flex::column().with_cross_axis_alignment(CrossAxisAlignment::Stretch);
     let mut action_index = 0;
     for item in items {
@@ -44,7 +63,7 @@ pub(super) fn render(
                 .finish(),
             );
         }
-        let keyboard_selected = keyboard_active && action_index == selected_index;
+        let keyboard_selected = keyboard_selection == Some(action_index);
         let state = mouse_state("menu-item", action_index as i64);
         action_index += 1;
         let hovered = state.lock().unwrap().is_mouse_over_element();
@@ -100,22 +119,25 @@ pub(super) fn render(
                 })
                 .finish(),
         )
-        .with_width(186.)
+        .with_width(width)
         .finish(),
     )
-    .on_keydown(|ctx, _, keystroke| {
-        if keystroke.key.eq_ignore_ascii_case("escape") {
-            ctx.dispatch_typed_action(WorkspaceAction::DismissLocalWorkspaceContextMenu);
-            DispatchEventResult::StopPropagation
-        } else {
-            DispatchEventResult::PropagateToParent
+    .on_keydown({
+        let dismiss = dismiss.clone();
+        move |ctx, _, keystroke| {
+            if keystroke.key.eq_ignore_ascii_case("escape") {
+                ctx.dispatch_typed_action(dismiss.clone());
+                DispatchEventResult::StopPropagation
+            } else {
+                DispatchEventResult::PropagateToParent
+            }
         }
     })
     .with_always_handle()
     .finish();
     Dismiss::new(menu)
-        .on_dismiss(|ctx, _app| {
-            ctx.dispatch_typed_action(WorkspaceAction::DismissLocalWorkspaceContextMenu);
+        .on_dismiss(move |ctx, _app| {
+            ctx.dispatch_typed_action(dismiss.clone());
         })
         .prevent_interaction_with_other_elements()
         .finish()

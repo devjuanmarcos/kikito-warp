@@ -108,7 +108,7 @@ impl GitOperation {
                 "log".into(),
                 "--all".into(),
                 "--date-order".into(),
-                "--format=%H%x00%P%x00%an%x00%aI%x00%s".into(),
+                "--format=%H%x00%P%x00%an%x00%aI%x00%s%x00%D".into(),
                 "-n".into(),
                 (*limit).clamp(1, 5000).to_string(),
             ],
@@ -187,7 +187,8 @@ impl GitOperation {
                 vec!["pull".into(), remote.clone(), branch.clone()]
             }
             Self::Push { remote, branch } => {
-                vec!["push".into(), remote.clone(), branch.clone()]
+                // `-u` makes publishing a branch also set its upstream, so status can report sync.
+                vec!["push".into(), "-u".into(), remote.clone(), branch.clone()]
             }
         }
     }
