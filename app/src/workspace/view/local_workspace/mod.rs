@@ -439,7 +439,7 @@ pub(crate) fn tabs_layout_menu(tabs_in_sidebar: bool, appearance: &Appearance) -
             },
             context_menu::MenuItem {
                 label: "Abas na barra lateral",
-                icon: Icon::ListOpen,
+                icon: Icon::LeftSidebarOpen,
                 action: WorkspaceAction::SetLocalWorkspaceTabsInSidebar(true),
                 danger: false,
                 separator_before: false,
@@ -495,7 +495,7 @@ pub(crate) fn window_buttons(appearance: &Appearance, has_unread: bool) -> Box<d
         .with_child(notifications.finish())
         .with_child(project_tabs::header_button(
             appearance,
-            Icon::Settings,
+            Icon::Gear,
             ("window-settings", 0),
             "Configurações",
             |ctx, _| ctx.dispatch_typed_action(WorkspaceAction::ShowSettings),
@@ -506,5 +506,60 @@ pub(crate) fn window_buttons(appearance: &Appearance, has_unread: bool) -> Box<d
         .finish()
 }
 
+pub(crate) use project_tabs::TABS_LAYOUT_BUTTON_POSITION_ID;
+
 /// Horizontal offset of `window_buttons` from the window's right edge.
 pub(crate) const WINDOW_BUTTONS_RIGHT_INSET: f32 = project_tabs::WINDOW_CONTROLS_INSET + 8.;
+
+pub(super) fn project_row_position_id(
+    project_id: crate::local_workspace::model::ProjectId,
+) -> String {
+    format!("local_workspace:project_row:{project_id}")
+}
+
+pub(super) fn organization_tile_position_id(
+    organization_id: crate::local_workspace::model::OrganizationId,
+) -> String {
+    format!("local_workspace:organization_tile:{organization_id}")
+}
+
+/// The open organization or project context menu and where it sits. It renders at the window's
+/// root so its outside-click dismissal sees clicks anywhere in the window.
+pub(crate) fn context_menu_overlay(
+    model: &WorkspaceModel,
+    appearance: &Appearance,
+) -> Option<(Box<dyn Element>, warpui::elements::OffsetPositioning)> {
+    use crate::local_workspace::model::ContextMenuTarget;
+    use warpui::elements::{
+        ChildAnchor, OffsetPositioning, PositionedElementAnchor, PositionedElementOffsetBounds,
+    };
+    let target = model.context_menu()?;
+    let menu = context_menu::render(
+        target,
+        model.context_menu_index(),
+        model.context_menu_keyboard_active(),
+        appearance,
+    );
+    let positioning = match target {
+        ContextMenuTarget::Organization(id) => {
+            OffsetPositioning::offset_from_save_position_element(
+                organization_tile_position_id(id),
+                pathfinder_geometry::vector::vec2f(
+                    org_rail::RAIL_WIDTH / 2.,
+                    org_rail::ORGANIZATION_TILE_SIZE / 2.,
+                ),
+                PositionedElementOffsetBounds::WindowByPosition,
+                PositionedElementAnchor::TopLeft,
+                ChildAnchor::TopLeft,
+            )
+        }
+        ContextMenuTarget::Project(id) => OffsetPositioning::offset_from_save_position_element(
+            project_row_position_id(id),
+            pathfinder_geometry::vector::vec2f(-38., 3.),
+            PositionedElementOffsetBounds::WindowByPosition,
+            PositionedElementAnchor::TopRight,
+            ChildAnchor::TopRight,
+        ),
+    };
+    Some((menu, positioning))
+}

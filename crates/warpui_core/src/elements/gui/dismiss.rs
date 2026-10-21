@@ -20,6 +20,8 @@ pub struct Dismiss {
     /// are handled by the [`Dismiss`] rather than being propagated further down in the element
     /// hierarchy.
     prevent_interaction_with_other_elements: bool,
+    /// Whether a right click outside the child dismisses it too, like a native context menu.
+    dismiss_on_right_click: bool,
 }
 
 impl Dismiss {
@@ -29,7 +31,14 @@ impl Dismiss {
             dismiss_handler: None,
             origin: None,
             prevent_interaction_with_other_elements: false,
+            dismiss_on_right_click: false,
         }
+    }
+
+    /// Also dismisses on a right click outside the child.
+    pub fn dismiss_on_right_click(mut self) -> Self {
+        self.dismiss_on_right_click = true;
+        self
     }
 
     /// Attach a handler for when the dismiss is clicked
@@ -98,6 +107,10 @@ impl Element for Dismiss {
             // If the event is available at the root z-index, that means it isn't covered by the
             // child element, which means the user is clicking outside of the child element
             (Some(handler), Some(Event::LeftMouseDown { .. })) => {
+                handler(ctx, app);
+                return self.prevent_interaction_with_other_elements;
+            }
+            (Some(handler), Some(Event::RightMouseDown { .. })) if self.dismiss_on_right_click => {
                 handler(ctx, app);
                 return self.prevent_interaction_with_other_elements;
             }

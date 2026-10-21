@@ -155,6 +155,7 @@ pub(super) fn menu(
             ctx.dispatch_typed_action(dismiss.clone());
         })
         .prevent_interaction_with_other_elements()
+        .dismiss_on_right_click()
         .finish()
 }
 

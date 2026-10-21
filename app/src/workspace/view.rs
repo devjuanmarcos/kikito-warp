@@ -616,6 +616,7 @@ const THEME_CHOOSER_RATIO: f32 = 3.5;
 
 /// Save position for the tab bar.
 pub(crate) const TAB_BAR_POSITION_ID: &str = "workspace_view:tab_bar";
+const LOCAL_WORKSPACE_BAR_HEIGHT: f32 = 34.;
 const TEAM_SWITCHER_PILL_POSITION_ID: &str = "workspace_view:team_switcher_pill";
 const TEAM_SWITCHER_DOT_ALPHA: u8 = 204;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1107,10 +1108,11 @@ pub struct Workspace {
     show_new_session_dropdown_menu: Option<NewSessionMenuAnchor>,
     /// Set while adding a tab that must stay outside every local project.
     suppress_local_project_assignment: bool,
+    /// Set while a window snapshot's tabs are being re-created.
+    restoring_session_tabs: bool,
     /// Project tab whose context menu is open, with the click position.
     local_workspace_tab_menu: Option<(i32, Vector2F)>,
-    /// Click position of the open tabs layout menu.
-    local_workspace_tabs_layout_menu: Option<Vector2F>,
+    local_workspace_tabs_layout_menu_open: bool,
     changelog_model: ModelHandle<ChangelogModel>,
     palette: ViewHandle<CommandPalette>,
     ctrl_tab_palette: ViewHandle<CommandPalette>,
@@ -1747,6 +1749,7 @@ impl Workspace {
         let modal = ctx.add_typed_action_view(|ctx| {
             Modal::new(None, body, ctx)
                 .with_top_margin(0.)
+                .with_dismiss_on_click()
                 .with_modal_style(UiComponentStyles {
                     width: Some(420.),
                     border_width: Some(0.),
@@ -1963,13 +1966,45 @@ impl Workspace {
             )
             .map_err(|error| error.to_string())?;
         }
+        let mut created = None;
         self.local_workspace.update(ctx, |model, ctx| {
             if let Ok(id) = model.add_organization(name) {
                 let _ = model.set_organization_visuals(id, accent_color, image_data);
+                created = Some(id);
                 ctx.notify();
             }
         });
+        if let Some(id) = created {
+            self.select_local_workspace(Some(id), None, ctx);
+        }
         Ok(())
+    }
+
+    /// Closes the open tabs of projects that are being removed, which would otherwise keep
+    /// running hidden outside every project.
+    fn close_local_project_tabs(
+        &mut self,
+        project_ids: &[crate::local_workspace::model::ProjectId],
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let workspace_tab_ids: Vec<String> = {
+            let model = self.local_workspace.as_ref(ctx);
+            project_ids
+                .iter()
+                .filter_map(|project_id| model.project(*project_id))
+                .flat_map(|project| project.tabs.iter())
+                .filter_map(|tab_id| model.workspace_tab_id(*tab_id).map(str::to_owned))
+                .collect()
+        };
+        for workspace_tab_id in workspace_tab_ids {
+            if let Some(index) = self
+                .tabs
+                .iter()
+                .position(|tab| tab.workspace_tab_id == workspace_tab_id)
+            {
+                self.close_tab(index, true, true, ctx);
+            }
+        }
     }
 
     fn submit_local_workspace_change(
@@ -2024,6 +2059,13 @@ impl Workspace {
                 let db_id =
                     i32::try_from(*id).map_err(|_| "ID de organização inválido.".to_owned())?;
                 send(Operation::DeleteOrganization(db_id))?;
+                let project_ids: Vec<_> = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .projects_for_organization(*id)
+                    .map(|project| project.id)
+                    .collect();
+                self.close_local_project_tabs(&project_ids, ctx);
                 self.local_workspace.update(ctx, |model, ctx| {
                     if model.remove_organization(*id).is_ok() {
                         ctx.notify();
@@ -2096,6 +2138,7 @@ impl Workspace {
             Kind::RemoveProject(id) => {
                 let db_id = i32::try_from(*id).map_err(|_| "ID de projeto inválido.".to_owned())?;
                 send(Operation::DeleteProject(db_id))?;
+                self.close_local_project_tabs(&[*id], ctx);
                 self.local_workspace.update(ctx, |model, ctx| {
                     if model.remove_project(*id).is_ok() {
                         ctx.notify();
@@ -2141,6 +2184,38 @@ impl Workspace {
         SettingsPaneManager::as_ref(app)
             .find_pane(self.window_id)
             .is_some_and(|locator| locator.pane_group_id == tab.pane_group.id())
+    }
+
+    /// When the selected project has no open tab left, activates a tab outside every project
+    /// (adding the stand-in if there is none) so the project stays selected on its empty state
+    /// instead of jumping to the neighbor tab's project. Returns whether it activated a tab.
+    fn land_on_emptied_local_project(&mut self, ctx: &mut ViewContext<Self>) -> bool {
+        let model = self.local_workspace.as_ref(ctx);
+        let Some(project_id) = model.selected_project() else {
+            return false;
+        };
+        let available_workspace_tabs: Vec<String> = self
+            .tabs
+            .iter()
+            .map(|tab| tab.workspace_tab_id.clone())
+            .collect();
+        if local_workspace::preferred_open_project_tab(model, project_id, &available_workspace_tabs)
+            .is_some()
+        {
+            return false;
+        }
+        let unassigned = (0..self.tabs.len()).find(|index| {
+            !self.is_settings_tab(*index, ctx)
+                && model
+                    .tab_identity_id(&self.tabs[*index].workspace_tab_id)
+                    .and_then(|tab_id| model.tab_owner(tab_id))
+                    .is_none()
+        });
+        match unassigned {
+            Some(index) => self.activate_tab_internal(index, ctx),
+            None => self.add_local_workspace_stand_in_tab(ctx),
+        }
+        true
     }
 
     fn add_local_workspace_stand_in_tab(&mut self, ctx: &mut ViewContext<Self>) {
@@ -5114,6 +5189,11 @@ impl Workspace {
         ctx.observe(&TabShortcutModifierState::handle(ctx), |_, _, ctx| {
             ctx.notify();
         });
+        // Selection, menus and tab membership live in the local workspace model; actions that
+        // only update it must still repaint the window.
+        ctx.observe(&local_workspace, |_, _, ctx| {
+            ctx.notify();
+        });
 
         ctx.observe(&RelaunchModel::handle(ctx), |_, _, ctx| {
             ctx.notify();
@@ -5605,8 +5685,9 @@ impl Workspace {
             new_session_dropdown_menu,
             show_new_session_dropdown_menu: None,
             suppress_local_project_assignment: false,
+            restoring_session_tabs: false,
             local_workspace_tab_menu: None,
-            local_workspace_tabs_layout_menu: None,
+            local_workspace_tabs_layout_menu_open: false,
             changelog_model,
             welcome_tips_view_state,
             welcome_tips_view,
@@ -6309,6 +6390,7 @@ impl Workspace {
                         .collect();
                 }
 
+                self.restoring_session_tabs = true;
                 window_snapshot
                     .tabs
                     .iter()
@@ -6349,6 +6431,7 @@ impl Workspace {
                             );
                         }
                     });
+                self.restoring_session_tabs = false;
 
                 if self.tab_count() == 0 {
                     if self.should_trigger_get_started_onboarding(ctx) {
@@ -7805,22 +7888,14 @@ impl Workspace {
 
     /// Change the active tab index. This must be used instead of setting `self.active_tab_index`
     /// directly, as it updates related state.
-    pub(crate) fn set_active_tab_index(&mut self, index: usize, ctx: &mut ViewContext<Self>) {
-        let index = if index >= self.tab_count() {
-            log::warn!(
-                "Attempted to set active tab index {index} but only {} tabs exist, clamping",
-                self.tab_count()
-            );
-            self.tab_count().saturating_sub(1)
-        } else {
-            index
-        };
-
-        let Some(target_workspace_tab_id) =
-            self.tabs.get(index).map(|tab| tab.workspace_tab_id.clone())
-        else {
-            return;
-        };
+    /// Moves the local workspace selection to the project owning the tab at `index` and returns
+    /// the index to activate, or `None` when the activation must not happen.
+    fn route_local_workspace_activation(
+        &mut self,
+        index: usize,
+        ctx: &mut ViewContext<Self>,
+    ) -> Option<usize> {
+        let target_workspace_tab_id = self.tabs.get(index)?.workspace_tab_id.clone();
         let route = local_workspace::tab_activation_route(
             self.local_workspace.as_ref(ctx),
             &target_workspace_tab_id,
@@ -7833,17 +7908,14 @@ impl Workspace {
             } => {
                 self.select_local_workspace(Some(organization_id), Some(project_id), ctx);
                 if self.local_workspace.as_ref(ctx).selected_project() != Some(project_id) {
-                    return;
+                    return None;
                 }
             }
         }
-        let Some(mut index) = self
+        let mut index = self
             .tabs
             .iter()
-            .position(|tab| tab.workspace_tab_id == target_workspace_tab_id)
-        else {
-            return;
-        };
+            .position(|tab| tab.workspace_tab_id == target_workspace_tab_id)?;
 
         if let (Some(project_id), Some(tab)) = (
             self.local_workspace.as_ref(ctx).selected_project(),
@@ -7911,6 +7983,30 @@ impl Workspace {
                 }
             }
         }
+        Some(index)
+    }
+
+    pub(crate) fn set_active_tab_index(&mut self, index: usize, ctx: &mut ViewContext<Self>) {
+        let index = if index >= self.tab_count() {
+            log::warn!(
+                "Attempted to set active tab index {index} but only {} tabs exist, clamping",
+                self.tab_count()
+            );
+            self.tab_count().saturating_sub(1)
+        } else {
+            index
+        };
+
+        // Restored tabs receive their saved identity only after they're added, so the local
+        // workspace reconciles once, after the whole window is restored.
+        let index = if self.restoring_session_tabs {
+            index
+        } else {
+            match self.route_local_workspace_activation(index, ctx) {
+                Some(index) => index,
+                None => return,
+            }
+        };
         self.active_tab_index = index;
 
         // The range selection's anchor is the active tab, so any change to
@@ -14694,7 +14790,9 @@ impl Workspace {
                 // back to the new last tab (the previous neighbor). This matches the
                 // browser / macOS convention for both layouts.
                 let active_index = index.min(self.tabs.len() - 1);
-                self.activate_tab_internal(active_index, ctx);
+                if !self.land_on_emptied_local_project(ctx) {
+                    self.activate_tab_internal(active_index, ctx);
+                }
             }
             Ordering::Less => {
                 // If we are closing a tab before the active tab we need to adjust
@@ -27005,13 +27103,13 @@ impl TypedActionView for Workspace {
                 self.local_workspace_tab_menu = Some((*tab_id, *position));
                 ctx.notify();
             }
-            OpenLocalWorkspaceTabsLayoutMenu(position) => {
-                self.local_workspace_tabs_layout_menu = Some(*position);
+            OpenLocalWorkspaceTabsLayoutMenu => {
+                self.local_workspace_tabs_layout_menu_open = true;
                 ctx.notify();
             }
             DismissLocalWorkspaceMenus => {
                 self.local_workspace_tab_menu = None;
-                self.local_workspace_tabs_layout_menu = None;
+                self.local_workspace_tabs_layout_menu_open = false;
                 ctx.notify();
             }
             RenameLocalWorkspaceTab(tab_id) => {
@@ -27030,7 +27128,7 @@ impl TypedActionView for Workspace {
                 }
             }
             SetLocalWorkspaceTabsInSidebar(in_sidebar) => {
-                self.local_workspace_tabs_layout_menu = None;
+                self.local_workspace_tabs_layout_menu_open = false;
                 TabSettings::handle(ctx).update(ctx, |settings, ctx| {
                     report_if_error!(
                         settings
@@ -30077,32 +30175,6 @@ impl View for Workspace {
                 ),
             );
         }
-        if let Some((tab_id, position)) = self.local_workspace_tab_menu {
-            stack.add_positioned_overlay_child(
-                local_workspace::tab_menu(self.local_workspace.as_ref(app), tab_id, appearance),
-                OffsetPositioning::offset_from_parent(
-                    position,
-                    ParentOffsetBounds::WindowByPosition,
-                    ParentAnchor::TopLeft,
-                    ChildAnchor::TopLeft,
-                ),
-            );
-        }
-        if let Some(position) = self.local_workspace_tabs_layout_menu {
-            stack.add_positioned_overlay_child(
-                local_workspace::tabs_layout_menu(
-                    *TabSettings::as_ref(app).local_workspace_tabs_in_sidebar,
-                    appearance,
-                ),
-                OffsetPositioning::offset_from_parent(
-                    position,
-                    ParentOffsetBounds::WindowByPosition,
-                    ParentAnchor::TopLeft,
-                    ChildAnchor::TopRight,
-                ),
-            );
-        }
-
         // The local workspace opens view options from its project bar or its tabs sidebar, so
         // the popup doesn't depend on the vertical tabs setting.
         if !use_simplified_wasm_tab_bar && self.vertical_tabs_panel.show_settings_popup {
@@ -31161,23 +31233,24 @@ impl View for Workspace {
                 );
                 let (anchor, child_anchor, offset_x) = if mailbox_on_left {
                     (
-                        PositionedElementAnchor::BottomLeft,
+                        ParentAnchor::TopLeft,
                         ChildAnchor::TopLeft,
                         WORKSPACE_PADDING,
                     )
                 } else {
                     (
-                        PositionedElementAnchor::BottomRight,
+                        ParentAnchor::TopRight,
                         ChildAnchor::TopRight,
                         -WORKSPACE_PADDING,
                     )
                 };
+                // The local workspace doesn't render the session tab bar, so the toasts sit
+                // under the project bar from the window's corner.
                 stack.add_positioned_overlay_child(
                     ChildView::new(stack_view).finish(),
-                    OffsetPositioning::offset_from_save_position_element(
-                        TAB_BAR_POSITION_ID,
-                        vec2f(offset_x, 4.),
-                        PositionedElementOffsetBounds::WindowByPosition,
+                    OffsetPositioning::offset_from_parent(
+                        vec2f(offset_x, LOCAL_WORKSPACE_BAR_HEIGHT + 4.),
+                        ParentOffsetBounds::WindowByPosition,
                         anchor,
                         child_anchor,
                     ),
@@ -31242,6 +31315,40 @@ impl View for Workspace {
                     vec2f(-10., 67.),
                     ParentOffsetBounds::WindowByPosition,
                     ParentAnchor::TopRight,
+                    ChildAnchor::TopRight,
+                ),
+            );
+        }
+
+        // Local workspace menus go last so no toast or popup layer covers their outside-click
+        // dismissal.
+        if let Some((menu, positioning)) =
+            local_workspace::context_menu_overlay(self.local_workspace.as_ref(app), appearance)
+        {
+            stack.add_positioned_overlay_child(menu, positioning);
+        }
+        if let Some((tab_id, position)) = self.local_workspace_tab_menu {
+            stack.add_positioned_overlay_child(
+                local_workspace::tab_menu(self.local_workspace.as_ref(app), tab_id, appearance),
+                OffsetPositioning::offset_from_parent(
+                    position,
+                    ParentOffsetBounds::WindowByPosition,
+                    ParentAnchor::TopLeft,
+                    ChildAnchor::TopLeft,
+                ),
+            );
+        }
+        if self.local_workspace_tabs_layout_menu_open {
+            stack.add_positioned_overlay_child(
+                local_workspace::tabs_layout_menu(
+                    *TabSettings::as_ref(app).local_workspace_tabs_in_sidebar,
+                    appearance,
+                ),
+                OffsetPositioning::offset_from_save_position_element(
+                    local_workspace::TABS_LAYOUT_BUTTON_POSITION_ID,
+                    vec2f(0., 4.),
+                    PositionedElementOffsetBounds::WindowByPosition,
+                    PositionedElementAnchor::BottomRight,
                     ChildAnchor::TopRight,
                 ),
             );

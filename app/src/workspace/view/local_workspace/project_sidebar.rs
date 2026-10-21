@@ -6,16 +6,14 @@ use crate::editor::EditorView;
 use crate::local_git::{HeadState, RepositoryStatus};
 use crate::local_workspace::model::{ProjectPathStatus, WorkspaceModel};
 use crate::workspace::action::WorkspaceAction;
-use pathfinder_geometry::vector::vec2f;
 use warp_core::ui::Icon;
 use warpui::ViewHandle;
 use warpui::elements::Element;
 use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
 use warpui::elements::{
-    Border, CacheOption, ChildAnchor, ClippedScrollStateHandle, ConstrainedBox, Container,
-    CrossAxisAlignment, DispatchEventResult, EventHandler, Expanded, Fill, Flex, Hoverable, Image,
-    MainAxisAlignment, MainAxisSize, OffsetPositioning, ParentAnchor, ParentElement,
-    ParentOffsetBounds, ScrollbarWidth, Shrinkable, Stack, Text,
+    Border, CacheOption, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment,
+    DispatchEventResult, EventHandler, Expanded, Fill, Flex, Hoverable, Image, MainAxisAlignment,
+    MainAxisSize, ParentElement, SavePosition, ScrollbarWidth, Shrinkable, Text,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::platform::Cursor;
@@ -325,28 +323,9 @@ pub(super) fn render(
                         ))
                     })
                     .finish();
-                let mut project_item = Stack::new().with_child(row);
-                if model.context_menu()
-                    == Some(crate::local_workspace::model::ContextMenuTarget::Project(
-                        project.id,
-                    ))
-                {
-                    project_item.add_positioned_overlay_child(
-                        super::context_menu::render(
-                            crate::local_workspace::model::ContextMenuTarget::Project(project.id),
-                            model.context_menu_index(),
-                            model.context_menu_keyboard_active(),
-                            appearance,
-                        ),
-                        OffsetPositioning::offset_from_parent(
-                            vec2f(-38., 3.),
-                            ParentOffsetBounds::WindowByPosition,
-                            ParentAnchor::TopRight,
-                            ChildAnchor::TopRight,
-                        ),
-                    );
-                }
-                project_list.add_child(project_item.finish());
+                project_list.add_child(
+                    SavePosition::new(row, &super::project_row_position_id(project_id)).finish(),
+                );
             }
             let visible_projects = model
                 .projects_for_organization(organization_id)
@@ -463,35 +442,21 @@ pub(super) fn render(
                 .with_padding_top(7.)
                 .with_padding_bottom(7.)
                 .finish();
-            let mut project_item = Flex::column()
-                .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-                .with_child(
-                    EventHandler::new(row)
-                        .on_left_mouse_up(move |ctx, _, _| {
-                            ctx.dispatch_typed_action(action.clone());
-                            DispatchEventResult::StopPropagation
-                        })
-                        .on_right_mouse_down(move |ctx, _, _, _| {
-                            ctx.dispatch_typed_action(
-                                WorkspaceAction::OpenLocalWorkspaceProjectMenu(project_id),
-                            );
-                            DispatchEventResult::StopPropagation
-                        })
-                        .finish(),
-                );
-            if model.context_menu()
-                == Some(crate::local_workspace::model::ContextMenuTarget::Project(
-                    project.id,
-                ))
-            {
-                project_item.add_child(super::context_menu::render(
-                    crate::local_workspace::model::ContextMenuTarget::Project(project.id),
-                    model.context_menu_index(),
-                    model.context_menu_keyboard_active(),
-                    appearance,
-                ));
-            }
-            sidebar.add_child(project_item.finish());
+            let row = EventHandler::new(row)
+                .on_left_mouse_up(move |ctx, _, _| {
+                    ctx.dispatch_typed_action(action.clone());
+                    DispatchEventResult::StopPropagation
+                })
+                .on_right_mouse_down(move |ctx, _, _, _| {
+                    ctx.dispatch_typed_action(WorkspaceAction::OpenLocalWorkspaceProjectMenu(
+                        project_id,
+                    ));
+                    DispatchEventResult::StopPropagation
+                })
+                .finish();
+            sidebar.add_child(
+                SavePosition::new(row, &super::project_row_position_id(project_id)).finish(),
+            );
         }
         if !search_query.is_empty()
             && !model

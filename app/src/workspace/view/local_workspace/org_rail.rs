@@ -14,14 +14,14 @@ use warpui::elements::Element;
 use warpui::elements::{
     Border, CacheOption, ChildAnchor, ConstrainedBox, Container, CrossAxisAlignment, Dash, Flex,
     Hoverable, Image, MainAxisAlignment, OffsetPositioning, ParentAnchor, ParentElement,
-    ParentOffsetBounds, Rect, Stack, Text,
+    ParentOffsetBounds, Rect, SavePosition, Stack, Text,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::platform::Cursor;
 
-const RAIL_WIDTH: f32 = 64.;
+pub(super) const RAIL_WIDTH: f32 = 64.;
 const RAIL_HEADER_HEIGHT: f32 = 34.;
-const ORGANIZATION_TILE_SIZE: f32 = 36.;
+pub(super) const ORGANIZATION_TILE_SIZE: f32 = 36.;
 const ACTIVE_MARKER_HEIGHT: f32 = 28.;
 const HOVER_MARKER_HEIGHT: f32 = 12.;
 
@@ -106,26 +106,10 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
             )),
             appearance,
         );
-        let mut organization_item = Stack::new().with_child(item);
-        if model.context_menu()
-            == Some(crate::local_workspace::model::ContextMenuTarget::Organization(organization.id))
-        {
-            organization_item.add_positioned_overlay_child(
-                super::context_menu::render(
-                    crate::local_workspace::model::ContextMenuTarget::Organization(organization.id),
-                    model.context_menu_index(),
-                    model.context_menu_keyboard_active(),
-                    appearance,
-                ),
-                OffsetPositioning::offset_from_parent(
-                    vec2f(RAIL_WIDTH / 2., ORGANIZATION_TILE_SIZE / 2.),
-                    ParentOffsetBounds::WindowByPosition,
-                    ParentAnchor::TopLeft,
-                    ChildAnchor::TopLeft,
-                ),
-            );
-        }
-        top_items.add_child(organization_item.finish());
+        top_items.add_child(
+            SavePosition::new(item, &super::organization_tile_position_id(organization.id))
+                .finish(),
+        );
     }
     top_items.add_child(rail_action(
         Icon::Plus,

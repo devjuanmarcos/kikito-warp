@@ -1070,15 +1070,15 @@ impl View for CreateDialog {
         if confirmation {
             let message = match &self.kind {
                 CreateDialogKind::RemoveOrganization(_) => {
-                    "Os projetos, pastas e sessões continuarão no disco. Apenas a organização será removida deste terminal."
+                    "As pastas continuarão no disco. Os projetos desta organização saem do terminal e as abas abertas deles serão fechadas."
                 }
                 CreateDialogKind::RemoveProject(_) => {
-                    "A pasta continuará no disco. Os terminais ficarão acessíveis em Início, sem projeto."
+                    "A pasta continuará no disco. As abas abertas deste projeto serão fechadas."
                 }
                 _ => "",
             };
             body.add_child(
-                Text::new_inline(message.to_owned(), appearance.ui_font_family(), 12.)
+                Text::new(message.to_owned(), appearance.ui_font_family(), 12.)
                     .with_line_height_ratio(BODY_LINE_HEIGHT / 12.)
                     .with_color(theme.sub_text_color(theme.background()).into())
                     .finish(),

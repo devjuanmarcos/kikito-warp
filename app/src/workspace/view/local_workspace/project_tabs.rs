@@ -22,6 +22,7 @@ use warpui::elements::SavePosition;
 use warpui::geometry::vector::Vector2F;
 
 const BAR_HEIGHT: f32 = 34.;
+pub(crate) const TABS_LAYOUT_BUTTON_POSITION_ID: &str = "local_workspace:tabs_layout_button";
 const CLOSE_SLOT: f32 = 16.;
 const TAB_HEIGHT: f32 = 26.;
 const TAB_MIN_WIDTH: f32 = 72.;
@@ -80,7 +81,7 @@ pub(super) fn render(
             .with_spacing(6.);
         content.add_child(sized_icon(Icon::Terminal, sub_text, 12.));
         let label = match rename_editor.take_if(|(renaming, _)| *renaming == tab_id) {
-            Some((_, editor)) => editor,
+            Some((_, editor)) => warpui::elements::Clipped::new(editor).finish(),
             None => Text::new_inline(title, appearance.ui_font_family(), 12.)
                 .with_color((if active { main_text } else { sub_text }).into())
                 .soft_wrap(false)
@@ -228,15 +229,21 @@ pub(super) fn render(
         ("tab-git", 0),
         Some(("Controle de versão", TooltipSide::BelowRight)),
     ));
-    bar.add_child(header_button(
-        appearance,
-        Icon::LayoutAlt01,
-        ("tab-layout", 0),
-        "Layout das abas",
-        |ctx, position| {
-            ctx.dispatch_typed_action(WorkspaceAction::OpenLocalWorkspaceTabsLayoutMenu(position))
-        },
-    ));
+    bar.add_child(
+        SavePosition::new(
+            header_button(
+                appearance,
+                Icon::LayoutAlt01,
+                ("tab-layout", 0),
+                "Layout das abas",
+                |ctx, _| {
+                    ctx.dispatch_typed_action(WorkspaceAction::OpenLocalWorkspaceTabsLayoutMenu)
+                },
+            ),
+            TABS_LAYOUT_BUTTON_POSITION_ID,
+        )
+        .finish(),
+    );
 
     Some(bar_frame(appearance, bar.finish()))
 }
@@ -273,27 +280,13 @@ pub(super) fn render_title_bar(appearance: &Appearance, title: &str) -> Box<dyn 
     bar_frame(appearance, bar.finish())
 }
 
-/// Header of the settings screen: its title and a button that closes it.
+/// Header of the settings screen: a button that closes it (the settings pane shows its own title).
 pub(super) fn render_settings_bar(appearance: &Appearance) -> Box<dyn Element> {
-    let theme = appearance.theme();
     let mut bar = Flex::row()
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(8.);
-    bar.add_child(
-        Expanded::new(
-            1.,
-            Container::new(
-                Text::new_inline("Configurações", appearance.ui_font_family(), 12.)
-                    .with_color(theme.main_text_color(theme.surface_1()).into())
-                    .soft_wrap(false)
-                    .finish(),
-            )
-            .with_padding_left(8.)
-            .finish(),
-        )
-        .finish(),
-    );
+    bar.add_child(Expanded::new(1., Flex::row().finish()).finish());
     bar.add_child(header_button(
         appearance,
         Icon::X,

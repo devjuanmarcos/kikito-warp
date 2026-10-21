@@ -223,8 +223,8 @@ pub enum WorkspaceAction {
         tab_id: i32,
         position: Vector2F,
     },
-    /// Opens the menu that picks where project tabs are listed, at the click position.
-    OpenLocalWorkspaceTabsLayoutMenu(Vector2F),
+    /// Opens the menu that picks where project tabs are listed.
+    OpenLocalWorkspaceTabsLayoutMenu,
     DismissLocalWorkspaceMenus,
     RenameLocalWorkspaceTab(i32),
     /// Lists project tabs in a sidebar beside the projects (`true`) or in the project bar.
@@ -1378,7 +1378,7 @@ impl WorkspaceAction {
             | CancelLocalGitCreateBranch
             | OpenLocalWorkspaceNewTabMenu { .. }
             | OpenLocalWorkspaceTabMenu { .. }
-            | OpenLocalWorkspaceTabsLayoutMenu(_)
+            | OpenLocalWorkspaceTabsLayoutMenu
             | DismissLocalWorkspaceMenus
             | RenameLocalWorkspaceTab(_)
             | SetLocalWorkspaceTabsInSidebar(_)
