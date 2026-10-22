@@ -9,13 +9,13 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 | Fluxo no VS Code | Kikito | Observação |
 |---|---|---|
 | Detectar o repositório da pasta aberta (ou de uma pasta pai) | ✅ | `detect_possible_local_git_repo` sobe a árvore. |
-| Detectar sub-repositórios dentro da pasta (`git.autoRepositoryDetection: subFolders`, `git.repositoryScanMaxDepth`) | ❌ | Fase 1. Varrer a pasta do projeto até profundidade 2, ignorando `node_modules`, `target`, `dist`, `.venv` etc. Aceitar `.git` pasta ou arquivo (worktree/submódulo). |
-| Lista "Repositórios" com nome, branch atual e status de sincronização (↑↓) de cada um | ❌ | Fase 1. Seção no topo do painel quando houver mais de um repositório. |
-| Clicar num repositório para torná-lo o ativo (alterações, commit, grafo e rodapé passam a ser dele) | ❌ | Fase 1. Lembrar o ativo por projeto. |
-| Contagem de alterações por repositório na lista | ❌ | Fase 1. |
+| Detectar sub-repositórios dentro da pasta (`git.autoRepositoryDetection: subFolders`, `git.repositoryScanMaxDepth`) | ✅ | Até 2 níveis, ignora `node_modules`/`target`/etc. Varrer a pasta do projeto até profundidade 2, ignorando `node_modules`, `target`, `dist`, `.venv` etc. Aceitar `.git` pasta ou arquivo (worktree/submódulo). |
+| Lista "Repositórios" com nome, branch atual e status de sincronização (↑↓) de cada um | ✅ | Fase 1. Seção no topo do painel quando houver mais de um repositório. |
+| Clicar num repositório para torná-lo o ativo (alterações, commit, grafo e rodapé passam a ser dele) | ✅ | Lembrado por projeto, inclusive após reiniciar. |
+| Contagem de alterações por repositório na lista | ✅ | |
 | Fechar/ocultar um repositório da lista | ❌ | Fase 3. |
 | Abrir repositório de uma pasta pai (`git.openRepositoryInParentFolders`) | ✅ | Já sobe a árvore. |
-| Pasta sem repositório: "Inicializar repositório" | ❌ | Fase 2 (`git init`). |
+| Pasta sem repositório: "Inicializar repositório" | ✅ | Falta testar no app. |
 | Clonar repositório | ⏸ | Faz mais sentido no fluxo de criar projeto. |
 
 ## 2. Alterações
@@ -26,13 +26,13 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 | Preparar / retirar arquivo | ✅ | |
 | Preparar tudo / retirar tudo | ✅ | |
 | Descartar arquivo (com confirmação) | ✅ | |
-| Descartar todas as alterações | ❌ | Fase 2, com confirmação. |
+| Descartar todas as alterações | ✅ | Com confirmação. |
 | Abrir diff do arquivo (lado a lado) | 🟡 | Hoje é um preview inline no painel; o VS Code abre editor de diff. Avaliar abrir o diff na área principal (Fase 3). |
 | Preparar / retirar bloco (hunk) | ✅ | "Preparar bloco". |
 | Preparar linhas selecionadas | ⏸ | Depende de seleção no diff. |
-| Abrir o arquivo / revelar no explorador | ❌ | Fase 2 (menu de contexto do arquivo). |
-| Copiar caminho / caminho relativo | ❌ | Fase 2. |
-| Adicionar ao `.gitignore` | ❌ | Fase 2. |
+| Abrir o arquivo / revelar no explorador | ❌ | Fase 3. |
+| Copiar caminho / caminho relativo | ✅ | Menu de clique direito do arquivo. |
+| Adicionar ao `.gitignore` | ✅ | |
 | Ver como lista / árvore | ❌ | Fase 3. |
 | Seleção múltipla de arquivos | ⏸ | |
 
@@ -43,9 +43,9 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 | Mensagem + Ctrl+Enter | ✅ | |
 | Commit / Commit de tudo (sem nada preparado) | ✅ | |
 | Amend (alterar último commit) | ✅ | Menu do botão de commit, com confirmação. |
-| Commit e push / Commit e sincronizar | 🟡 | Commit e push existe; falta "Commit e sincronizar" (pull + push). Fase 2. |
+| Commit e push / Commit e sincronizar | ✅ | |
 | Desfazer último commit | ✅ | |
-| Reverter commit | 🟡 | Só o último; o VS Code reverte qualquer commit pelo grafo. Fase 2. |
+| Reverter commit | ✅ | Qualquer commit, pelo grafo. |
 | Histórico de mensagens (seta para cima) | ❌ | Fase 3. |
 | Commit vazio / `--no-verify` / `--signoff` | ⏸ | |
 | Gerar mensagem com IA | ⏸ | Depende da decisão sobre IA no Kikito. |
@@ -55,16 +55,16 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 | Fluxo | Kikito | Observação |
 |---|---|---|
 | Trocar de branch (locais) | ✅ | Lista de branches. |
-| Trocar para branch remota (cria a local rastreando) | ❌ | Fase 2. |
+| Trocar para branch remota (cria a local rastreando) | ✅ | |
 | Criar branch / criar a partir de outra | ✅ | |
 | Renomear branch | ✅ | |
-| Excluir branch local | ❌ | Fase 2, com confirmação. |
+| Excluir branch local | ✅ | Com confirmação. |
 | Excluir branch remota | ❌ | Fase 3. |
 | Publicar branch (push `-u`) | ✅ | "Publicar". |
-| Merge de branch na atual | ❌ | Fase 2. |
+| Merge de branch na atual | ✅ | |
 | Rebase da atual sobre outra | ❌ | Fase 3. |
-| Busca na lista de branches | ❌ | Fase 2 (listas longas). |
-| Clicar no branch do rodapé para trocar | ❌ | Fase 1 (atalho barato). |
+| Busca na lista de branches | ❌ | Fase 3. |
+| Clicar no branch do rodapé para trocar | ✅ | Abre a lista de branches. |
 
 ## 5. Sincronização
 
@@ -73,7 +73,7 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 | Fetch | ✅ | |
 | Pull | ✅ | |
 | Push | ✅ | |
-| Sincronizar (pull + push) com contagem ↑↓ | 🟡 | Rodapé mostra ↑↓ e "Sincronizar"; conferir o fluxo completo com remoto real. |
+| Sincronizar (pull + push) com contagem ↑↓ | ✅ | Testado com remoto local. |
 | Fetch com prune / de todos os remotos | ❌ | Fase 3. |
 | Pull com rebase | ❌ | Fase 3. |
 | Force push (`--force-with-lease`) | ❌ | Fase 3, com confirmação. |
@@ -84,7 +84,7 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 
 | Fluxo | Kikito | Observação |
 |---|---|---|
-| Adicionar / remover remoto | ❌ | Fase 2. |
+| Adicionar / remover remoto | ❌ | Fase 3. |
 | Publicar no GitHub (criar repositório) | ⏸ | Precisa de autenticação GitHub. |
 | Abrir no GitHub (arquivo, commit, branch) | ❌ | Fase 3: montar a URL a partir do remoto `origin`. |
 | Criar Pull Request | ⏸ | Extensão separada no VS Code. |
@@ -93,10 +93,10 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 
 | Fluxo | Kikito | Observação |
 |---|---|---|
-| Stash (com e sem não rastreados, só preparados) | ❌ | Fase 2. |
-| Aplicar / pop do último ou de um específico | ❌ | Fase 2. |
-| Descartar stash / todos | ❌ | Fase 2, com confirmação. |
-| Ver stashes | ❌ | Fase 2 (seção recolhível). |
+| Stash (com e sem não rastreados, só preparados) | ✅ | Com e sem não rastreados. |
+| Aplicar / pop do último ou de um específico | ✅ | |
+| Descartar stash / todos | ✅ | Um por vez, com confirmação. |
+| Ver stashes | ✅ | Seção STASHES. |
 
 ## 8. Tags
 
@@ -113,10 +113,10 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 |---|---|---|
 | Histórico com faixas, refs como pílulas, HEAD em anel | ✅ | |
 | Filtro: todas as branches / só a atual | ✅ | |
-| Clicar no commit: detalhes | 🟡 | Mostra mensagem, hash, autor, data; falta a lista de arquivos alterados com diff. Fase 2. |
-| Menu do commit: copiar hash, copiar mensagem | ❌ | Fase 2. |
-| Menu do commit: criar branch, criar tag, checkout (HEAD destacado) | ❌ | Fase 2/3. |
-| Menu do commit: cherry-pick, reverter | ❌ | Fase 2. |
+| Clicar no commit: detalhes | ✅ | Com a lista de arquivos alterados. |
+| Menu do commit: copiar hash, copiar mensagem | ✅ | |
+| Menu do commit: criar branch, criar tag, checkout (HEAD destacado) | 🟡 | Criar branch feito; tag e checkout destacado na Fase 3. |
+| Menu do commit: cherry-pick, reverter | ✅ | |
 | Carregar mais histórico (paginação) | 🟡 | Limite fixo de 200. Fase 3. |
 
 ## 10. Conflitos de merge
@@ -124,16 +124,16 @@ Legenda: ✅ já existe · 🟡 parcial · ❌ falta · ⏸ fora de escopo por e
 | Fluxo | Kikito | Observação |
 |---|---|---|
 | Grupo "Conflitos de merge" | ✅ | Arquivos com `!`. |
-| Aceitar atual / recebida / ambas | ❌ | Fase 2 (por arquivo: `checkout --ours/--theirs`). |
-| Marcar como resolvido (preparar) | 🟡 | Preparar funciona; conferir no fluxo. |
-| Abortar merge / continuar rebase | ❌ | Fase 2: banner com o estado. |
+| Aceitar atual / recebida / ambas | 🟡 | Atual e recebida por arquivo; "ambas" exige editor de merge. |
+| Marcar como resolvido (preparar) | ✅ | Aceitar um lado já prepara. |
+| Abortar merge / continuar rebase | ✅ | Faixa para merge, cherry-pick e revert pendentes, com abortar. |
 
 ## 11. Barra de status / indicadores
 
 | Fluxo | Kikito | Observação |
 |---|---|---|
 | Branch atual e ↑↓ na barra | ✅ | Rodapé do painel e chip do terminal. |
-| Contagem de alterações no ícone do painel | ❌ | Fase 2 (badge no botão Git do cabeçalho). |
+| Contagem de alterações no ícone do painel | ✅ | Badge no botão Git do cabeçalho. |
 | Blame inline / histórico do arquivo (Timeline) | ⏸ | Fora do painel. |
 
 ## Ordem de implementação

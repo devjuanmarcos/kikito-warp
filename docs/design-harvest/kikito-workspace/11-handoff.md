@@ -196,3 +196,7 @@ Pendências: teste completo do fluxo no app (perfil `parity`), menu de clique di
 - Testado no app (perfil `parity`, monorepo/svc-pagamentos): badge, stash guardar/pop, lista de branches, merge limpo (fast-forward). Faltam testar: merge com conflito (stash antes; o clique do merge em feature-conflito não pegou), aceitar lado, abortar, excluir branch, checkout remoto, cherry-pick/reverter, menu do arquivo, descartar tudo, init, commit e sincronizar.
 - Pendências: lembrar o repositório ativo entre reinícios (hoje só em memória); grafo exclui `refs/stash` (feito, falta build).
 - Fixture: `scratchpad/repos/monorepo/{svc-pagamentos,apps/painel}`; svc-pagamentos tem branches `feature-x` (já mesclada) e `feature-conflito` (conflita no README).
+
+### 14.1 Fase 2 concluída (22/10/2026)
+
+Commits `addfe8d01` e `d0c9ebbbd`. Testados no app: stash guardar/pop, merge limpo, merge com conflito (aceitar deles, abortar), excluir branch, checkout de branch remota, reverter commit, menu do arquivo (.gitignore), descartar tudo, commit e sincronizar (remoto bare em `scratchpad/repos/remotes/svc-pagamentos.git`), repositório ativo lembrado após reiniciar (`%APPDATA%\warp\<perfil>\data\local_workspace_git_repositories.json`). Só "Inicializar repositório" ficou sem teste no app. Mapeamento atualizado em `12-git-flows-vscode.md`; próximo: Fase 3.
