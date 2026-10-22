@@ -244,7 +244,9 @@ impl GitOperation {
             Self::CheckoutRemoteBranch { remote_branch } => {
                 vec!["switch".into(), "--track".into(), remote_branch.clone()]
             }
-            Self::MergeBranch { branch } => vec!["merge".into(), "--no-edit".into(), branch.clone()],
+            Self::MergeBranch { branch } => {
+                vec!["merge".into(), "--no-edit".into(), branch.clone()]
+            }
             Self::MergeAbort => vec!["merge".into(), "--abort".into()],
             Self::StashPush { include_untracked } => {
                 let mut arguments = vec!["stash".into(), "push".into()];

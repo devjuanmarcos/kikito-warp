@@ -271,7 +271,11 @@ pub(super) fn section_header(
 
 /// Section title with the kit's `letter-spacing: .04em`, which `Text` can't express: one
 /// glyph per child, spaced by that amount.
-pub(super) fn tracked_title(title: &'static str, color: Fill, appearance: &Appearance) -> Box<dyn Element> {
+pub(super) fn tracked_title(
+    title: &'static str,
+    color: Fill,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
     let mut letters = Flex::row()
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(TITLE_TRACKING);
@@ -435,7 +439,8 @@ fn changes_section(
         ));
     }
     if let Some(
-        confirmation @ (super::GitConfirmation::DiscardAll | super::GitConfirmation::DeleteBranch(_)),
+        confirmation @ (super::GitConfirmation::DiscardAll
+        | super::GitConfirmation::DeleteBranch(_)),
     ) = source_control.confirmation
     {
         section.add_child(super::extras::confirmation_row(
@@ -1527,9 +1532,13 @@ fn discard_all_row(appearance: &Appearance) -> Box<dyn Element> {
                 .with_spacing(4.)
                 .with_child(sized_icon(Icon::Retry, color, 11.))
                 .with_child(
-                    Text::new_inline("Descartar todas as alterações", appearance.ui_font_family(), 11.)
-                        .with_color(color.into())
-                        .finish(),
+                    Text::new_inline(
+                        "Descartar todas as alterações",
+                        appearance.ui_font_family(),
+                        11.,
+                    )
+                    .with_color(color.into())
+                    .finish(),
                 )
                 .finish(),
         )

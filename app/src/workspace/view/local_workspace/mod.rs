@@ -9,8 +9,8 @@ mod project_tabs;
 mod source_control;
 mod ws_style;
 pub(crate) use source_control::{
-    DiffPreview, GitConfirmation, GitPanelSection, GitPanelState, GitRemoteAction,
-    RepositoryEntry, SourceControl,
+    DiffPreview, GitConfirmation, GitPanelSection, GitPanelState, GitRemoteAction, RepositoryEntry,
+    SourceControl,
 };
 
 /// Window border (both sides), organization rail and project sidebar, in pixels.

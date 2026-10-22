@@ -249,13 +249,9 @@ pub(super) fn stash_section(
     if source_control.stashes.is_empty() {
         section.add_child(
             Container::new(
-                Text::new_inline(
-                    "Nenhum stash guardado.",
-                    appearance.ui_font_family(),
-                    12.,
-                )
-                .with_color(theme.hint_text_color(background).into())
-                .finish(),
+                Text::new_inline("Nenhum stash guardado.", appearance.ui_font_family(), 12.)
+                    .with_color(theme.hint_text_color(background).into())
+                    .finish(),
             )
             .with_padding_left(14.)
             .with_padding_top(4.)
@@ -265,14 +261,22 @@ pub(super) fn stash_section(
         return section.finish();
     }
     for stash in source_control.stashes {
-        section.add_child(stash_row(stash, source_control.operation_pending, appearance));
+        section.add_child(stash_row(
+            stash,
+            source_control.operation_pending,
+            appearance,
+        ));
     }
     Container::new(section.finish())
         .with_padding_bottom(6.)
         .finish()
 }
 
-fn stash_row(stash: &LocalStash, operation_pending: bool, appearance: &Appearance) -> Box<dyn Element> {
+fn stash_row(
+    stash: &LocalStash,
+    operation_pending: bool,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
     let theme = appearance.theme();
     let background = theme.surface_1();
     let state = mouse_state("git-stash-row", stash.index as i64);
@@ -281,7 +285,11 @@ fn stash_row(stash: &LocalStash, operation_pending: bool, appearance: &Appearanc
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(6.)
-        .with_child(sized_icon(Icon::Bookmark, theme.sub_text_color(background), 12.))
+        .with_child(sized_icon(
+            Icon::Bookmark,
+            theme.sub_text_color(background),
+            12.,
+        ))
         .with_child(
             Expanded::new(
                 1.,

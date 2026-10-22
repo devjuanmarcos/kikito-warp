@@ -648,7 +648,11 @@ pub(crate) async fn read_stashes(repository: &Path) -> Result<Vec<LocalStash>, G
     parse_stashes(&output)
 }
 
-pub(crate) async fn stash_apply(repository: &Path, index: usize, pop: bool) -> Result<(), GitError> {
+pub(crate) async fn stash_apply(
+    repository: &Path,
+    index: usize,
+    pop: bool,
+) -> Result<(), GitError> {
     LocalGitService::open(repository)
         .await?
         .run(GitOperation::StashApply { index, pop })
@@ -727,8 +731,7 @@ fn parse_remote_branches(output: &str) -> Vec<String> {
             let mut fields = line.trim_end_matches('\r').split('\0');
             let name = fields.next()?.trim();
             let symref = fields.next().unwrap_or_default();
-            (!name.is_empty() && symref.is_empty() && name.contains('/'))
-                .then(|| name.to_owned())
+            (!name.is_empty() && symref.is_empty() && name.contains('/')).then(|| name.to_owned())
         })
         .collect()
 }
@@ -763,7 +766,7 @@ fn parse_commit_files(output: &str) -> Vec<CommitFile> {
             let mut fields = line.trim_end_matches('\r').split('\t');
             let status = fields.next()?.chars().next()?;
             // Renames and copies list the old path first; show the new one.
-            let path = fields.last()?;
+            let path = fields.next_back()?;
             Some(CommitFile {
                 status,
                 path: path.to_owned(),

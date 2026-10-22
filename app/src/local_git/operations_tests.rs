@@ -1268,7 +1268,11 @@ fn phase_two_operations_build_local_git_commands() {
         ["switch", "--track", "origin/feature/a"]
     );
     assert_eq!(
-        GitOperation::StashApply { index: 2, pop: true }.arguments(),
+        GitOperation::StashApply {
+            index: 2,
+            pop: true
+        }
+        .arguments(),
         ["stash", "pop", "stash@{2}"]
     );
     assert_eq!(
@@ -1306,7 +1310,9 @@ fn stash_remote_branch_and_commit_file_parsers() {
         ]
     );
     assert_eq!(
-        super::parse_remote_branches("origin/HEAD\0refs/remotes/origin/main\norigin/main\0\norigin\0\n"),
+        super::parse_remote_branches(
+            "origin/HEAD\0refs/remotes/origin/main\norigin/main\0\norigin\0\n"
+        ),
         vec!["origin/main".to_owned()]
     );
     assert_eq!(

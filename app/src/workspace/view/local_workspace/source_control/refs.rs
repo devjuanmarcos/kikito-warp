@@ -30,7 +30,12 @@ pub(super) fn render(
     let mut section = Flex::column().with_main_axis_size(MainAxisSize::Min);
     section.add_child(group_label("Branches locais", appearance));
     for (index, branch) in branches.iter().enumerate() {
-        section.add_child(local_branch_row(index, branch, operation_pending, appearance));
+        section.add_child(local_branch_row(
+            index,
+            branch,
+            operation_pending,
+            appearance,
+        ));
         if create_from == Some(branch.name.as_str()) {
             section.add_child(branch_form(
                 "Criar e mudar",
@@ -62,7 +67,12 @@ pub(super) fn render(
     if !remote_branches.is_empty() {
         section.add_child(group_label("Branches remotas", appearance));
         for (index, remote) in remote_branches.iter().enumerate() {
-            section.add_child(remote_branch_row(index, remote, operation_pending, appearance));
+            section.add_child(remote_branch_row(
+                index,
+                remote,
+                operation_pending,
+                appearance,
+            ));
         }
     }
     Container::new(section.finish())
@@ -192,7 +202,11 @@ fn remote_branch_row(
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(6.)
-        .with_child(sized_icon(Icon::Cloud, theme.sub_text_color(background), 12.))
+        .with_child(sized_icon(
+            Icon::Cloud,
+            theme.sub_text_color(background),
+            12.,
+        ))
         .with_child(
             Expanded::new(
                 1.,

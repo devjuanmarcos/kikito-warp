@@ -30662,7 +30662,7 @@ impl View for Workspace {
                         stashes: git_stashes,
                         remote_branches: &remote_branches,
                         merging: git_merging,
-                        commit_files: commit_files,
+                        commit_files,
                         confirmation: self.local_workspace_git_confirmation.as_ref(),
                         can_init: git_can_init,
                         scroll_state: self.local_workspace_source_control_scroll.clone(),
