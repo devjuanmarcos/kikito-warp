@@ -1387,6 +1387,9 @@ fn github_web_url_accepts_https_and_ssh_remotes_only_for_github() {
         super::github_web_url("https://github.com/org/repo").as_deref(),
         Some("https://github.com/org/repo")
     );
-    assert_eq!(super::github_web_url("https://gitlab.com/org/repo.git"), None);
+    assert_eq!(
+        super::github_web_url("https://gitlab.com/org/repo.git"),
+        None
+    );
     assert_eq!(super::github_web_url("C:/remotes/repo.git"), None);
 }

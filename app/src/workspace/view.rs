@@ -1428,10 +1428,17 @@ impl Workspace {
         self.tabs
             .iter()
             .map(|tab| {
-                (
-                    tab.workspace_tab_id.clone(),
-                    tab.pane_group.as_ref(app).display_title(app),
-                )
+                let pane_group = tab.pane_group.as_ref(app);
+                let mut title = pane_group.display_title(app);
+                // File panes are titled with their absolute path; the header only has room for the
+                // file name.
+                if pane_group.custom_title(app).is_none()
+                    && pane_group.active_session_id(app).is_none()
+                    && let Some(name) = Path::new(&title).file_name()
+                {
+                    title = name.to_string_lossy().into_owned();
+                }
+                (tab.workspace_tab_id.clone(), title)
             })
             .collect()
     }
@@ -1666,7 +1673,30 @@ impl Workspace {
         editor.update(ctx, |editor, ctx| {
             editor.set_placeholder_text("Nome da nova branch", ctx)
         });
+        ctx.subscribe_to_view(&editor, |me, _, event, ctx| match event {
+            EditorEvent::Enter => me.submit_local_workspace_git_name_input(ctx),
+            EditorEvent::Escape => {
+                me.local_workspace_git_name_form = None;
+                me.local_workspace_git_create_branch_from = None;
+                me.local_workspace_git_rename_branch = None;
+                ctx.notify();
+            }
+            _ => {}
+        });
         editor
+    }
+
+    fn submit_local_workspace_git_name_input(&mut self, ctx: &mut ViewContext<Self>) {
+        #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+        if self.local_workspace_git_name_form.is_some() {
+            self.submit_local_workspace_git_name_form(ctx);
+        } else if let Some(source) = self.local_workspace_git_create_branch_from.clone() {
+            self.run_local_workspace_git_create_branch(&source, ctx);
+        } else if let Some(branch) = self.local_workspace_git_rename_branch.clone() {
+            self.run_local_workspace_git_rename_branch(&branch, ctx);
+        }
+        #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+        ctx.notify();
     }
 
     fn open_local_workspace_dialog(
@@ -2758,6 +2788,8 @@ impl Workspace {
         drop(self.local_workspace_git_watcher.take());
         self.local_workspace_git_status = None;
         self.local_workspace_git_branches.clear();
+        self.local_workspace_git_history.clear();
+        self.local_workspace_git_panel.expanded_commit = None;
         self.local_workspace_git_stashes.clear();
         self.local_workspace_git_remote_branches.clear();
         self.local_workspace_git_merging = None;
@@ -11703,12 +11735,15 @@ impl Workspace {
                 search_query: search_query.map(|s| s.to_owned()),
             }),
         })));
+        // Settings is a screen of its own, not one of the project's tabs.
+        self.suppress_local_project_assignment = true;
         self.add_tab_with_pane_layout(
             panes_layout,
             Arc::new(HashMap::new()),
             Some("Configurações".to_owned()),
             ctx,
         );
+        self.suppress_local_project_assignment = false;
     }
 
     /// Open a file from the given session as a notebook pane.
@@ -16010,30 +16045,9 @@ impl Workspace {
         self.tab_mru_order
             .push(self.tabs[insert_idx].pane_group.id());
 
-        if !is_restoration && !self.suppress_local_project_assignment {
-            let selected_project = self.local_workspace.as_ref(ctx).selected_project();
-            if let Some(project_id) = selected_project {
-                let workspace_tab_id = self.tabs[insert_idx].workspace_tab_id.clone();
-                let mut identity_id = None;
-                self.local_workspace.update(ctx, |model, ctx| {
-                    if let Ok(tab_id) = model.ensure_tab_identity(&workspace_tab_id)
-                        && model.assign_tab(project_id, tab_id).is_ok()
-                    {
-                        let _ = model.set_active_tab(project_id, Some(tab_id));
-                        identity_id = Some(tab_id);
-                    }
-                    ctx.notify();
-                });
-                if let Some(identity_id) = identity_id
-                    && !self.persist_local_project_tabs(project_id, Some(identity_id), ctx)
-                {
-                    self.local_workspace.update(ctx, |model, ctx| {
-                        let _ = model.remove_tab_from_project(project_id, identity_id);
-                        ctx.notify();
-                    });
-                }
-            }
-        }
+        // Tabs opened from a snapshot (files, notebooks) are new tabs too; only re-creating a saved
+        // window keeps tabs out of the selected project.
+        self.assign_new_tab_to_local_project(insert_idx, ctx);
 
         self.activate_tab_internal(insert_idx, ctx);
 
@@ -16079,6 +16093,39 @@ impl Workspace {
         }
     }
 
+    /// Puts a tab the user just opened into the selected project (files, notebooks and panes moved
+    /// out count too); only re-creating a saved window keeps tabs outside every project.
+    fn assign_new_tab_to_local_project(&mut self, index: usize, ctx: &mut ViewContext<Self>) {
+        if self.restoring_session_tabs || self.suppress_local_project_assignment {
+            return;
+        }
+        let Some(project_id) = self.local_workspace.as_ref(ctx).selected_project() else {
+            return;
+        };
+        let Some(workspace_tab_id) = self.tabs.get(index).map(|tab| tab.workspace_tab_id.clone())
+        else {
+            return;
+        };
+        let mut identity_id = None;
+        self.local_workspace.update(ctx, |model, ctx| {
+            if let Ok(tab_id) = model.ensure_tab_identity(&workspace_tab_id)
+                && model.assign_tab(project_id, tab_id).is_ok()
+            {
+                let _ = model.set_active_tab(project_id, Some(tab_id));
+                identity_id = Some(tab_id);
+            }
+            ctx.notify();
+        });
+        if let Some(identity_id) = identity_id
+            && !self.persist_local_project_tabs(project_id, Some(identity_id), ctx)
+        {
+            self.local_workspace.update(ctx, |model, ctx| {
+                let _ = model.remove_tab_from_project(project_id, identity_id);
+                ctx.notify();
+            });
+        }
+    }
+
     pub fn add_tab_from_existing_pane(
         &mut self,
         pane: Box<dyn AnyPaneContent>,
@@ -16105,10 +16152,12 @@ impl Workspace {
             self.tabs.push(TabData::new(new_pane_group));
             self.tab_mru_order
                 .push(self.tabs.last().unwrap().pane_group.id());
+            self.assign_new_tab_to_local_project(self.tab_count() - 1, ctx);
             self.activate_tab_internal(self.tab_count() - 1, ctx);
         } else {
             self.tabs.insert(new_idx, TabData::new(new_pane_group));
             self.tab_mru_order.push(self.tabs[new_idx].pane_group.id());
+            self.assign_new_tab_to_local_project(new_idx, ctx);
             self.activate_tab_internal(new_idx, ctx);
         }
 
@@ -27312,6 +27361,7 @@ impl TypedActionView for Workspace {
             RequestLocalGitConfirmation(confirmation) => {
                 self.local_workspace_git_confirmation = Some(confirmation.clone());
                 self.local_workspace_git_file_menu = None;
+                self.local_workspace_git_sync_menu = None;
                 ctx.notify();
             }
             CancelLocalGitConfirmation => {
@@ -27535,7 +27585,8 @@ impl TypedActionView for Workspace {
                     );
                 }
             }
-            ContinueLocalGitPending => {
+            ContinueLocalGitPending =>
+            {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
                 if let Some(pending) = self.local_workspace_git_merging {
                     self.run_local_workspace_git_task(
@@ -27600,11 +27651,15 @@ impl TypedActionView for Workspace {
                             },
                             ctx,
                         ),
-                        LocalGitSyncAction::FetchAll => self.run_local_workspace_git_task(
-                            "Fetch de todos os remotos concluído",
-                            |repository| async move { crate::local_git::fetch_all(&repository).await },
-                            ctx,
-                        ),
+                        LocalGitSyncAction::FetchAll => {
+                            self.run_local_workspace_git_task(
+                                "Fetch de todos os remotos concluído",
+                                |repository| async move {
+                                    crate::local_git::fetch_all(&repository).await
+                                },
+                                ctx,
+                            )
+                        }
                         LocalGitSyncAction::PushTags => self.run_local_workspace_git_task(
                             "Tags enviadas",
                             move |repository| async move {
@@ -27665,29 +27720,36 @@ impl TypedActionView for Workspace {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
                 self.run_local_workspace_git_task(
                     "Tag excluída",
-                    move |repository| async move { crate::local_git::delete_tag(&repository, &name).await },
+                    move |repository| async move {
+                        crate::local_git::delete_tag(&repository, &name).await
+                    },
                     ctx,
                 );
             }
             OpenLocalGitCommitOnGitHub(commit) => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-                if let Some(repository) = self.local_workspace_git_path.as_deref().map(PathBuf::from) {
+                if let Some(repository) =
+                    self.local_workspace_git_path.as_deref().map(PathBuf::from)
+                {
                     let commit = commit.clone();
-                    let _ = ctx.spawn(
-                        async move { crate::local_git::github_commit_url(&repository, &commit).await },
-                        |workspace, url, ctx| {
-                            match url {
-                                Some(url) => ctx.open_url(&url),
-                                None => {
-                                    workspace.local_workspace_git_error = Some(
-                                        "O remoto origin deste repositório não está no GitHub."
-                                            .to_owned(),
-                                    );
+                    let _ =
+                        ctx.spawn(
+                            async move {
+                                crate::local_git::github_commit_url(&repository, &commit).await
+                            },
+                            |workspace, url, ctx| {
+                                match url {
+                                    Some(url) => ctx.open_url(&url),
+                                    None => {
+                                        workspace.local_workspace_git_error = Some(
+                                            "O remoto origin deste repositório não está no GitHub."
+                                                .to_owned(),
+                                        );
+                                    }
                                 }
-                            }
-                            ctx.notify();
-                        },
-                    );
+                                ctx.notify();
+                            },
+                        );
                 }
             }
             LoadMoreLocalGitHistory => {
@@ -27880,11 +27942,15 @@ impl TypedActionView for Workspace {
                 self.local_workspace_git_branch_menu = None;
                 self.local_workspace_git_rename_branch = None;
                 self.local_workspace_git_create_branch_from = Some(source.clone());
+                // The form lives in the branch list, which is closed when starting from the graph.
+                self.local_workspace_git_panel.branches_open = true;
+                self.local_workspace_git_panel.changes_collapsed = false;
                 self.local_workspace_git_branch_name_input
                     .update(ctx, |editor, ctx| {
                         editor.set_placeholder_text("Nome da nova branch", ctx);
                         editor.set_buffer_text_ignoring_undo("", ctx)
                     });
+                ctx.focus(&self.local_workspace_git_branch_name_input);
                 ctx.notify();
             }
             CreateLocalGitBranchFrom(source) => {
@@ -27902,6 +27968,7 @@ impl TypedActionView for Workspace {
                         editor.set_placeholder_text("Novo nome da branch", ctx);
                         editor.set_buffer_text_ignoring_undo("", ctx)
                     });
+                ctx.focus(&self.local_workspace_git_branch_name_input);
                 ctx.notify();
             }
             RenameLocalGitBranch(branch) => {
@@ -34220,7 +34287,9 @@ async fn read_local_git_snapshot(
     let history = crate::local_git::read_history(path, history_limit)
         .await
         .unwrap_or_default();
-    let remotes = crate::local_git::read_remotes(path).await.unwrap_or_default();
+    let remotes = crate::local_git::read_remotes(path)
+        .await
+        .unwrap_or_default();
     let stashes = crate::local_git::read_stashes(path)
         .await
         .unwrap_or_default();

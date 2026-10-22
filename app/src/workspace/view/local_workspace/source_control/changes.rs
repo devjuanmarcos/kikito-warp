@@ -128,8 +128,8 @@ pub(super) fn render(
     sections.add_child(changes_section(&source_control, appearance));
     if source_control.status.is_some() {
         sections.add_child(super::extras::stash_section(&source_control, appearance));
+        sections.add_child(graph_section(&source_control, appearance));
     }
-    sections.add_child(graph_section(&source_control, appearance));
     let scrollable = NewScrollable::vertical(
         SingleAxisConfig::Clipped {
             handle: source_control.scroll_state.clone(),
@@ -413,37 +413,37 @@ fn changes_section(
             ("git-push", 0),
             appearance,
         ));
-    right.add_child(
-        Hoverable::new(mouse_state("git-sync-menu", 0), |mouse| {
-            let theme = appearance.theme();
-            let over = mouse.is_mouse_over_element();
-            let mut button = Container::new(
-                ConstrainedBox::new(sized_icon(
-                    Icon::DotsHorizontal,
-                    if over {
-                        theme.main_text_color(theme.surface_1())
-                    } else {
-                        theme.sub_text_color(theme.surface_1())
-                    },
-                    14.,
-                ))
-                .with_width(14.)
-                .with_height(14.)
-                .finish(),
-            )
-            .with_uniform_padding(3.)
-            .with_corner_radius(radius(4.));
-            if over {
-                button = button.with_background(fg_overlay(theme, 10));
-            }
-            button.finish()
-        })
-        .with_cursor(Cursor::PointingHand)
-        .on_click(|ctx, _, position| {
-            ctx.dispatch_typed_action(WorkspaceAction::OpenLocalGitSyncMenu(position))
-        })
-        .finish(),
-    );
+        right.add_child(
+            Hoverable::new(mouse_state("git-sync-menu", 0), |mouse| {
+                let theme = appearance.theme();
+                let over = mouse.is_mouse_over_element();
+                let mut button = Container::new(
+                    ConstrainedBox::new(sized_icon(
+                        Icon::DotsHorizontal,
+                        if over {
+                            theme.main_text_color(theme.surface_1())
+                        } else {
+                            theme.sub_text_color(theme.surface_1())
+                        },
+                        14.,
+                    ))
+                    .with_width(14.)
+                    .with_height(14.)
+                    .finish(),
+                )
+                .with_uniform_padding(3.)
+                .with_corner_radius(radius(4.));
+                if over {
+                    button = button.with_background(fg_overlay(theme, 10));
+                }
+                button.finish()
+            })
+            .with_cursor(Cursor::PointingHand)
+            .on_click(|ctx, _, position| {
+                ctx.dispatch_typed_action(WorkspaceAction::OpenLocalGitSyncMenu(position))
+            })
+            .finish(),
+        );
     }
     let mut section = Flex::column()
         .with_main_axis_size(MainAxisSize::Min)
@@ -458,7 +458,7 @@ fn changes_section(
     if panel.changes_collapsed {
         return section.finish();
     }
-    if panel.branches_open {
+    if panel.branches_open && source_control.status.is_some() {
         section.add_child(super::refs::render(
             source_control.branches,
             source_control.remote_branches,
@@ -966,6 +966,8 @@ fn ref_labels(commit: &LocalCommit, local_branches: &HashSet<&str>) -> Vec<RefLa
     let mut labels: Vec<RefLabel> = commit
         .refs
         .iter()
+        // A remote's default-branch alias (`origin/HEAD`) only duplicates its branch pill.
+        .filter(|decoration| !decoration.ends_with("/HEAD"))
         .map(|decoration| {
             if decoration == "HEAD" {
                 RefLabel {
@@ -1285,17 +1287,29 @@ fn footer(source_control: &SourceControl<'_>, appearance: &Appearance) -> Box<dy
                 }
             }
             None => {
-                row.add_child(
-                    Text::new_inline("não publicada", appearance.ui_font_family(), 11.)
-                        .with_color(theme.ui_yellow_color())
-                        .finish(),
-                );
+                let note = match status.head {
+                    HeadState::Branch(_) => Some("não publicada"),
+                    HeadState::Detached => Some("destacado"),
+                    HeadState::Unborn => None,
+                };
+                if let Some(note) = note {
+                    row.add_child(
+                        Text::new_inline(note, appearance.ui_font_family(), 11.)
+                            .with_color(theme.ui_yellow_color())
+                            .finish(),
+                    );
+                }
                 matches!(status.head, HeadState::Branch(_))
                     .then_some(("Publicar", GitRemoteAction::Push))
             }
         };
         row.add_child(Expanded::new(1., Flex::row().finish()).finish());
-        if let Some(fetched) = source_control.panel.last_fetch_ms {
+        // The panel is too narrow for the branch, the fetch time and a sync button together.
+        if let Some(fetched) = source_control
+            .panel
+            .last_fetch_ms
+            .filter(|_| sync.is_none())
+        {
             row.add_child(
                 Text::new_inline(
                     format!("fetch {}", super::super::home::relative_time(fetched)),

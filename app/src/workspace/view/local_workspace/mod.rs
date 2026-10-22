@@ -682,9 +682,9 @@ pub(crate) fn git_sync_menu(remotes: &[String], appearance: &Appearance) -> Box<
         items.push(context_menu::MenuItem {
             label: format!("Remover remoto {remote}").into(),
             icon: Icon::Trash,
-            action: WorkspaceAction::RequestLocalGitConfirmation(LocalGitConfirmation::RemoveRemote(
-                remote.clone(),
-            )),
+            action: WorkspaceAction::RequestLocalGitConfirmation(
+                LocalGitConfirmation::RemoveRemote(remote.clone()),
+            ),
             danger: true,
             separator_before: false,
             checked: false,

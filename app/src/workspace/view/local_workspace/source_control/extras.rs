@@ -518,7 +518,10 @@ fn stable_commit_key(hash: &str) -> i64 {
 }
 
 /// Tags of a commit, each with a delete button.
-pub(super) fn commit_tags(commit: &LocalCommit, appearance: &Appearance) -> Option<Box<dyn Element>> {
+pub(super) fn commit_tags(
+    commit: &LocalCommit,
+    appearance: &Appearance,
+) -> Option<Box<dyn Element>> {
     let tags: Vec<&str> = commit
         .refs
         .iter()
@@ -536,7 +539,11 @@ pub(super) fn commit_tags(commit: &LocalCommit, appearance: &Appearance) -> Opti
             Flex::row()
                 .with_cross_axis_alignment(CrossAxisAlignment::Center)
                 .with_spacing(2.)
-                .with_child(sized_icon(Icon::Bookmark, theme.sub_text_color(theme.surface_1()), 11.))
+                .with_child(sized_icon(
+                    Icon::Bookmark,
+                    theme.sub_text_color(theme.surface_1()),
+                    11.,
+                ))
                 .with_child(
                     Text::new_inline(tag.to_owned(), appearance.monospace_font_family(), 11.)
                         .with_color(theme.main_text_color(theme.surface_1()).into())
@@ -546,7 +553,10 @@ pub(super) fn commit_tags(commit: &LocalCommit, appearance: &Appearance) -> Opti
                     Icon::Trash,
                     "Excluir tag",
                     WorkspaceAction::DeleteLocalGitTag(tag.to_owned()),
-                    ("git-tag-delete", stable_commit_key(&commit.hash) ^ index as i64),
+                    (
+                        "git-tag-delete",
+                        stable_commit_key(&commit.hash) ^ index as i64,
+                    ),
                     appearance,
                 ))
                 .finish(),
@@ -566,7 +576,10 @@ pub(super) fn name_form(
 
     let (title, confirm) = match form {
         super::GitNameForm::Tag(_) => ("Nova tag no commit", "Criar tag"),
-        super::GitNameForm::Remote => ("Novo remoto: endereço, ou nome e endereço", "Adicionar remoto"),
+        super::GitNameForm::Remote => (
+            "Novo remoto: endereço, ou nome e endereço",
+            "Adicionar remoto",
+        ),
     };
     let theme = appearance.theme();
     Container::new(

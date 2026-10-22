@@ -246,7 +246,7 @@ pub(super) fn render(
                 let live_branch = if active {
                     git_status.and_then(|status| match &status.head {
                         HeadState::Branch(name) => Some(name.as_str()),
-                        HeadState::Detached => Some("HEAD separado"),
+                        HeadState::Detached => Some("HEAD destacado"),
                         HeadState::Unborn => None,
                     })
                 } else {

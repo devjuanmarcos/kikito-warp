@@ -832,7 +832,11 @@ pub(crate) async fn fetch_all(repository: &Path) -> Result<(), GitError> {
         .await
 }
 
-pub(crate) async fn pull_rebase(repository: &Path, remote: &str, branch: &str) -> Result<(), GitError> {
+pub(crate) async fn pull_rebase(
+    repository: &Path,
+    remote: &str,
+    branch: &str,
+) -> Result<(), GitError> {
     operations::validate_remote(remote)?;
     operations::validate_reference(branch)?;
     LocalGitService::open(repository)
@@ -870,7 +874,11 @@ pub(crate) async fn push_tags(repository: &Path, remote: &str) -> Result<(), Git
         .await
 }
 
-pub(crate) async fn create_tag(repository: &Path, name: &str, commit: &str) -> Result<(), GitError> {
+pub(crate) async fn create_tag(
+    repository: &Path,
+    name: &str,
+    commit: &str,
+) -> Result<(), GitError> {
     operations::validate_reference(name)?;
     operations::validate_reference(commit)?;
     LocalGitService::open(repository)
