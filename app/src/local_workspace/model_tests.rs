@@ -563,3 +563,71 @@ fn persisted_tab_identity_resolves_workspace_tab_uuid() {
     assert_eq!(model.workspace_tab_id(74), Some("stable-tab"));
     assert_eq!(model.tab_identity_id("stable-tab"), Some(74));
 }
+
+#[test]
+fn moving_an_organization_reorders_the_rail_and_clamps_past_the_end() {
+    let mut model = WorkspaceModel::new();
+    let first = model.add_organization("Primeira").unwrap();
+    let second = model.add_organization("Segunda").unwrap();
+    let third = model.add_organization("Terceira").unwrap();
+
+    model.move_organization(third, 0).unwrap();
+    let order: Vec<_> = model
+        .organizations()
+        .map(|organization| organization.id)
+        .collect();
+    assert_eq!(order, vec![third, first, second]);
+
+    model.move_organization(third, 10).unwrap();
+    let order: Vec<_> = model
+        .organizations()
+        .map(|organization| organization.id)
+        .collect();
+    assert_eq!(order, vec![first, second, third]);
+
+    assert_eq!(
+        model.move_organization(99, 0),
+        Err(ModelError::MissingOrganization)
+    );
+}
+
+#[test]
+fn moving_a_project_stays_within_its_organization() {
+    let mut model = WorkspaceModel::new();
+    let organization = model.add_organization("Equipe").unwrap();
+    let other = model.add_organization("Outra").unwrap();
+    let first = model.add_project(organization, "A", r"C:\a").unwrap();
+    let second = model.add_project(organization, "B", r"C:\b").unwrap();
+    let elsewhere = model.add_project(other, "C", r"C:\c").unwrap();
+
+    model.move_project(second, 0).unwrap();
+
+    let order: Vec<_> = model
+        .projects_for_organization(organization)
+        .map(|project| project.id)
+        .collect();
+    assert_eq!(order, vec![second, first]);
+    let other_order: Vec<_> = model
+        .projects_for_organization(other)
+        .map(|project| project.id)
+        .collect();
+    assert_eq!(other_order, vec![elsewhere]);
+}
+
+#[test]
+fn moving_a_project_tab_reorders_its_project_tabs() {
+    let mut model = WorkspaceModel::new();
+    let organization = model.add_organization("Equipe").unwrap();
+    let project = model.add_project(organization, "A", r"C:\a").unwrap();
+    for tab_id in [1, 2, 3] {
+        model.assign_tab(project, tab_id).unwrap();
+    }
+
+    model.move_project_tab(1, 2).unwrap();
+
+    assert_eq!(model.project(project).unwrap().tabs, vec![2, 3, 1]);
+    assert_eq!(
+        model.move_project_tab(42, 0),
+        Err(ModelError::TabNotAssigned)
+    );
+}

@@ -1,9 +1,11 @@
 use super::{
-    TabActivationRoute, branch_from_head, can_activate_tab_in_selected_project,
+    TabActivationRoute, branch_from_head, can_activate_tab_in_selected_project, drag_target_index,
     keycaps_from_display, preferred_open_project_tab, should_render_empty_organization_state,
-    should_render_project_sidebar, tab_activation_route,
+    should_render_project_sidebar, tab_activation_route, tab_after_close,
 };
 use crate::local_workspace::model::WorkspaceModel;
+use pathfinder_geometry::rect::RectF;
+use pathfinder_geometry::vector::vec2f;
 
 #[test]
 fn empty_project_does_not_expose_an_unassigned_open_terminal() {
@@ -159,4 +161,93 @@ fn keycaps_split_mac_symbols_and_spaced_labels() {
         keycaps_from_display("Ctrl Shift T"),
         vec!["Ctrl", "Shift", "T"]
     );
+}
+
+fn row(y: f32) -> Option<RectF> {
+    Some(RectF::new(vec2f(0., y), vec2f(100., 40.)))
+}
+
+#[test]
+fn dragged_item_moves_once_its_center_crosses_a_neighbor_midpoint() {
+    let rects = [row(0.), row(40.), row(80.), row(120.)];
+
+    // Center at 55: short of the next row's midpoint (100).
+    assert_eq!(
+        drag_target_index(
+            1,
+            RectF::new(vec2f(0., 35.), vec2f(100., 40.)),
+            &rects,
+            true
+        ),
+        1
+    );
+    // Center at 105: past row 2's midpoint.
+    assert_eq!(
+        drag_target_index(
+            1,
+            RectF::new(vec2f(0., 85.), vec2f(100., 40.)),
+            &rects,
+            true
+        ),
+        2
+    );
+    // A fast drag past several rows jumps straight to the last one crossed.
+    assert_eq!(
+        drag_target_index(
+            0,
+            RectF::new(vec2f(0., 125.), vec2f(100., 40.)),
+            &rects,
+            true
+        ),
+        3
+    );
+    assert_eq!(
+        drag_target_index(
+            3,
+            RectF::new(vec2f(0., -5.), vec2f(100., 40.)),
+            &rects,
+            true
+        ),
+        0
+    );
+}
+
+#[test]
+fn drag_target_skips_items_that_are_not_on_screen() {
+    let rects = [
+        Some(RectF::new(vec2f(0., 0.), vec2f(80., 26.))),
+        None,
+        Some(RectF::new(vec2f(84., 0.), vec2f(80., 26.))),
+    ];
+
+    assert_eq!(
+        drag_target_index(
+            0,
+            RectF::new(vec2f(90., 0.), vec2f(80., 26.)),
+            &rects,
+            false
+        ),
+        2
+    );
+    assert_eq!(
+        drag_target_index(
+            0,
+            RectF::new(vec2f(20., 0.), vec2f(80., 26.)),
+            &rects,
+            false
+        ),
+        0
+    );
+}
+
+#[test]
+fn closing_a_tab_lands_on_a_neighbor_of_the_same_project() {
+    // Tabs left after closing index 1: [project A, project B, project A].
+    let in_project_a = |index: usize| index == 0 || index == 2;
+
+    // The tab now at the closed index belongs to another project, so the next own tab wins.
+    assert_eq!(tab_after_close(1, 3, in_project_a), Some(2));
+    // Closing the last tab falls back to the nearest own tab before it.
+    assert_eq!(tab_after_close(3, 3, |index| index == 0), Some(0));
+    assert_eq!(tab_after_close(1, 3, |_| false), None);
 }

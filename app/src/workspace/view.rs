@@ -301,6 +301,7 @@ use crate::launch_configs::launch_config::WindowTemplate;
 use crate::launch_configs::save_modal::{LaunchConfigModalEvent, LaunchConfigSaveModal};
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
 use crate::local_git::{HeadState, LocalBranch, RepositoryStatus};
+use crate::local_workspace::model::DragItem;
 use crate::menu::{
     Event as MenuEvent, MENU_VERTICAL_PADDING, Menu, MenuItem, MenuItemFields, MenuSelectionSource,
     MenuVariant,
@@ -3762,9 +3763,261 @@ impl Workspace {
             .as_ref(ctx)
             .project(project_id)
             .and_then(|project| project.active_tab);
-        if !self.persist_local_project_tabs(project_id, active_tab_id, ctx)
-            && let Some(original) = original
+        if self.persist_local_project_tabs(project_id, active_tab_id, ctx) {
+            self.sync_window_tab_order_with_local_project(project_id, ctx);
+        } else if let Some(original) = original {
+            self.local_workspace.update(ctx, |model, ctx| {
+                let _ = model.reorder_project_tabs(project_id, &original);
+                ctx.notify();
+            });
+        }
+    }
+
+    /// Moves a dragged organization, project or project tab past the neighbors its dragged bounds
+    /// crossed. The new order is saved on drop.
+    fn drag_local_workspace_item(
+        &mut self,
+        item: DragItem,
+        position: RectF,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let model = self.local_workspace.as_ref(ctx);
+        let (items, vertical): (Vec<DragItem>, bool) = match item {
+            DragItem::Organization(_) => (
+                model
+                    .organizations()
+                    .map(|organization| DragItem::Organization(organization.id))
+                    .collect(),
+                true,
+            ),
+            DragItem::Project(project_id) => {
+                let Some(organization) = model
+                    .project(project_id)
+                    .and_then(|project| model.organization(project.organization_id))
+                else {
+                    return;
+                };
+                (
+                    organization
+                        .projects
+                        .iter()
+                        .map(|id| DragItem::Project(*id))
+                        .collect(),
+                    true,
+                )
+            }
+            DragItem::Tab(tab_id) => {
+                let Some(project) = model
+                    .tab_owner(tab_id)
+                    .and_then(|project_id| model.project(project_id))
+                else {
+                    return;
+                };
+                (
+                    project.tabs.iter().map(|id| DragItem::Tab(*id)).collect(),
+                    false,
+                )
+            }
+        };
+        let Some(current) = items.iter().position(|candidate| *candidate == item) else {
+            return;
+        };
+        let rects: Vec<Option<RectF>> = items
+            .iter()
+            .map(|item| {
+                let position_id = match *item {
+                    DragItem::Organization(id) => {
+                        local_workspace::organization_tile_position_id(id)
+                    }
+                    DragItem::Project(id) => local_workspace::project_row_position_id(id),
+                    // Closed tabs keep a stale position from when they were last on screen.
+                    DragItem::Tab(id) => {
+                        let is_open = model.workspace_tab_id(id).is_some_and(|identity| {
+                            self.tabs.iter().any(|tab| tab.workspace_tab_id == identity)
+                        });
+                        if !is_open {
+                            return None;
+                        }
+                        local_workspace::project_tab_position_id(id)
+                    }
+                };
+                ctx.element_position_by_id(position_id)
+            })
+            .collect();
+        let target = local_workspace::drag_target_index(current, position, &rects, vertical);
+        if target == current {
+            return;
+        }
+        self.local_workspace.update(ctx, |model, ctx| {
+            let result = match item {
+                DragItem::Organization(id) => model.move_organization(id, target),
+                DragItem::Project(id) => model.move_project(id, target),
+                DragItem::Tab(id) => model.move_project_tab(id, target),
+            };
+            if let Err(error) = result {
+                log::warn!("Could not move dragged local workspace item: {error:?}");
+            }
+            ctx.notify();
+        });
+        ctx.notify();
+    }
+
+    fn drop_local_workspace_item(&mut self, item: DragItem, ctx: &mut ViewContext<Self>) {
+        let model = self.local_workspace.as_ref(ctx);
+        let operation = match item {
+            DragItem::Organization(_) => {
+                crate::persistence::LocalWorkspaceOperation::ReorderOrganizations(
+                    model
+                        .organizations()
+                        .filter_map(|organization| i32::try_from(organization.id).ok())
+                        .collect(),
+                )
+            }
+            DragItem::Project(project_id) => {
+                let Some(organization) = model
+                    .project(project_id)
+                    .and_then(|project| model.organization(project.organization_id))
+                else {
+                    return;
+                };
+                let Ok(organization_id) = i32::try_from(organization.id) else {
+                    return;
+                };
+                crate::persistence::LocalWorkspaceOperation::ReorderProjects {
+                    organization_id,
+                    project_ids: organization
+                        .projects
+                        .iter()
+                        .filter_map(|id| i32::try_from(*id).ok())
+                        .collect(),
+                }
+            }
+            DragItem::Tab(tab_id) => {
+                let Some(project) = model
+                    .tab_owner(tab_id)
+                    .and_then(|project_id| model.project(project_id))
+                else {
+                    return;
+                };
+                let (project_id, active_tab_id) = (project.id, project.active_tab);
+                if self.persist_local_project_tabs(project_id, active_tab_id, ctx) {
+                    self.sync_window_tab_order_with_local_project(project_id, ctx);
+                }
+                return;
+            }
+        };
+        #[cfg(feature = "local_fs")]
+        if let Some(sender) = self.model_event_sender.as_ref()
+            && let Err(error) =
+                crate::persistence::apply_local_workspace_operation(sender, operation)
         {
+            log::error!("Could not persist local workspace order: {error}");
+            self.local_workspace.update(ctx, |model, ctx| {
+                model.set_status_error(Some(
+                    "Não foi possível salvar a nova ordem. Tente novamente.".to_owned(),
+                ));
+                ctx.notify();
+            });
+        }
+        #[cfg(not(feature = "local_fs"))]
+        let _ = operation;
+    }
+
+    /// Puts the project's open tabs in the window's tab list in the project's order, within the
+    /// slots they already occupy, so the header and the tabs sidebar list them alike.
+    fn sync_window_tab_order_with_local_project(
+        &mut self,
+        project_id: crate::local_workspace::model::ProjectId,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let model = self.local_workspace.as_ref(ctx);
+        let Some(project) = model.project(project_id) else {
+            return;
+        };
+        let ordered: Vec<String> = project
+            .tabs
+            .iter()
+            .filter_map(|tab_id| model.workspace_tab_id(*tab_id))
+            .filter(|identity| {
+                self.tabs
+                    .iter()
+                    .any(|tab| tab.workspace_tab_id == *identity)
+            })
+            .map(str::to_owned)
+            .collect();
+        let slots: Vec<usize> = self
+            .tabs
+            .iter()
+            .enumerate()
+            .filter(|(_, tab)| ordered.contains(&tab.workspace_tab_id))
+            .map(|(index, _)| index)
+            .collect();
+        if slots.len() != ordered.len() {
+            return;
+        }
+        let active_pane_group = self
+            .tabs
+            .get(self.active_tab_index)
+            .map(|tab| tab.pane_group.id());
+        let mut changed = false;
+        for (slot, identity) in slots.iter().zip(&ordered) {
+            let Some(current) = self
+                .tabs
+                .iter()
+                .position(|tab| tab.workspace_tab_id == *identity)
+            else {
+                continue;
+            };
+            if current != *slot {
+                self.tabs.swap(current, *slot);
+                changed = true;
+            }
+        }
+        if !changed {
+            return;
+        }
+        if let Some(index) = active_pane_group
+            .and_then(|id| self.tabs.iter().position(|tab| tab.pane_group.id() == id))
+        {
+            self.active_tab_index = index;
+        }
+        ctx.dispatch_global_action("workspace:save_app", ());
+        ctx.notify();
+    }
+
+    /// Saves the order the tabs sidebar left the selected project's tabs in, so the header lists
+    /// them alike.
+    fn sync_local_project_tab_order_with_window(&mut self, ctx: &mut ViewContext<Self>) {
+        let model = self.local_workspace.as_ref(ctx);
+        let Some(project) = model
+            .selected_project()
+            .and_then(|project_id| model.project(project_id))
+        else {
+            return;
+        };
+        let mut ordered: Vec<i32> = self
+            .tabs
+            .iter()
+            .filter_map(|tab| model.tab_identity_id(&tab.workspace_tab_id))
+            .filter(|tab_id| project.tabs.contains(tab_id))
+            .collect();
+        let closed: Vec<i32> = project
+            .tabs
+            .iter()
+            .copied()
+            .filter(|tab_id| !ordered.contains(tab_id))
+            .collect();
+        ordered.extend(closed);
+        if ordered == project.tabs {
+            return;
+        }
+        let (project_id, original, active_tab_id) =
+            (project.id, project.tabs.clone(), project.active_tab);
+        self.local_workspace.update(ctx, |model, ctx| {
+            let _ = model.reorder_project_tabs(project_id, &ordered);
+            ctx.notify();
+        });
+        if !self.persist_local_project_tabs(project_id, active_tab_id, ctx) {
             self.local_workspace.update(ctx, |model, ctx| {
                 let _ = model.reorder_project_tabs(project_id, &original);
                 ctx.notify();
@@ -15253,8 +15506,14 @@ impl Workspace {
                 // right for horizontal tabs, below for vertical tabs. After removal that
                 // tab occupies the same index. If the closed tab was the last one, fall
                 // back to the new last tab (the previous neighbor). This matches the
-                // browser / macOS convention for both layouts.
-                let active_index = index.min(self.tabs.len() - 1);
+                // browser / macOS convention for both layouts. With a local project selected,
+                // only its own tabs are neighbors, or a neighbor from another project would
+                // move the selection to that project.
+                let active_index =
+                    local_workspace::tab_after_close(index, self.tabs.len(), |index| {
+                        self.local_workspace_lists_tab(index, ctx)
+                    })
+                    .unwrap_or_else(|| index.min(self.tabs.len() - 1));
                 if !self.land_on_emptied_local_project(ctx) {
                     self.activate_tab_internal(active_index, ctx);
                 }
@@ -28089,6 +28348,10 @@ impl TypedActionView for Workspace {
             MoveLocalWorkspaceTab { tab_id, delta } => {
                 self.move_local_workspace_tab(*tab_id, *delta, ctx)
             }
+            DragLocalWorkspaceItem { item, position } => {
+                self.drag_local_workspace_item(*item, *position, ctx)
+            }
+            DropLocalWorkspaceItem(item) => self.drop_local_workspace_item(*item, ctx),
             AssignActiveTabToLocalWorkspaceProject => {
                 self.assign_active_tab_to_local_workspace_project(ctx)
             }
@@ -29293,6 +29556,9 @@ impl TypedActionView for Workspace {
                     if tab.pinned && tab.group_id.is_some() {
                         tab.pinned = false;
                     }
+                }
+                if !is_cross_window {
+                    self.sync_local_project_tab_order_with_window(ctx);
                 }
                 send_telemetry_from_ctx!(TelemetryEvent::DragAndDropTab, ctx);
                 if is_cross_window {

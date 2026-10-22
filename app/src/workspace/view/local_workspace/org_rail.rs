@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
-use super::ws_style::{TooltipSide, mouse_state, neutral, tooltip, with_tooltip};
+use super::ws_style::{
+    TooltipSide, draggable_state, mouse_state, neutral, reorder_draggable, tooltip, with_tooltip,
+};
 use crate::appearance::Appearance;
-use crate::local_workspace::model::WorkspaceModel;
+use crate::local_workspace::model::{DragItem, WorkspaceModel};
 use crate::workspace::action::WorkspaceAction;
 use bytes::Bytes;
 use pathfinder_color::ColorU;
@@ -12,9 +14,9 @@ use warp_core::ui::theme::WarpTheme;
 use warpui::assets::asset_cache::{AssetSource, AsyncAssetId, AsyncAssetType};
 use warpui::elements::Element;
 use warpui::elements::{
-    Border, CacheOption, ChildAnchor, ConstrainedBox, Container, CrossAxisAlignment, Dash, Flex,
-    Hoverable, Image, MainAxisAlignment, OffsetPositioning, ParentAnchor, ParentElement,
-    ParentOffsetBounds, Rect, SavePosition, Stack, Text,
+    Border, CacheOption, ChildAnchor, ConstrainedBox, Container, CrossAxisAlignment, Dash,
+    DragAxis, Flex, Hoverable, Image, MainAxisAlignment, OffsetPositioning, ParentAnchor,
+    ParentElement, ParentOffsetBounds, Rect, SavePosition, Stack, Text,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::platform::Cursor;
@@ -82,6 +84,7 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
         None,
         WorkspaceAction::SelectLocalWorkspaceHome,
         None,
+        None,
         appearance,
     ));
     let divider = ConstrainedBox::new(
@@ -129,6 +132,7 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
             Some(WorkspaceAction::OpenLocalWorkspaceOrganizationMenu(
                 organization.id,
             )),
+            Some(DragItem::Organization(organization.id)),
             appearance,
         );
         top_items.add_child(
@@ -251,6 +255,7 @@ fn rail_item(
     image_data: Option<Vec<u8>>,
     action: WorkspaceAction,
     context_action: Option<WorkspaceAction>,
+    drag_item: Option<DragItem>,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
@@ -338,7 +343,7 @@ fn rail_item(
         .with_height(ORGANIZATION_TILE_SIZE + 2. * ring_width)
         .finish();
         let mut ringed = Stack::new().with_child(tile_contents);
-        ringed.add_positioned_overlay_child(
+        ringed.add_positioned_child(
             ring,
             OffsetPositioning::offset_from_parent(
                 vec2f(0., 0.),
@@ -395,7 +400,7 @@ fn rail_item(
         .with_width(3.)
         .with_height(marker_height)
         .finish();
-        tile_stack.add_positioned_overlay_child(
+        tile_stack.add_positioned_child(
             marker,
             OffsetPositioning::offset_from_parent(
                 vec2f(0., 0.),
@@ -412,9 +417,14 @@ fn rail_item(
         handler = handler
             .on_right_click(move |ctx, _, _| ctx.dispatch_typed_action(context_action.clone()));
     }
-    let handler = handler.finish();
+    let mut handler = handler.finish();
+    let mut dragging = false;
+    if let Some(drag_item) = drag_item {
+        dragging = draggable_state(drag_item).is_dragging();
+        handler = reorder_draggable(handler, drag_item, DragAxis::VerticalOnly, None, theme);
+    }
     match tooltip_label {
-        Some(label) if hovered => with_tooltip(
+        Some(label) if hovered && !dragging => with_tooltip(
             handler,
             tooltip(appearance, &label),
             TooltipSide::Right {

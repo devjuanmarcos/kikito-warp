@@ -23,6 +23,14 @@ pub enum ContextMenuTarget {
     Project(ProjectId),
 }
 
+/// An item the user reorders by dragging it within its list.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum DragItem {
+    Organization(OrganizationId),
+    Project(ProjectId),
+    Tab(TabId),
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Organization {
     pub id: OrganizationId,
@@ -576,6 +584,38 @@ impl WorkspaceModel {
         Ok(())
     }
 
+    pub fn move_organization(
+        &mut self,
+        id: OrganizationId,
+        index: usize,
+    ) -> Result<(), ModelError> {
+        move_to_index(&mut self.organization_order, id, index)
+            .ok_or(ModelError::MissingOrganization)
+    }
+
+    /// Moves a project to `index` within its organization's list.
+    pub fn move_project(&mut self, id: ProjectId, index: usize) -> Result<(), ModelError> {
+        let organization_id = self
+            .projects
+            .get(&id)
+            .ok_or(ModelError::MissingProject)?
+            .organization_id;
+        let organization = self
+            .organizations
+            .get_mut(&organization_id)
+            .ok_or(ModelError::MissingOrganization)?;
+        move_to_index(&mut organization.projects, id, index).ok_or(ModelError::MissingProject)
+    }
+
+    pub fn move_project_tab(&mut self, tab_id: TabId, index: usize) -> Result<(), ModelError> {
+        let project_id = self.tab_owner(tab_id).ok_or(ModelError::TabNotAssigned)?;
+        let project = self
+            .projects
+            .get_mut(&project_id)
+            .ok_or(ModelError::MissingProject)?;
+        move_to_index(&mut project.tabs, tab_id, index).ok_or(ModelError::TabNotAssigned)
+    }
+
     pub fn replace_project_tabs(
         &mut self,
         project_id: ProjectId,
@@ -768,6 +808,14 @@ impl WorkspaceModel {
         self.next_organization_id = organization_id;
         self.next_project_id = project_id;
     }
+}
+
+/// Moves `item` to `index` (clamped to the list), or returns `None` when it isn't in `items`.
+fn move_to_index<T: PartialEq>(items: &mut Vec<T>, item: T, index: usize) -> Option<()> {
+    let current = items.iter().position(|candidate| *candidate == item)?;
+    let item = items.remove(current);
+    items.insert(index.min(items.len()), item);
+    Some(())
 }
 
 impl Entity for WorkspaceModel {

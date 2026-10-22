@@ -1,10 +1,11 @@
 use super::ws_style::{
-    TooltipSide, fg_overlay, mouse_state, naked_icon_button, radius, secondary_button, sized_icon,
+    TooltipSide, fg_overlay, mouse_state, naked_icon_button, radius, reorder_draggable,
+    secondary_button, sized_icon,
 };
 use crate::appearance::Appearance;
 use crate::editor::EditorView;
 use crate::local_git::{HeadState, RepositoryStatus};
-use crate::local_workspace::model::{ProjectPathStatus, WorkspaceModel};
+use crate::local_workspace::model::{DragItem, ProjectPathStatus, WorkspaceModel};
 use crate::workspace::action::WorkspaceAction;
 use warp_core::ui::Icon;
 use warpui::ViewHandle;
@@ -12,8 +13,8 @@ use warpui::elements::Element;
 use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
 use warpui::elements::{
     Border, CacheOption, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment,
-    DispatchEventResult, EventHandler, Expanded, Fill, Flex, Hoverable, Image, MainAxisAlignment,
-    MainAxisSize, ParentElement, SavePosition, ScrollbarWidth, Shrinkable, Text,
+    DispatchEventResult, DragAxis, EventHandler, Expanded, Fill, Flex, Hoverable, Image,
+    MainAxisAlignment, MainAxisSize, ParentElement, SavePosition, ScrollbarWidth, Shrinkable, Text,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::platform::Cursor;
@@ -323,6 +324,18 @@ pub(super) fn render(
                         ))
                     })
                     .finish();
+                // Reordering a filtered list would move projects relative to hidden ones.
+                let row = if search_query.is_empty() {
+                    reorder_draggable(
+                        row,
+                        DragItem::Project(project_id),
+                        DragAxis::VerticalOnly,
+                        None,
+                        theme,
+                    )
+                } else {
+                    row
+                };
                 project_list.add_child(
                     SavePosition::new(row, &super::project_row_position_id(project_id)).finish(),
                 );

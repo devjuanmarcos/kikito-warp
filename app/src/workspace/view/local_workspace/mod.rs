@@ -29,6 +29,7 @@ pub(crate) fn source_control_width(model: &WorkspaceModel, window_width: f32) ->
 }
 
 use crate::workspace::action::WorkspaceAction;
+use pathfinder_geometry::rect::RectF;
 use warpui::ViewHandle;
 use warpui::elements::{
     Align, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment, Element, Empty,
@@ -88,6 +89,18 @@ pub(super) fn can_activate_tab_in_selected_project(
         .tab_identity_id(workspace_tab_id)
         .and_then(|tab_id| model.tab_owner(tab_id))
         == Some(project_id)
+}
+
+/// Tab to activate once the active tab at `closed_index` closes, among the `tab_count` tabs left:
+/// the first listed tab from that index on, else the nearest listed one before it.
+pub(super) fn tab_after_close(
+    closed_index: usize,
+    tab_count: usize,
+    is_listed: impl Fn(usize) -> bool,
+) -> Option<usize> {
+    (closed_index..tab_count)
+        .chain((0..closed_index.min(tab_count)).rev())
+        .find(|index| is_listed(*index))
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -517,6 +530,52 @@ pub(super) fn project_row_position_id(
     project_id: crate::local_workspace::model::ProjectId,
 ) -> String {
     format!("local_workspace:project_row:{project_id}")
+}
+
+pub(super) fn project_tab_position_id(tab_id: crate::local_workspace::model::TabId) -> String {
+    format!("local_workspace:project_tab:{tab_id}")
+}
+
+/// Index a dragged item moves to within its list, given the laid-out `rects` of the list's items
+/// in order (`None` for items not on screen): past every neighbor whose midpoint the dragged
+/// bounds' center has crossed along the list's axis.
+pub(super) fn drag_target_index(
+    current: usize,
+    dragged: RectF,
+    rects: &[Option<RectF>],
+    vertical: bool,
+) -> usize {
+    let center = |rect: RectF| {
+        if vertical {
+            rect.center().y()
+        } else {
+            rect.center().x()
+        }
+    };
+    let dragged_center = center(dragged);
+    let mut target = current;
+    for (index, rect) in rects.iter().enumerate().take(current).rev() {
+        let Some(rect) = rect else {
+            continue;
+        };
+        if dragged_center >= center(*rect) {
+            break;
+        }
+        target = index;
+    }
+    if target != current {
+        return target;
+    }
+    for (index, rect) in rects.iter().enumerate().skip(current + 1) {
+        let Some(rect) = rect else {
+            continue;
+        };
+        if dragged_center <= center(*rect) {
+            break;
+        }
+        target = index;
+    }
+    target
 }
 
 pub(super) fn organization_tile_position_id(

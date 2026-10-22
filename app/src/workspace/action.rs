@@ -29,7 +29,7 @@ use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentVersion};
 use crate::auth::auth_manager::LoginGatedFeature;
 use crate::drive::CloudObjectTypeAndId;
 use crate::drive::items::WarpDriveItemId;
-use crate::local_workspace::model::{OrganizationId, ProjectId};
+use crate::local_workspace::model::{DragItem, OrganizationId, ProjectId};
 use crate::palette::PaletteMode;
 use crate::pane_group::PaneGroup;
 use crate::prompt::editor_modal::OpenSource as PromptEditorOpenSource;
@@ -168,6 +168,11 @@ pub enum WorkspaceAction {
         tab_id: i32,
         delta: i32,
     },
+    DragLocalWorkspaceItem {
+        item: DragItem,
+        position: RectF,
+    },
+    DropLocalWorkspaceItem(DragItem),
     AssignActiveTabToLocalWorkspaceProject,
     AddLocalWorkspaceTerminal,
     ToggleLocalWorkspaceSourceControl,
@@ -1392,6 +1397,8 @@ impl WorkspaceAction {
             | SelectLocalWorkspaceTab(_)
             | CloseLocalWorkspaceTab(_)
             | MoveLocalWorkspaceTab { .. }
+            | DragLocalWorkspaceItem { .. }
+            | DropLocalWorkspaceItem(_)
             | AssignActiveTabToLocalWorkspaceProject
             | ToggleLocalWorkspaceSourceControl
             | ToggleLocalWorkspaceSourceControlForProject(_)

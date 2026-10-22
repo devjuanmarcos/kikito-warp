@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use warp_core::ui::Icon;
 use warpui::elements::{
-    Border, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult, Element,
+    Border, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult, DragAxis, Element,
     EventHandler, Expanded, Flex, Hoverable, MainAxisSize, ParentElement, Shrinkable, Text,
 };
 use warpui::platform::Cursor;
@@ -12,10 +12,11 @@ use super::super::vertical_tabs::{
     VERTICAL_TABS_ADD_TAB_POSITION_ID, VERTICAL_TABS_SETTINGS_BUTTON_POSITION_ID,
 };
 use super::ws_style::{
-    TooltipSide, fg_overlay, mouse_state, naked_icon_button, radius, sized_icon, with_tooltip,
+    TooltipSide, fg_overlay, mouse_state, naked_icon_button, radius, reorder_draggable, sized_icon,
+    with_tooltip,
 };
 use crate::appearance::Appearance;
-use crate::local_workspace::model::{ProjectId, WorkspaceModel};
+use crate::local_workspace::model::{DragItem, ProjectId, WorkspaceModel};
 use crate::workspace::action::NewSessionMenuAnchor;
 use crate::workspace::action::WorkspaceAction;
 use warpui::elements::SavePosition;
@@ -165,6 +166,14 @@ pub(super) fn render(
                 DispatchEventResult::StopPropagation
             })
             .finish();
+        let tab = reorder_draggable(
+            tab,
+            DragItem::Tab(tab_id),
+            DragAxis::HorizontalOnly,
+            Some(4.),
+            theme,
+        );
+        let tab = SavePosition::new(tab, &super::project_tab_position_id(tab_id)).finish();
         tabs.add_child(Shrinkable::new(1., tab).finish());
     }
     // In sidebar mode the vertical tabs panel hosts these buttons and their position ids.

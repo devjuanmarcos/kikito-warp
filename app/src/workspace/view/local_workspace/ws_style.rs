@@ -6,13 +6,15 @@ use warp_core::ui::Icon;
 use warp_core::ui::color::blend::Blend;
 use warp_core::ui::theme::{Fill, WarpTheme};
 use warpui::elements::{
-    Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Element,
-    Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseState, MouseStateHandle,
-    OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack, Text,
+    Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, DragAxis,
+    Draggable, DraggableState, Element, Flex, Hoverable, MainAxisAlignment, MainAxisSize,
+    MouseState, MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement,
+    ParentOffsetBounds, Radius, Stack, Text,
 };
 use warpui::platform::Cursor;
 
 use crate::appearance::Appearance;
+use crate::local_workspace::model::DragItem;
 use crate::workspace::action::WorkspaceAction;
 
 thread_local! {
@@ -24,6 +26,47 @@ thread_local! {
 /// survive the per-frame rebuild of the element tree.
 pub(super) fn mouse_state(kind: &'static str, id: i64) -> MouseStateHandle {
     MOUSE_STATES.with(|states| states.borrow_mut().entry((kind, id)).or_default().clone())
+}
+
+thread_local! {
+    static DRAGGABLE_STATES: RefCell<HashMap<DragItem, DraggableState>> =
+        RefCell::new(HashMap::new());
+}
+
+/// Returns the same `DraggableState` for an item across renders, so a drag survives the
+/// per-frame rebuild of the element tree.
+pub(super) fn draggable_state(item: DragItem) -> DraggableState {
+    DRAGGABLE_STATES.with(|states| states.borrow_mut().entry(item).or_default().clone())
+}
+
+/// Lets `element` be dragged along `axis` to reorder `item` within its list. With a
+/// `placeholder_radius`, the emptied slot shows a faint rounded placeholder during the drag, like
+/// the tabs sidebar.
+pub(super) fn reorder_draggable(
+    element: Box<dyn Element>,
+    item: DragItem,
+    axis: DragAxis,
+    placeholder_radius: Option<f32>,
+    theme: &WarpTheme,
+) -> Box<dyn Element> {
+    let state = draggable_state(item);
+    let dragging = state.is_dragging();
+    let draggable = Draggable::new(state, element)
+        .with_drag_axis(axis)
+        .on_drag(move |ctx, _, position, _| {
+            ctx.dispatch_typed_action(WorkspaceAction::DragLocalWorkspaceItem { item, position })
+        })
+        .on_drop(move |ctx, _, _, _| {
+            ctx.dispatch_typed_action(WorkspaceAction::DropLocalWorkspaceItem(item))
+        })
+        .finish();
+    match placeholder_radius {
+        Some(placeholder_radius) if dragging => Container::new(draggable)
+            .with_background(fg_overlay(theme, 5))
+            .with_corner_radius(radius(placeholder_radius))
+            .finish(),
+        _ => draggable,
+    }
 }
 
 pub(super) fn fg_overlay(theme: &WarpTheme, percent: u8) -> Fill {
