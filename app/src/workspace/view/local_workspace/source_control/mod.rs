@@ -37,6 +37,27 @@ pub enum GitConfirmation {
     DiscardAll,
     DeleteBranch(String),
     DropStash(usize),
+    ForcePush,
+    DeleteRemoteBranch(String),
+    RemoveRemote(String),
+}
+
+/// Remote operations of the "⋯" menu beyond fetch, pull and push.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GitSyncAction {
+    PullRebase,
+    FetchPrune,
+    FetchAll,
+    PushTags,
+}
+
+/// What the panel's name field is asking for.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum GitNameForm {
+    /// A tag on this commit.
+    Tag(String),
+    /// A remote, typed as "url" or "nome url".
+    Remote,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -110,6 +131,9 @@ pub(crate) struct SourceControl<'a> {
     pub confirmation: Option<&'a GitConfirmation>,
     /// The project folder has no repository and can be initialized.
     pub can_init: bool,
+    pub name_form: Option<&'a GitNameForm>,
+    /// The graph shows the newest commits only; more can be loaded.
+    pub history_truncated: bool,
     pub scroll_state: ClippedScrollStateHandle,
     /// Panel width, see [`panel_width`].
     pub width: f32,

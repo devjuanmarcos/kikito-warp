@@ -153,6 +153,13 @@ fn local_branch_row(
                 ("git-branch-merge", key),
                 appearance,
             ));
+            row.add_child(tool_button(
+                Icon::ArrowRight,
+                "Fazer rebase da branch atual sobre esta",
+                WorkspaceAction::RebaseLocalGitOnto(name.clone()),
+                ("git-branch-rebase", key),
+                appearance,
+            ));
         }
         row.add_child(tool_button(
             Icon::Plus,
@@ -224,6 +231,15 @@ fn remote_branch_row(
             "Fazer checkout (cria a branch local)",
             WorkspaceAction::CheckoutRemoteLocalGitBranch(remote.to_owned()),
             ("git-remote-checkout", index as i64),
+            appearance,
+        ));
+        row.add_child(tool_button(
+            Icon::Trash,
+            "Excluir no remoto",
+            WorkspaceAction::RequestLocalGitConfirmation(GitConfirmation::DeleteRemoteBranch(
+                remote.to_owned(),
+            )),
+            ("git-remote-delete", index as i64),
             appearance,
         ));
     }

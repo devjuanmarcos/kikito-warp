@@ -9,8 +9,8 @@ mod project_tabs;
 mod source_control;
 mod ws_style;
 pub(crate) use source_control::{
-    DiffPreview, GitConfirmation, GitPanelSection, GitPanelState, GitRemoteAction, RepositoryEntry,
-    SourceControl,
+    DiffPreview, GitConfirmation, GitNameForm, GitPanelSection, GitPanelState, GitRemoteAction,
+    GitSyncAction, RepositoryEntry, SourceControl,
 };
 
 /// Window border (both sides), organization rail and project sidebar, in pixels.
@@ -383,7 +383,7 @@ pub(crate) fn tab_menu(
         })
         .unwrap_or_default();
     let mut items = vec![context_menu::MenuItem {
-        label: "Renomear aba",
+        label: "Renomear aba".into(),
         icon: Icon::Pencil,
         action: WorkspaceAction::RenameLocalWorkspaceTab(tab_id),
         danger: false,
@@ -392,7 +392,7 @@ pub(crate) fn tab_menu(
     }];
     if can_move_left {
         items.push(context_menu::MenuItem {
-            label: "Mover para a esquerda",
+            label: "Mover para a esquerda".into(),
             icon: Icon::ArrowLeft,
             action: WorkspaceAction::MoveLocalWorkspaceTab { tab_id, delta: -1 },
             danger: false,
@@ -402,7 +402,7 @@ pub(crate) fn tab_menu(
     }
     if can_move_right {
         items.push(context_menu::MenuItem {
-            label: "Mover para a direita",
+            label: "Mover para a direita".into(),
             icon: Icon::ArrowRight,
             action: WorkspaceAction::MoveLocalWorkspaceTab { tab_id, delta: 1 },
             danger: false,
@@ -411,7 +411,7 @@ pub(crate) fn tab_menu(
         });
     }
     items.push(context_menu::MenuItem {
-        label: "Fechar aba",
+        label: "Fechar aba".into(),
         icon: Icon::X,
         action: WorkspaceAction::CloseLocalWorkspaceTab(tab_id),
         danger: true,
@@ -432,7 +432,7 @@ pub(crate) fn tabs_layout_menu(tabs_in_sidebar: bool, appearance: &Appearance) -
     context_menu::menu(
         vec![
             context_menu::MenuItem {
-                label: "Abas no cabeçalho",
+                label: "Abas no cabeçalho".into(),
                 icon: Icon::LayoutAlt01,
                 action: WorkspaceAction::SetLocalWorkspaceTabsInSidebar(false),
                 danger: false,
@@ -440,7 +440,7 @@ pub(crate) fn tabs_layout_menu(tabs_in_sidebar: bool, appearance: &Appearance) -
                 checked: !tabs_in_sidebar,
             },
             context_menu::MenuItem {
-                label: "Abas na barra lateral",
+                label: "Abas na barra lateral".into(),
                 icon: Icon::LeftSidebarOpen,
                 action: WorkspaceAction::SetLocalWorkspaceTabsInSidebar(true),
                 danger: false,
@@ -577,7 +577,15 @@ pub(crate) fn git_file_menu(
     context_menu::menu(
         vec![
             context_menu::MenuItem {
-                label: "Copiar caminho",
+                label: "Abrir arquivo".into(),
+                icon: Icon::LinkExternal,
+                action: WorkspaceAction::OpenLocalGitFile(absolute.clone()),
+                danger: false,
+                separator_before: false,
+                checked: false,
+            },
+            context_menu::MenuItem {
+                label: "Copiar caminho".into(),
                 icon: Icon::Copy,
                 action: WorkspaceAction::CopyLocalGitText(absolute),
                 danger: false,
@@ -585,7 +593,7 @@ pub(crate) fn git_file_menu(
                 checked: false,
             },
             context_menu::MenuItem {
-                label: "Copiar caminho relativo",
+                label: "Copiar caminho relativo".into(),
                 icon: Icon::Copy,
                 action: WorkspaceAction::CopyLocalGitText(path.to_owned()),
                 danger: false,
@@ -593,7 +601,7 @@ pub(crate) fn git_file_menu(
                 checked: false,
             },
             context_menu::MenuItem {
-                label: "Adicionar ao .gitignore",
+                label: "Adicionar ao .gitignore".into(),
                 icon: Icon::Plus,
                 action: WorkspaceAction::IgnoreLocalGitPath(path.to_owned()),
                 danger: false,
@@ -601,7 +609,7 @@ pub(crate) fn git_file_menu(
                 checked: false,
             },
             context_menu::MenuItem {
-                label: "Descartar alterações",
+                label: "Descartar alterações".into(),
                 icon: Icon::Retry,
                 action: WorkspaceAction::RequestDiscardLocalGitPath {
                     path: path.to_owned(),
@@ -615,6 +623,78 @@ pub(crate) fn git_file_menu(
         None,
         LOCAL_MENU_WIDTH,
         WorkspaceAction::DismissLocalGitFileMenu,
+        appearance,
+    )
+}
+
+/// The Git panel's "⋯" menu: remote operations beyond fetch, pull and push, and remotes.
+pub(crate) fn git_sync_menu(remotes: &[String], appearance: &Appearance) -> Box<dyn Element> {
+    use crate::workspace::view::LocalGitConfirmation;
+    use crate::workspace::view::LocalGitSyncAction;
+
+    let item = |label: &'static str, icon: Icon, action: WorkspaceAction| context_menu::MenuItem {
+        label: label.into(),
+        icon,
+        action,
+        danger: false,
+        separator_before: false,
+        checked: false,
+    };
+    let mut items = vec![
+        item(
+            "Pull (rebase)",
+            Icon::Download01,
+            WorkspaceAction::RunLocalGitSync(LocalGitSyncAction::PullRebase),
+        ),
+        item(
+            "Fetch (limpar removidas)",
+            Icon::Refresh,
+            WorkspaceAction::RunLocalGitSync(LocalGitSyncAction::FetchPrune),
+        ),
+        item(
+            "Fetch de todos os remotos",
+            Icon::Refresh,
+            WorkspaceAction::RunLocalGitSync(LocalGitSyncAction::FetchAll),
+        ),
+        item(
+            "Push das tags",
+            Icon::Bookmark,
+            WorkspaceAction::RunLocalGitSync(LocalGitSyncAction::PushTags),
+        ),
+        context_menu::MenuItem {
+            label: "Forçar push…".into(),
+            icon: Icon::Upload,
+            action: WorkspaceAction::RequestLocalGitConfirmation(LocalGitConfirmation::ForcePush),
+            danger: true,
+            separator_before: false,
+            checked: false,
+        },
+        context_menu::MenuItem {
+            label: "Adicionar remoto…".into(),
+            icon: Icon::Plus,
+            action: WorkspaceAction::OpenLocalGitRemoteForm,
+            danger: false,
+            separator_before: true,
+            checked: false,
+        },
+    ];
+    for remote in remotes {
+        items.push(context_menu::MenuItem {
+            label: format!("Remover remoto {remote}").into(),
+            icon: Icon::Trash,
+            action: WorkspaceAction::RequestLocalGitConfirmation(LocalGitConfirmation::RemoveRemote(
+                remote.clone(),
+            )),
+            danger: true,
+            separator_before: false,
+            checked: false,
+        });
+    }
+    context_menu::menu(
+        items,
+        None,
+        LOCAL_MENU_WIDTH,
+        WorkspaceAction::DismissLocalGitSyncMenu,
         appearance,
     )
 }

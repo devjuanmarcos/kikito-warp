@@ -263,6 +263,21 @@ pub enum WorkspaceAction {
     },
     DismissLocalGitFileMenu,
     IgnoreLocalGitPath(String),
+    ContinueLocalGitPending,
+    /// Opens the "⋯" menu of remote operations at the click position.
+    OpenLocalGitSyncMenu(Vector2F),
+    DismissLocalGitSyncMenu,
+    RunLocalGitSync(crate::workspace::view::LocalGitSyncAction),
+    RebaseLocalGitOnto(String),
+    CheckoutLocalGitCommit(String),
+    OpenLocalGitTagForm(String),
+    OpenLocalGitRemoteForm,
+    SubmitLocalGitNameForm,
+    CancelLocalGitNameForm,
+    DeleteLocalGitTag(String),
+    OpenLocalGitCommitOnGitHub(String),
+    LoadMoreLocalGitHistory,
+    OpenLocalGitFile(String),
     ToggleLocalGitGraphFilter,
     ToggleLocalGitCommitMenu,
     ToggleLocalGitBranches,
@@ -1434,6 +1449,20 @@ impl WorkspaceAction {
             | OpenLocalGitFileMenu { .. }
             | DismissLocalGitFileMenu
             | IgnoreLocalGitPath(_)
+            | ContinueLocalGitPending
+            | OpenLocalGitSyncMenu(_)
+            | DismissLocalGitSyncMenu
+            | RunLocalGitSync(_)
+            | RebaseLocalGitOnto(_)
+            | CheckoutLocalGitCommit(_)
+            | OpenLocalGitTagForm(_)
+            | OpenLocalGitRemoteForm
+            | SubmitLocalGitNameForm
+            | CancelLocalGitNameForm
+            | DeleteLocalGitTag(_)
+            | OpenLocalGitCommitOnGitHub(_)
+            | LoadMoreLocalGitHistory
+            | OpenLocalGitFile(_)
             | ToggleLocalGitGraphFilter
             | ToggleLocalGitCommitMenu
             | ToggleLocalGitBranches

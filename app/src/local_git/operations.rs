@@ -22,6 +22,7 @@ pub(crate) enum PendingOperation {
     Merge,
     CherryPick,
     Revert,
+    Rebase,
 }
 
 impl PendingOperation {
@@ -31,6 +32,7 @@ impl PendingOperation {
             Self::Merge => "MERGE_HEAD",
             Self::CherryPick => "CHERRY_PICK_HEAD",
             Self::Revert => "REVERT_HEAD",
+            Self::Rebase => "REBASE_HEAD",
         }
     }
 
@@ -39,6 +41,7 @@ impl PendingOperation {
             Self::Merge => "merge",
             Self::CherryPick => "cherry-pick",
             Self::Revert => "revert",
+            Self::Rebase => "rebase",
         }
     }
 }
@@ -74,6 +77,21 @@ pub(super) enum GitOperation {
     CheckoutRemoteBranch { remote_branch: String },
     MergeBranch { branch: String },
     AbortPending(PendingOperation),
+    ContinuePending(PendingOperation),
+    FetchPrune { remote: String },
+    FetchAll,
+    PullRebase { remote: String, branch: String },
+    PushForceWithLease { remote: String, branch: String },
+    PushTags { remote: String },
+    CreateTag { name: String, commit: String },
+    DeleteTag { name: String },
+    DeleteRemoteBranch { remote: String, branch: String },
+    Rebase { onto: String },
+    CheckoutDetached { commit: String },
+    Remotes,
+    AddRemote { name: String, url: String },
+    RemoveRemote { name: String },
+    RemoteUrl { name: String },
     StashPush { include_untracked: bool },
     StashList,
     StashApply { index: usize, pop: bool },
@@ -96,6 +114,8 @@ impl GitOperation {
             | Self::History { .. }
             | Self::MergeBase { .. }
             | Self::RemoteBranches
+            | Self::Remotes
+            | Self::RemoteUrl { .. }
             | Self::StashList
             | Self::CommitFiles { .. } => OperationKind::LocalRead,
             Self::Diff { .. } => OperationKind::LocalRead,
@@ -116,6 +136,13 @@ impl GitOperation {
             | Self::CheckoutRemoteBranch { .. }
             | Self::MergeBranch { .. }
             | Self::AbortPending(_)
+            | Self::ContinuePending(_)
+            | Self::CreateTag { .. }
+            | Self::DeleteTag { .. }
+            | Self::Rebase { .. }
+            | Self::CheckoutDetached { .. }
+            | Self::AddRemote { .. }
+            | Self::RemoveRemote { .. }
             | Self::StashPush { .. }
             | Self::StashApply { .. }
             | Self::StashDrop { .. }
@@ -123,7 +150,15 @@ impl GitOperation {
             | Self::RevertCommit { .. }
             | Self::ResolveConflict { .. }
             | Self::Init => OperationKind::LocalWrite,
-            Self::Fetch { .. } | Self::Pull { .. } | Self::Push { .. } => OperationKind::Remote,
+            Self::Fetch { .. }
+            | Self::Pull { .. }
+            | Self::Push { .. }
+            | Self::FetchPrune { .. }
+            | Self::FetchAll
+            | Self::PullRebase { .. }
+            | Self::PushForceWithLease { .. }
+            | Self::PushTags { .. }
+            | Self::DeleteRemoteBranch { .. } => OperationKind::Remote,
         }
     }
 
@@ -275,6 +310,46 @@ impl GitOperation {
                 vec!["merge".into(), "--no-edit".into(), branch.clone()]
             }
             Self::AbortPending(pending) => vec![pending.command().into(), "--abort".into()],
+            Self::ContinuePending(pending) => vec![
+                // Keep Git from opening an editor for the message it prepared.
+                "-c".into(),
+                "core.editor=true".into(),
+                pending.command().into(),
+                "--continue".into(),
+            ],
+            Self::FetchPrune { remote } => vec!["fetch".into(), "--prune".into(), remote.clone()],
+            Self::FetchAll => vec!["fetch".into(), "--all".into(), "--prune".into()],
+            Self::PullRebase { remote, branch } => vec![
+                "pull".into(),
+                "--rebase".into(),
+                remote.clone(),
+                branch.clone(),
+            ],
+            Self::PushForceWithLease { remote, branch } => vec![
+                "push".into(),
+                "--force-with-lease".into(),
+                remote.clone(),
+                branch.clone(),
+            ],
+            Self::PushTags { remote } => vec!["push".into(), remote.clone(), "--tags".into()],
+            Self::CreateTag { name, commit } => vec!["tag".into(), name.clone(), commit.clone()],
+            Self::DeleteTag { name } => vec!["tag".into(), "-d".into(), name.clone()],
+            Self::DeleteRemoteBranch { remote, branch } => vec![
+                "push".into(),
+                remote.clone(),
+                "--delete".into(),
+                branch.clone(),
+            ],
+            Self::Rebase { onto } => vec!["rebase".into(), onto.clone()],
+            Self::CheckoutDetached { commit } => {
+                vec!["switch".into(), "--detach".into(), commit.clone()]
+            }
+            Self::Remotes => vec!["remote".into()],
+            Self::AddRemote { name, url } => {
+                vec!["remote".into(), "add".into(), name.clone(), url.clone()]
+            }
+            Self::RemoveRemote { name } => vec!["remote".into(), "remove".into(), name.clone()],
+            Self::RemoteUrl { name } => vec!["remote".into(), "get-url".into(), name.clone()],
             Self::StashPush { include_untracked } => {
                 let mut arguments = vec!["stash".into(), "push".into()];
                 if *include_untracked {
@@ -349,6 +424,25 @@ impl GitOperation {
             Self::AbortPending(PendingOperation::Merge) => "abortar o merge",
             Self::AbortPending(PendingOperation::CherryPick) => "abortar o cherry-pick",
             Self::AbortPending(PendingOperation::Revert) => "abortar a reversão",
+            Self::AbortPending(PendingOperation::Rebase) => "abortar o rebase",
+            Self::ContinuePending(PendingOperation::Merge) => "concluir o merge",
+            Self::ContinuePending(PendingOperation::CherryPick) => "concluir o cherry-pick",
+            Self::ContinuePending(PendingOperation::Revert) => "concluir a reversão",
+            Self::ContinuePending(PendingOperation::Rebase) => "continuar o rebase",
+            Self::FetchPrune { .. } => "buscar alterações e limpar branches remotas removidas",
+            Self::FetchAll => "buscar alterações de todos os remotos",
+            Self::PullRebase { .. } => "integrar alterações do remoto com rebase",
+            Self::PushForceWithLease { .. } => "forçar o envio ao remoto",
+            Self::PushTags { .. } => "enviar as tags ao remoto",
+            Self::CreateTag { .. } => "criar a tag",
+            Self::DeleteTag { .. } => "excluir a tag",
+            Self::DeleteRemoteBranch { .. } => "excluir a branch remota",
+            Self::Rebase { .. } => "fazer o rebase da branch atual",
+            Self::CheckoutDetached { .. } => "fazer checkout do commit",
+            Self::Remotes => "listar os remotos",
+            Self::AddRemote { .. } => "adicionar o remoto",
+            Self::RemoveRemote { .. } => "remover o remoto",
+            Self::RemoteUrl { .. } => "ler o endereço do remoto",
             Self::StashPush { .. } => "guardar as alterações no stash",
             Self::StashList => "listar os stashes",
             Self::StashApply { pop: false, .. } => "aplicar o stash",

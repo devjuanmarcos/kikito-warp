@@ -1336,3 +1336,57 @@ fn stash_remote_branch_and_commit_file_parsers() {
         ]
     );
 }
+
+#[test]
+fn phase_three_operations_build_git_commands() {
+    assert_eq!(
+        GitOperation::ContinuePending(super::PendingOperation::Rebase).arguments(),
+        ["-c", "core.editor=true", "rebase", "--continue"]
+    );
+    assert_eq!(
+        GitOperation::PushForceWithLease {
+            remote: "origin".to_owned(),
+            branch: "main".to_owned()
+        }
+        .arguments(),
+        ["push", "--force-with-lease", "origin", "main"]
+    );
+    assert_eq!(
+        GitOperation::DeleteRemoteBranch {
+            remote: "origin".to_owned(),
+            branch: "feature/a".to_owned()
+        }
+        .arguments(),
+        ["push", "origin", "--delete", "feature/a"]
+    );
+    assert_eq!(
+        GitOperation::PushForceWithLease {
+            remote: "origin".to_owned(),
+            branch: "main".to_owned()
+        }
+        .kind(),
+        OperationKind::Remote
+    );
+    assert_eq!(
+        GitOperation::CreateTag {
+            name: "v1.0".to_owned(),
+            commit: "abc123".to_owned()
+        }
+        .kind(),
+        OperationKind::LocalWrite
+    );
+}
+
+#[test]
+fn github_web_url_accepts_https_and_ssh_remotes_only_for_github() {
+    assert_eq!(
+        super::github_web_url("git@github.com:devjuanmarcos/kikito-warp.git").as_deref(),
+        Some("https://github.com/devjuanmarcos/kikito-warp")
+    );
+    assert_eq!(
+        super::github_web_url("https://github.com/org/repo").as_deref(),
+        Some("https://github.com/org/repo")
+    );
+    assert_eq!(super::github_web_url("https://gitlab.com/org/repo.git"), None);
+    assert_eq!(super::github_web_url("C:/remotes/repo.git"), None);
+}

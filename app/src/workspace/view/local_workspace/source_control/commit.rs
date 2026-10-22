@@ -225,7 +225,7 @@ pub(super) fn render(
 fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuItem> {
     let mut items = vec![
         MenuItem {
-            label: "Commit",
+            label: "Commit".into(),
             icon: Icon::Check,
             action: if has_staged {
                 WorkspaceAction::CommitLocalGit
@@ -237,7 +237,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             checked: false,
         },
         MenuItem {
-            label: "Commit e push",
+            label: "Commit e push".into(),
             icon: Icon::Upload,
             action: WorkspaceAction::CommitAndPushLocalGit,
             danger: false,
@@ -245,7 +245,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             checked: false,
         },
         MenuItem {
-            label: "Commit e sincronizar",
+            label: "Commit e sincronizar".into(),
             icon: Icon::Retry,
             action: WorkspaceAction::CommitAndSyncLocalGit,
             danger: false,
@@ -253,7 +253,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             checked: false,
         },
         MenuItem {
-            label: "Preparar tudo",
+            label: "Preparar tudo".into(),
             icon: Icon::Plus,
             action: WorkspaceAction::StageAllLocalGit,
             danger: false,
@@ -261,7 +261,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             checked: false,
         },
         MenuItem {
-            label: "Remover tudo da preparação",
+            label: "Remover tudo da preparação".into(),
             icon: Icon::Minus,
             action: WorkspaceAction::UnstageAllLocalGit,
             danger: false,
@@ -273,7 +273,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
     if has_commit {
         items.extend([
             MenuItem {
-                label: "Alterar último commit",
+                label: "Alterar último commit".into(),
                 icon: Icon::Pencil,
                 action: WorkspaceAction::RequestLocalGitAmend,
                 danger: false,
@@ -281,7 +281,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
                 checked: false,
             },
             MenuItem {
-                label: "Desfazer último commit",
+                label: "Desfazer último commit".into(),
                 icon: Icon::Retry,
                 action: WorkspaceAction::RequestUndoLocalGitCommit,
                 danger: false,
@@ -289,7 +289,7 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
                 checked: false,
             },
             MenuItem {
-                label: "Reverter último commit",
+                label: "Reverter último commit".into(),
                 icon: Icon::Retry,
                 action: WorkspaceAction::RequestRevertLocalGitCommit,
                 danger: true,

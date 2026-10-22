@@ -85,6 +85,22 @@ pub(super) fn confirmation_row(
             "Descartar",
             Icon::Trash,
         ),
+        GitConfirmation::ForcePush => (
+            "Forçar o envio da branch? O remoto passa a ter exatamente o histórico local (com lease: falha se alguém tiver enviado algo novo)."
+                .to_owned(),
+            "Forçar envio",
+            Icon::Upload,
+        ),
+        GitConfirmation::DeleteRemoteBranch(branch) => (
+            format!("Excluir a branch {branch} no remoto? Ela deixa de existir para todos."),
+            "Excluir no remoto",
+            Icon::Trash,
+        ),
+        GitConfirmation::RemoveRemote(name) => (
+            format!("Remover o remoto {name}? As branches remotas dele somem da lista."),
+            "Remover",
+            Icon::Trash,
+        ),
     };
     let mut actions = Flex::row().with_spacing(6.);
     if !operation_pending {
@@ -138,6 +154,16 @@ pub(super) fn merge_banner(pending: PendingOperation, appearance: &Appearance) -
             "Reversão em andamento. Resolva os conflitos e faça o commit, ou aborte a reversão.",
             "Abortar reversão",
         ),
+        PendingOperation::Rebase => (
+            "Rebase em andamento. Resolva os conflitos, prepare os arquivos e continue, ou aborte o rebase.",
+            "Abortar rebase",
+        ),
+    };
+    let continue_label = match pending {
+        PendingOperation::Merge => "Concluir merge",
+        PendingOperation::CherryPick => "Concluir cherry-pick",
+        PendingOperation::Revert => "Concluir reversão",
+        PendingOperation::Rebase => "Continuar rebase",
     };
     Container::new(
         Flex::column()
@@ -147,13 +173,25 @@ pub(super) fn merge_banner(pending: PendingOperation, appearance: &Appearance) -
                     .with_color(theme.ui_yellow_color())
                     .finish(),
             )
-            .with_child(small_secondary_button(
-                Icon::X,
-                abort_label,
-                WorkspaceAction::AbortLocalGitMerge,
-                ("git-merge-abort", 0),
-                appearance,
-            ))
+            .with_child(
+                Flex::row()
+                    .with_spacing(6.)
+                    .with_child(small_secondary_button(
+                        Icon::Check,
+                        continue_label,
+                        WorkspaceAction::ContinueLocalGitPending,
+                        ("git-merge-continue", 0),
+                        appearance,
+                    ))
+                    .with_child(small_secondary_button(
+                        Icon::X,
+                        abort_label,
+                        WorkspaceAction::AbortLocalGitMerge,
+                        ("git-merge-abort", 0),
+                        appearance,
+                    ))
+                    .finish(),
+            )
             .finish(),
     )
     .with_background(fg_overlay(theme, 5))
@@ -383,6 +421,27 @@ pub(super) fn commit_actions(commit: &LocalCommit, appearance: &Appearance) -> B
             appearance,
         ))
         .with_child(tool_button(
+            Icon::Check,
+            "Fazer checkout deste commit",
+            WorkspaceAction::CheckoutLocalGitCommit(hash.clone()),
+            ("git-commit-checkout", key),
+            appearance,
+        ))
+        .with_child(tool_button(
+            Icon::Bookmark,
+            "Criar tag neste commit",
+            WorkspaceAction::OpenLocalGitTagForm(hash.clone()),
+            ("git-commit-tag", key),
+            appearance,
+        ))
+        .with_child(tool_button(
+            Icon::LinkExternal,
+            "Abrir no GitHub",
+            WorkspaceAction::OpenLocalGitCommitOnGitHub(hash.clone()),
+            ("git-commit-github", key),
+            appearance,
+        ))
+        .with_child(tool_button(
             Icon::GitBranch,
             "Criar branch a partir deste commit",
             WorkspaceAction::OpenLocalGitCreateBranch(short),
@@ -456,4 +515,113 @@ pub(super) fn commit_files(files: &[CommitFile], appearance: &Appearance) -> Box
 
 fn stable_commit_key(hash: &str) -> i64 {
     i64::from_str_radix(&hash.chars().take(12).collect::<String>(), 16).unwrap_or_default()
+}
+
+/// Tags of a commit, each with a delete button.
+pub(super) fn commit_tags(commit: &LocalCommit, appearance: &Appearance) -> Option<Box<dyn Element>> {
+    let tags: Vec<&str> = commit
+        .refs
+        .iter()
+        .filter_map(|reference| reference.strip_prefix("tag: "))
+        .collect();
+    if tags.is_empty() {
+        return None;
+    }
+    let theme = appearance.theme();
+    let mut row = Flex::row()
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(4.);
+    for (index, tag) in tags.into_iter().enumerate() {
+        row.add_child(
+            Flex::row()
+                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                .with_spacing(2.)
+                .with_child(sized_icon(Icon::Bookmark, theme.sub_text_color(theme.surface_1()), 11.))
+                .with_child(
+                    Text::new_inline(tag.to_owned(), appearance.monospace_font_family(), 11.)
+                        .with_color(theme.main_text_color(theme.surface_1()).into())
+                        .finish(),
+                )
+                .with_child(tool_button(
+                    Icon::Trash,
+                    "Excluir tag",
+                    WorkspaceAction::DeleteLocalGitTag(tag.to_owned()),
+                    ("git-tag-delete", stable_commit_key(&commit.hash) ^ index as i64),
+                    appearance,
+                ))
+                .finish(),
+        );
+    }
+    Some(row.finish())
+}
+
+/// The name field for a new tag or remote, with confirm and cancel.
+pub(super) fn name_form(
+    form: &super::GitNameForm,
+    input: warpui::ViewHandle<crate::editor::EditorView>,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
+    use warpui::ui_components::components::{UiComponent, UiComponentStyles};
+    use warpui::ui_components::text_input::TextInput;
+
+    let (title, confirm) = match form {
+        super::GitNameForm::Tag(_) => ("Nova tag no commit", "Criar tag"),
+        super::GitNameForm::Remote => ("Novo remoto: endereço, ou nome e endereço", "Adicionar remoto"),
+    };
+    let theme = appearance.theme();
+    Container::new(
+        Flex::column()
+            .with_spacing(6.)
+            .with_child(
+                Text::new_inline(title, appearance.ui_font_family(), 11.)
+                    .with_color(theme.sub_text_color(theme.surface_1()).into())
+                    .finish(),
+            )
+            .with_child(
+                TextInput::new(input, UiComponentStyles::default().set_height(28.))
+                    .build()
+                    .finish(),
+            )
+            .with_child(
+                Flex::row()
+                    .with_spacing(6.)
+                    .with_child(small_secondary_button(
+                        Icon::Check,
+                        confirm,
+                        WorkspaceAction::SubmitLocalGitNameForm,
+                        ("git-name-form-submit", 0),
+                        appearance,
+                    ))
+                    .with_child(small_secondary_button(
+                        Icon::X,
+                        "Cancelar",
+                        WorkspaceAction::CancelLocalGitNameForm,
+                        ("git-name-form-cancel", 0),
+                        appearance,
+                    ))
+                    .finish(),
+            )
+            .finish(),
+    )
+    .with_background(fg_overlay(theme, 5))
+    .with_padding_left(14.)
+    .with_padding_right(14.)
+    .with_padding_top(8.)
+    .with_padding_bottom(8.)
+    .finish()
+}
+
+/// "Carregar mais" at the end of a truncated graph.
+pub(super) fn load_more(appearance: &Appearance) -> Box<dyn Element> {
+    Container::new(small_secondary_button(
+        Icon::DotsHorizontal,
+        "Carregar mais commits",
+        WorkspaceAction::LoadMoreLocalGitHistory,
+        ("git-load-more", 0),
+        appearance,
+    ))
+    .with_padding_left(14.)
+    .with_padding_top(4.)
+    .with_padding_bottom(6.)
+    .finish()
 }

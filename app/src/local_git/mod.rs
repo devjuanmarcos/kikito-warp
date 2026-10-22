@@ -634,6 +634,7 @@ pub(crate) async fn pending_operation(repository: &Path) -> Option<PendingOperat
         PendingOperation::Merge,
         PendingOperation::CherryPick,
         PendingOperation::Revert,
+        PendingOperation::Rebase,
     ] {
         let found = execute(
             repository,
@@ -800,4 +801,192 @@ fn parse_commit_files(output: &str) -> Vec<CommitFile> {
             })
         })
         .collect()
+}
+
+/// Concludes the pending operation with the message Git prepared (merge, cherry-pick and revert
+/// need the conflicts resolved and staged; rebase moves to the next commit).
+pub(crate) async fn continue_pending(
+    repository: &Path,
+    pending: PendingOperation,
+) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::ContinuePending(pending))
+        .await
+}
+
+pub(crate) async fn fetch_prune(repository: &Path, remote: &str) -> Result<(), GitError> {
+    operations::validate_remote(remote)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::FetchPrune {
+            remote: remote.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn fetch_all(repository: &Path) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::FetchAll)
+        .await
+}
+
+pub(crate) async fn pull_rebase(repository: &Path, remote: &str, branch: &str) -> Result<(), GitError> {
+    operations::validate_remote(remote)?;
+    operations::validate_reference(branch)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::PullRebase {
+            remote: remote.to_owned(),
+            branch: branch.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn push_force_with_lease(
+    repository: &Path,
+    remote: &str,
+    branch: &str,
+) -> Result<(), GitError> {
+    operations::validate_remote(remote)?;
+    operations::validate_reference(branch)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::PushForceWithLease {
+            remote: remote.to_owned(),
+            branch: branch.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn push_tags(repository: &Path, remote: &str) -> Result<(), GitError> {
+    operations::validate_remote(remote)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::PushTags {
+            remote: remote.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn create_tag(repository: &Path, name: &str, commit: &str) -> Result<(), GitError> {
+    operations::validate_reference(name)?;
+    operations::validate_reference(commit)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::CreateTag {
+            name: name.to_owned(),
+            commit: commit.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn delete_tag(repository: &Path, name: &str) -> Result<(), GitError> {
+    operations::validate_reference(name)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::DeleteTag {
+            name: name.to_owned(),
+        })
+        .await
+}
+
+/// Deletes `remote_branch` (`origin/feature`) on its remote.
+pub(crate) async fn delete_remote_branch(
+    repository: &Path,
+    remote_branch: &str,
+) -> Result<(), GitError> {
+    let (remote, branch) = remote_branch
+        .split_once('/')
+        .ok_or(GitError::InvalidReference)?;
+    operations::validate_remote(remote)?;
+    operations::validate_reference(branch)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::DeleteRemoteBranch {
+            remote: remote.to_owned(),
+            branch: branch.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn rebase_onto(repository: &Path, onto: &str) -> Result<(), GitError> {
+    operations::validate_reference(onto)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::Rebase {
+            onto: onto.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn checkout_detached(repository: &Path, commit: &str) -> Result<(), GitError> {
+    operations::validate_reference(commit)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::CheckoutDetached {
+            commit: commit.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn read_remotes(repository: &Path) -> Result<Vec<String>, GitError> {
+    let service = LocalGitService::open(repository).await?;
+    let output = execute(service.root(), GitOperation::Remotes).await?;
+    Ok(output
+        .lines()
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(str::to_owned)
+        .collect())
+}
+
+pub(crate) async fn add_remote(repository: &Path, name: &str, url: &str) -> Result<(), GitError> {
+    operations::validate_remote(name)?;
+    if url.trim().is_empty() || url.starts_with('-') {
+        return Err(GitError::InvalidReference);
+    }
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::AddRemote {
+            name: name.to_owned(),
+            url: url.trim().to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn remove_remote(repository: &Path, name: &str) -> Result<(), GitError> {
+    operations::validate_remote(name)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::RemoveRemote {
+            name: name.to_owned(),
+        })
+        .await
+}
+
+/// Web address of `commit` on GitHub when the `origin` remote points there.
+pub(crate) async fn github_commit_url(repository: &Path, commit: &str) -> Option<String> {
+    let service = LocalGitService::open(repository).await.ok()?;
+    let url = execute(
+        service.root(),
+        GitOperation::RemoteUrl {
+            name: "origin".to_owned(),
+        },
+    )
+    .await
+    .ok()?;
+    github_web_url(url.trim()).map(|base| format!("{base}/commit/{commit}"))
+}
+
+/// `https://github.com/owner/repo` for an `origin` URL on GitHub (HTTPS or SSH form).
+pub(crate) fn github_web_url(remote_url: &str) -> Option<String> {
+    let path = remote_url
+        .strip_prefix("git@github.com:")
+        .or_else(|| remote_url.strip_prefix("ssh://git@github.com/"))
+        .or_else(|| remote_url.strip_prefix("https://github.com/"))
+        .or_else(|| remote_url.strip_prefix("http://github.com/"))?;
+    let path = path.trim_end_matches('/').trim_end_matches(".git");
+    (path.split('/').count() == 2).then(|| format!("https://github.com/{path}"))
 }

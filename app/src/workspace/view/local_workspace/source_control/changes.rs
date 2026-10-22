@@ -413,6 +413,37 @@ fn changes_section(
             ("git-push", 0),
             appearance,
         ));
+    right.add_child(
+        Hoverable::new(mouse_state("git-sync-menu", 0), |mouse| {
+            let theme = appearance.theme();
+            let over = mouse.is_mouse_over_element();
+            let mut button = Container::new(
+                ConstrainedBox::new(sized_icon(
+                    Icon::DotsHorizontal,
+                    if over {
+                        theme.main_text_color(theme.surface_1())
+                    } else {
+                        theme.sub_text_color(theme.surface_1())
+                    },
+                    14.,
+                ))
+                .with_width(14.)
+                .with_height(14.)
+                .finish(),
+            )
+            .with_uniform_padding(3.)
+            .with_corner_radius(radius(4.));
+            if over {
+                button = button.with_background(fg_overlay(theme, 10));
+            }
+            button.finish()
+        })
+        .with_cursor(Cursor::PointingHand)
+        .on_click(|ctx, _, position| {
+            ctx.dispatch_typed_action(WorkspaceAction::OpenLocalGitSyncMenu(position))
+        })
+        .finish(),
+    );
     }
     let mut section = Flex::column()
         .with_main_axis_size(MainAxisSize::Min)
@@ -451,6 +482,25 @@ fn changes_section(
     }
     if let Some(pending) = source_control.merging {
         section.add_child(super::extras::merge_banner(pending, appearance));
+    }
+    if let Some(form) = source_control.name_form {
+        section.add_child(super::extras::name_form(
+            form,
+            source_control.branch_name_input.clone(),
+            appearance,
+        ));
+    }
+    if let Some(
+        confirmation @ (super::GitConfirmation::ForcePush
+        | super::GitConfirmation::DeleteRemoteBranch(_)
+        | super::GitConfirmation::RemoveRemote(_)),
+    ) = source_control.confirmation
+    {
+        section.add_child(super::extras::confirmation_row(
+            confirmation,
+            source_control.operation_pending,
+            appearance,
+        ));
     }
     if let Some((path, untracked)) = source_control.discard_confirmation {
         section.add_child(discard_confirmation_row(
@@ -892,6 +942,9 @@ fn graph_section(source_control: &SourceControl<'_>, appearance: &Appearance) ->
             .with_padding_bottom(6.)
             .finish(),
     );
+    if source_control.history_truncated && !panel.graph_current_only {
+        section.add_child(super::extras::load_more(appearance));
+    }
     section.finish()
 }
 
@@ -1137,6 +1190,9 @@ fn graph_row(
         )
         .with_child(meta.finish());
     details.add_child(super::extras::commit_actions(commit, appearance));
+    if let Some(tags) = super::extras::commit_tags(commit, appearance) {
+        details.add_child(tags);
+    }
     if let Some(Some(files)) = expanded {
         details.add_child(super::extras::commit_files(files, appearance));
     }

@@ -18,7 +18,7 @@ use warpui::elements::{
 use warpui::platform::Cursor;
 
 pub(super) struct MenuItem {
-    pub label: &'static str,
+    pub label: std::borrow::Cow<'static, str>,
     pub icon: Icon,
     pub action: WorkspaceAction,
     pub danger: bool,
@@ -93,7 +93,7 @@ pub(super) fn menu(
         row.add_child(
             Expanded::new(
                 1.,
-                Text::new_inline(item.label, appearance.ui_font_family(), font_size)
+                Text::new_inline(item.label.clone(), appearance.ui_font_family(), font_size)
                     .with_color(item_color.into())
                     .soft_wrap(false)
                     .finish(),
@@ -163,7 +163,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
     match target {
         ContextMenuTarget::Organization(id) => vec![
             MenuItem {
-                label: "Editar organização",
+                label: "Editar organização".into(),
                 icon: Icon::Pencil,
                 action: WorkspaceAction::EditLocalWorkspaceOrganization(id),
                 danger: false,
@@ -171,7 +171,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 checked: false,
             },
             MenuItem {
-                label: "Remover organização",
+                label: "Remover organização".into(),
                 icon: Icon::Trash,
                 action: WorkspaceAction::RemoveLocalWorkspaceOrganization(id),
                 danger: true,
@@ -181,7 +181,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
         ],
         ContextMenuTarget::Project(id) => vec![
             MenuItem {
-                label: "Nova aba",
+                label: "Nova aba".into(),
                 icon: Icon::Plus,
                 action: WorkspaceAction::OpenLocalWorkspaceNewTabMenu {
                     project_id: id,
@@ -192,7 +192,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 checked: false,
             },
             MenuItem {
-                label: "Renomear projeto",
+                label: "Renomear projeto".into(),
                 icon: Icon::Pencil,
                 action: WorkspaceAction::EditLocalWorkspaceProject(id),
                 danger: false,
@@ -200,7 +200,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 checked: false,
             },
             MenuItem {
-                label: "Controle de versão",
+                label: "Controle de versão".into(),
                 icon: Icon::GitBranch,
                 action: WorkspaceAction::ToggleLocalWorkspaceSourceControlForProject(id),
                 danger: false,
@@ -208,7 +208,7 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 checked: false,
             },
             MenuItem {
-                label: "Remover projeto",
+                label: "Remover projeto".into(),
                 icon: Icon::Trash,
                 action: WorkspaceAction::RemoveLocalWorkspaceProject(id),
                 danger: true,
