@@ -231,6 +231,8 @@ pub enum WorkspaceAction {
     SetLocalWorkspaceTabsInSidebar(bool),
     ToggleLocalWorkspaceTabsInSidebar,
     ToggleLocalGitPanelSection(crate::workspace::view::LocalGitPanelSection),
+    /// Makes the repository at this root the one the Git panel works on.
+    SelectLocalGitRepository(String),
     ToggleLocalGitGraphFilter,
     ToggleLocalGitCommitMenu,
     ToggleLocalGitBranches,
@@ -1384,6 +1386,7 @@ impl WorkspaceAction {
             | SetLocalWorkspaceTabsInSidebar(_)
             | ToggleLocalWorkspaceTabsInSidebar
             | ToggleLocalGitPanelSection(_)
+            | SelectLocalGitRepository(_)
             | ToggleLocalGitGraphFilter
             | ToggleLocalGitCommitMenu
             | ToggleLocalGitBranches

@@ -1132,7 +1132,15 @@ pub struct Workspace {
     local_workspace: ModelHandle<crate::local_workspace::model::WorkspaceModel>,
     local_project_path_check_generation: u64,
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    /// Repository the Git panel runs its commands in.
     local_workspace_git_path: Option<String>,
+    /// Project folder whose repositories the Git panel lists.
+    local_workspace_git_project_path: Option<String>,
+    /// Repositories found in the project folder, with their last read status.
+    local_workspace_git_repositories: Vec<(PathBuf, Option<RepositoryStatus>)>,
+    /// Repository chosen in each project folder.
+    local_workspace_git_active_repositories: HashMap<String, PathBuf>,
+    local_workspace_git_discovery: Option<SpawnedFutureHandle>,
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     local_workspace_git_generation: u64,
     local_workspace_source_control_open: bool,
@@ -2020,9 +2028,10 @@ impl Workspace {
 
         use crate::persistence::LocalWorkspaceOperation as Operation;
 
+        let model_event_sender = self.model_event_sender.clone();
         let send = |operation| {
             #[cfg(feature = "local_fs")]
-            if let Some(sender) = self.model_event_sender.as_ref() {
+            if let Some(sender) = model_event_sender.as_ref() {
                 crate::persistence::apply_local_workspace_operation(sender, operation)
                     .map_err(|error| error.to_string())?;
             }
@@ -2058,14 +2067,15 @@ impl Workspace {
             Kind::RemoveOrganization(id) => {
                 let db_id =
                     i32::try_from(*id).map_err(|_| "ID de organização inválido.".to_owned())?;
-                send(Operation::DeleteOrganization(db_id))?;
                 let project_ids: Vec<_> = self
                     .local_workspace
                     .as_ref(ctx)
                     .projects_for_organization(*id)
                     .map(|project| project.id)
                     .collect();
+                // Tabs close while their projects still exist, so closing them persists cleanly.
                 self.close_local_project_tabs(&project_ids, ctx);
+                send(Operation::DeleteOrganization(db_id))?;
                 self.local_workspace.update(ctx, |model, ctx| {
                     if model.remove_organization(*id).is_ok() {
                         ctx.notify();
@@ -2137,18 +2147,73 @@ impl Workspace {
             }
             Kind::RemoveProject(id) => {
                 let db_id = i32::try_from(*id).map_err(|_| "ID de projeto inválido.".to_owned())?;
-                send(Operation::DeleteProject(db_id))?;
                 self.close_local_project_tabs(&[*id], ctx);
+                send(Operation::DeleteProject(db_id))?;
+                let organization_id = self
+                    .local_workspace
+                    .as_ref(ctx)
+                    .project(*id)
+                    .map(|project| project.organization_id);
+                let was_selected = self.local_workspace.as_ref(ctx).selected_project() == Some(*id);
                 self.local_workspace.update(ctx, |model, ctx| {
                     if model.remove_project(*id).is_ok() {
                         ctx.notify();
                     }
                 });
+                // Removing the open project lands on the organization's most recent project.
+                if was_selected && let Some(organization_id) = organization_id {
+                    self.select_local_workspace(Some(organization_id), None, ctx);
+                }
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
                 self.refresh_selected_local_workspace_git(ctx);
                 Ok(())
             }
         }
+    }
+
+    /// The project folder's repositories as the Git panel lists them.
+    fn local_workspace_repository_entries(&self) -> Vec<local_workspace::RepositoryEntry> {
+        let project = self
+            .local_workspace_git_project_path
+            .as_deref()
+            .map(Path::new);
+        let active = self.local_workspace_git_path.as_deref().map(Path::new);
+        self.local_workspace_git_repositories
+            .iter()
+            .map(|(root, status)| {
+                let label = project
+                    .and_then(|project| root.strip_prefix(project).ok())
+                    .map(|relative| relative.to_string_lossy().replace('\\', "/"))
+                    .filter(|relative| !relative.is_empty())
+                    .unwrap_or_else(|| {
+                        root.file_name()
+                            .map(|name| name.to_string_lossy().into_owned())
+                            .unwrap_or_else(|| root.to_string_lossy().into_owned())
+                    });
+                let (branch, ahead, behind, changes) = match status {
+                    Some(status) => (
+                        match &status.head {
+                            HeadState::Branch(name) => Some(name.clone()),
+                            HeadState::Detached => Some("HEAD destacado".to_owned()),
+                            HeadState::Unborn => None,
+                        },
+                        status.upstream.map_or(0, |upstream| upstream.ahead),
+                        status.upstream.map_or(0, |upstream| upstream.behind),
+                        status.changed_path_count(),
+                    ),
+                    None => (None, 0, 0, 0),
+                };
+                local_workspace::RepositoryEntry {
+                    root: root.to_string_lossy().into_owned(),
+                    label,
+                    branch,
+                    ahead,
+                    behind,
+                    changes,
+                    active: active.is_some_and(|active| crate::local_git::same_path(active, root)),
+                }
+            })
+            .collect()
     }
 
     /// The tab rename editor, keyed by the project tab being renamed.
@@ -2351,10 +2416,64 @@ impl Workspace {
                     .project(project_id)
                     .map(|project| project.path.clone())
             });
-        if self.local_workspace_git_path == selected_path {
+        if self.local_workspace_git_project_path == selected_path {
             return;
         }
+        self.local_workspace_git_project_path = selected_path.clone();
+        self.local_workspace_git_repositories.clear();
+        if let Some(discovery) = self.local_workspace_git_discovery.take() {
+            discovery.abort();
+        }
+        let Some(project_path) = selected_path else {
+            self.activate_local_workspace_git_repository(None, ctx);
+            return;
+        };
+        let remembered = self
+            .local_workspace_git_active_repositories
+            .get(&project_path)
+            .cloned();
+        let folder = PathBuf::from(&project_path);
+        self.local_workspace_git_discovery = Some(ctx.spawn(
+            async move {
+                let roots = crate::local_git::discover_repositories(&folder).await;
+                let mut repositories = Vec::with_capacity(roots.len());
+                for root in roots {
+                    let status = crate::local_git::read_status(&root).await.ok();
+                    repositories.push((root, status));
+                }
+                repositories
+            },
+            move |workspace, repositories, ctx| {
+                workspace.local_workspace_git_discovery = None;
+                if workspace.local_workspace_git_project_path.as_deref()
+                    != Some(project_path.as_str())
+                {
+                    return;
+                }
+                let active = remembered
+                    .filter(|remembered| {
+                        repositories
+                            .iter()
+                            .any(|(root, _)| crate::local_git::same_path(root, remembered))
+                    })
+                    .or_else(|| repositories.first().map(|(root, _)| root.clone()));
+                workspace.local_workspace_git_repositories = repositories;
+                // Without any repository the panel reports the project folder isn't one.
+                let active = active
+                    .map(|root| root.to_string_lossy().into_owned())
+                    .unwrap_or(project_path);
+                workspace.activate_local_workspace_git_repository(Some(active), ctx);
+            },
+        ));
+    }
 
+    /// Points the Git panel at `repository_path` and starts watching it.
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn activate_local_workspace_git_repository(
+        &mut self,
+        selected_path: Option<String>,
+        ctx: &mut ViewContext<Self>,
+    ) {
         self.local_workspace_git_path = selected_path.clone();
         self.local_workspace_git_generation = self.local_workspace_git_generation.wrapping_add(1);
         let generation = self.local_workspace_git_generation;
@@ -2453,6 +2572,7 @@ impl Workspace {
         if let Some(refresh) = self.local_workspace_git_refresh.take() {
             refresh.abort();
         }
+        let repository_root = path.clone();
         self.local_workspace_git_refresh = Some(ctx.spawn(
             async move {
                 let status = crate::local_git::read_status(&path).await?;
@@ -2469,6 +2589,13 @@ impl Workspace {
                 workspace.local_workspace_git_refresh = None;
                 match result {
                     Ok((status, branches, history)) => {
+                        if let Some((_, listed)) = workspace
+                            .local_workspace_git_repositories
+                            .iter_mut()
+                            .find(|(root, _)| crate::local_git::same_path(root, &repository_root))
+                        {
+                            *listed = Some(status.clone());
+                        }
                         workspace.local_workspace_git_status = Some(status);
                         workspace.local_workspace_git_branches = branches;
                         workspace.local_workspace_git_history = history;
@@ -5707,6 +5834,10 @@ impl Workspace {
             local_project_path_check_generation: 0,
             #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
             local_workspace_git_path: None,
+            local_workspace_git_project_path: None,
+            local_workspace_git_repositories: Vec::new(),
+            local_workspace_git_active_repositories: HashMap::new(),
+            local_workspace_git_discovery: None,
             #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
             local_workspace_git_generation: 0,
             local_workspace_source_control_open: false,
@@ -26864,6 +26995,9 @@ impl TypedActionView for Workspace {
             ToggleLocalGitPanelSection(section) => {
                 let panel = &mut self.local_workspace_git_panel;
                 match section {
+                    local_workspace::GitPanelSection::Repositories => {
+                        panel.repositories_collapsed = !panel.repositories_collapsed
+                    }
                     local_workspace::GitPanelSection::Changes => {
                         panel.changes_collapsed = !panel.changes_collapsed
                     }
@@ -26872,6 +27006,18 @@ impl TypedActionView for Workspace {
                     }
                 }
                 ctx.notify();
+            }
+            SelectLocalGitRepository(root) => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                {
+                    if let Some(project_path) = self.local_workspace_git_project_path.clone() {
+                        self.local_workspace_git_active_repositories
+                            .insert(project_path, PathBuf::from(root));
+                    }
+                    self.activate_local_workspace_git_repository(Some(root.clone()), ctx);
+                }
+                #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+                let _ = root;
             }
             ToggleLocalGitGraphFilter => {
                 self.local_workspace_git_panel.graph_current_only =
@@ -26884,8 +27030,12 @@ impl TypedActionView for Workspace {
                 ctx.notify();
             }
             ToggleLocalGitBranches => {
-                self.local_workspace_git_panel.branches_open =
-                    !self.local_workspace_git_panel.branches_open;
+                let panel = &mut self.local_workspace_git_panel;
+                panel.branches_open = !panel.branches_open;
+                // The branch list lives in "Alterações", so opening it from the footer expands it.
+                if panel.branches_open {
+                    panel.changes_collapsed = false;
+                }
                 ctx.notify();
             }
             ToggleLocalGitCommitDetails(hash) => {
@@ -26967,7 +27117,22 @@ impl TypedActionView for Workspace {
                 untracked,
             } => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-                self.open_local_workspace_git_diff(path, *staged, *untracked, ctx);
+                {
+                    // Clicking the open file again closes its comparison.
+                    let already_open =
+                        self.local_workspace_git_diff_preview
+                            .as_ref()
+                            .is_some_and(|preview| {
+                                preview.path.as_deref() == Some(path.as_str())
+                                    && preview.staged == *staged
+                            });
+                    if already_open {
+                        self.local_workspace_git_diff_preview = None;
+                        ctx.notify();
+                    } else {
+                        self.open_local_workspace_git_diff(path, *staged, *untracked, ctx);
+                    }
+                }
             }
             ApplyLocalGitHunk {
                 path,
@@ -30040,10 +30205,12 @@ impl View for Workspace {
                 .and_then(|project_id| local_workspace_model.project(project_id))
                 .map(|project| project.name.as_str())
                 .unwrap_or_default();
+            let repositories = self.local_workspace_repository_entries();
             let source_control =
                 self.local_workspace_source_control_open
                     .then(|| local_workspace::SourceControl {
                         project_name,
+                        repositories: &repositories,
                         status: git_status,
                         history: git_history,
                         branches: git_branches,
@@ -33104,6 +33271,7 @@ fn local_workspace_context_actions(
                 project_id: id,
                 position: None,
             },
+            WorkspaceAction::EditLocalWorkspaceProject(id),
             WorkspaceAction::ToggleLocalWorkspaceSourceControlForProject(id),
             WorkspaceAction::RemoveLocalWorkspaceProject(id),
         ],

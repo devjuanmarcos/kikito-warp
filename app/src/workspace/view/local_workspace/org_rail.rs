@@ -40,11 +40,36 @@ pub(super) fn render(model: &WorkspaceModel, appearance: &Appearance) -> Box<dyn
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_main_axis_alignment(MainAxisAlignment::Start)
         .with_spacing(8.);
-    top_items.add_child(
-        ConstrainedBox::new(Rect::new().finish())
-            .with_width(RAIL_WIDTH)
-            .with_height(RAIL_HEADER_HEIGHT)
+    let mut window_dots = Flex::row()
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(8.);
+    for _ in 0..3 {
+        window_dots.add_child(
+            ConstrainedBox::new(
+                Rect::new()
+                    .with_background(neutral(appearance.theme(), 20))
+                    .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                        warpui::elements::Radius::Percentage(50.),
+                    ))
+                    .finish(),
+            )
+            .with_width(12.)
+            .with_height(12.)
             .finish(),
+        );
+    }
+    top_items.add_child(
+        ConstrainedBox::new(
+            Flex::row()
+                .with_main_axis_size(warpui::elements::MainAxisSize::Max)
+                .with_main_axis_alignment(MainAxisAlignment::Center)
+                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                .with_child(window_dots.finish())
+                .finish(),
+        )
+        .with_width(RAIL_WIDTH)
+        .with_height(RAIL_HEADER_HEIGHT)
+        .finish(),
     );
     top_items.add_child(rail_item(
         None,
@@ -287,21 +312,42 @@ fn rail_item(
     let tile = if brand_home {
         Container::new(tile_contents).finish()
     } else if has_image {
-        // The kit rings an image tile instead of tinting it: the outline color at rest, the
-        // organization's color (1.5px) when active.
-        Container::new(tile_contents)
-            .with_border(if active {
-                warpui::elements::Border::all(1.5).with_border_fill(accent_color.map_or_else(
-                    || theme.accent(),
-                    |accent| organization_accent_with_alpha(theme, accent, 255),
+        // The kit rings an image tile from outside (a box-shadow): the outline color at rest,
+        // the organization's color (1.5px) when active. Drawn as an overlay so the ring never
+        // shrinks or shifts the image.
+        let ring_width = if active { 1.5 } else { 1. };
+        let ring_radius = if active { 10. } else { 8. } + ring_width;
+        let ring = ConstrainedBox::new(
+            Container::new(Rect::new().finish())
+                .with_border(warpui::elements::Border::all(ring_width).with_border_fill(
+                    if active {
+                        accent_color.map_or_else(
+                            || theme.accent(),
+                            |accent| organization_accent_with_alpha(theme, accent, 255),
+                        )
+                    } else {
+                        theme.outline()
+                    },
                 ))
-            } else {
-                warpui::elements::Border::all(1.).with_border_fill(theme.outline())
-            })
-            .with_corner_radius(warpui::elements::CornerRadius::with_all(
-                warpui::elements::Radius::Pixels(if active { 10. } else { 8. }),
-            ))
-            .finish()
+                .with_corner_radius(warpui::elements::CornerRadius::with_all(
+                    warpui::elements::Radius::Pixels(ring_radius),
+                ))
+                .finish(),
+        )
+        .with_width(ORGANIZATION_TILE_SIZE + 2. * ring_width)
+        .with_height(ORGANIZATION_TILE_SIZE + 2. * ring_width)
+        .finish();
+        let mut ringed = Stack::new().with_child(tile_contents);
+        ringed.add_positioned_overlay_child(
+            ring,
+            OffsetPositioning::offset_from_parent(
+                vec2f(0., 0.),
+                ParentOffsetBounds::Unbounded,
+                ParentAnchor::Center,
+                ChildAnchor::Center,
+            ),
+        );
+        ringed.finish()
     } else {
         Container::new(tile_contents)
             .with_background(accent_color.map_or_else(

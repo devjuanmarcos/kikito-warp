@@ -192,6 +192,14 @@ fn items(target: ContextMenuTarget) -> Vec<MenuItem> {
                 checked: false,
             },
             MenuItem {
+                label: "Renomear projeto",
+                icon: Icon::Pencil,
+                action: WorkspaceAction::EditLocalWorkspaceProject(id),
+                danger: false,
+                separator_before: false,
+                checked: false,
+            },
+            MenuItem {
                 label: "Controle de versão",
                 icon: Icon::GitBranch,
                 action: WorkspaceAction::ToggleLocalWorkspaceSourceControlForProject(id),

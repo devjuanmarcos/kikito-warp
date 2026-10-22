@@ -24,7 +24,7 @@ fn organization_context_menu_selection_wraps_over_its_two_actions() {
 }
 
 #[test]
-fn project_context_menu_selection_wraps_over_its_three_actions() {
+fn project_context_menu_selection_wraps_over_its_four_actions() {
     let mut model = WorkspaceModel::new();
     let organization = model.add_organization("Equipe").unwrap();
     let project = model
@@ -33,7 +33,7 @@ fn project_context_menu_selection_wraps_over_its_three_actions() {
     model.set_context_menu(Some(super::model::ContextMenuTarget::Project(project)));
 
     model.move_context_menu_selection(-1);
-    assert_eq!(model.context_menu_index(), 2);
+    assert_eq!(model.context_menu_index(), 3);
 }
 
 #[test]

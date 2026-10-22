@@ -25,6 +25,7 @@ pub(crate) enum CommandFailure {
     DirtyWorktree,
     PermissionDenied,
     NoCommonHistory,
+    RemoteUnavailable,
     Other,
 }
 
@@ -67,6 +68,9 @@ impl fmt::Display for GitError {
                     }
                     CommandFailure::NoCommonHistory => {
                         " As referências locais não têm um histórico em comum."
+                    }
+                    CommandFailure::RemoteUnavailable => {
+                        " O repositório não tem um remoto configurado ou ele está inacessível."
                     }
                     CommandFailure::Other => "",
                 };

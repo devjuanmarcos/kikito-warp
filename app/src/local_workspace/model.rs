@@ -517,7 +517,7 @@ impl WorkspaceModel {
         };
         let item_count = match target {
             ContextMenuTarget::Organization(_) => 2,
-            ContextMenuTarget::Project(_) => 3,
+            ContextMenuTarget::Project(_) => 4,
         };
         self.context_menu_keyboard_active = true;
         self.context_menu_index =

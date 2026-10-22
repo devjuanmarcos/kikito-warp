@@ -24,6 +24,7 @@ pub(crate) struct DiffPreview {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GitPanelSection {
+    Repositories,
     Changes,
     Graph,
 }
@@ -38,6 +39,7 @@ pub enum GitRemoteAction {
 /// Presentation state of the panel, kept apart from the repository data.
 #[derive(Clone, Default)]
 pub(crate) struct GitPanelState {
+    pub repositories_collapsed: bool,
     pub changes_collapsed: bool,
     pub graph_collapsed: bool,
     /// "Só a atual": only commits reachable from HEAD.
@@ -52,9 +54,24 @@ pub(crate) struct GitPanelState {
     pub last_fetch_ms: Option<i64>,
 }
 
+/// One repository found in the project folder, as the "Repositórios" list shows it.
+pub(crate) struct RepositoryEntry {
+    /// Absolute root, used to select the repository.
+    pub root: String,
+    /// Root relative to the project folder ("." for the folder itself).
+    pub label: String,
+    pub branch: Option<String>,
+    pub ahead: usize,
+    pub behind: usize,
+    pub changes: usize,
+    pub active: bool,
+}
+
 /// Everything the "Controle de versão" panel shows.
 pub(crate) struct SourceControl<'a> {
     pub project_name: &'a str,
+    /// Repositories in the project folder; the list shows when there is more than one.
+    pub repositories: &'a [RepositoryEntry],
     pub status: Option<&'a RepositoryStatus>,
     pub history: &'a [LocalCommit],
     pub branches: &'a [LocalBranch],

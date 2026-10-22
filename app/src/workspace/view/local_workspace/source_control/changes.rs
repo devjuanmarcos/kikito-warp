@@ -122,6 +122,9 @@ pub(super) fn render(
     let mut sections = Flex::column()
         .with_main_axis_size(MainAxisSize::Min)
         .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
+    if source_control.repositories.len() > 1 {
+        sections.add_child(repositories_section(&source_control, appearance));
+    }
     sections.add_child(changes_section(&source_control, appearance));
     sections.add_child(graph_section(&source_control, appearance));
     let scrollable = NewScrollable::vertical(
@@ -218,7 +221,7 @@ fn section_header(
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
     let sub = theme.sub_text_color(theme.surface_1());
-    let row = Flex::row()
+    let title_row = Flex::row()
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(4.)
@@ -231,32 +234,56 @@ fn section_header(
             sub,
             12.,
         ))
-        .with_child(
-            Text::new_inline(title, appearance.ui_font_family(), 10.)
-                .with_style(Properties::default().weight(Weight::Semibold))
-                .with_color(sub.into())
-                .finish(),
-        )
-        .with_child(Expanded::new(1., Flex::row().finish()).finish())
-        .with_child(right)
+        .with_child(tracked_title(title, sub, appearance))
         .finish();
-    Hoverable::new(mouse_state("git-section", section as i64), |_| {
-        ConstrainedBox::new(
-            Container::new(row)
-                .with_padding_left(6.)
-                .with_padding_right(8.)
-                .with_border(Border::top(1.).with_border_fill(theme.outline()))
-                .finish(),
-        )
-        .with_height(SECTION_HEADER_HEIGHT)
-        .finish()
+    // Only the title area toggles the section, so clicks on the controls at the right (branch,
+    // fetch, pull, push) don't collapse it.
+    let toggle = Hoverable::new(mouse_state("git-section", section as i64), |_| {
+        ConstrainedBox::new(title_row)
+            .with_height(SECTION_HEADER_HEIGHT - 1.)
+            .finish()
     })
     .with_cursor(Cursor::PointingHand)
     .on_click(move |ctx, _, _| {
         ctx.dispatch_typed_action(WorkspaceAction::ToggleLocalGitPanelSection(section))
     })
+    .finish();
+    let row = Flex::row()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(4.)
+        .with_child(Expanded::new(1., toggle).finish())
+        .with_child(right)
+        .finish();
+    ConstrainedBox::new(
+        Container::new(row)
+            .with_padding_left(6.)
+            .with_padding_right(8.)
+            .with_border(Border::top(1.).with_border_fill(theme.outline()))
+            .finish(),
+    )
+    .with_height(SECTION_HEADER_HEIGHT)
     .finish()
 }
+
+/// Section title with the kit's `letter-spacing: .04em`, which `Text` can't express: one
+/// glyph per child, spaced by that amount.
+fn tracked_title(title: &'static str, color: Fill, appearance: &Appearance) -> Box<dyn Element> {
+    let mut letters = Flex::row()
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(TITLE_TRACKING);
+    for letter in title.chars() {
+        letters.add_child(
+            Text::new_inline(letter.to_string(), appearance.ui_font_family(), 10.)
+                .with_style(Properties::default().weight(Weight::Semibold))
+                .with_color(color.into())
+                .finish(),
+        );
+    }
+    letters.finish()
+}
+
+const TITLE_TRACKING: f32 = 0.4;
 
 /// Kit `GPIconBtn`: 20px, sub color turning main with a fg-overlay-2 background on hover.
 fn icon_button(
@@ -310,6 +337,9 @@ fn changes_section(
     let sub = theme.sub_text_color(background);
     let panel = source_control.panel;
     let busy = |action| panel.remote_busy == Some(action);
+    let open_diff = source_control
+        .diff_preview
+        .and_then(|preview| preview.path.as_deref().map(|path| (path, preview.staged)));
     let mut right = Flex::row()
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(1.);
@@ -435,7 +465,9 @@ fn changes_section(
             appearance,
         ));
         for file in &staged.files {
-            section.add_child(file_row(file, &staged, false, pending, appearance));
+            section.add_child(file_row(
+                file, &staged, false, pending, open_diff, appearance,
+            ));
         }
     }
     let changes_count = unstaged.files.len() + untracked.files.len() + conflicted.files.len();
@@ -451,11 +483,18 @@ fn changes_section(
             appearance,
         ));
     for file in &conflicted.files {
-        changes.add_child(file_row(file, &conflicted, true, pending, appearance));
+        changes.add_child(file_row(
+            file,
+            &conflicted,
+            true,
+            pending,
+            open_diff,
+            appearance,
+        ));
     }
     for group in [&unstaged, &untracked] {
         for file in &group.files {
-            changes.add_child(file_row(file, group, false, pending, appearance));
+            changes.add_child(file_row(file, group, false, pending, open_diff, appearance));
         }
     }
     if staged.files.is_empty() && changes_count == 0 {
@@ -512,35 +551,10 @@ fn list_header(
     if let Some((icon, action)) = bulk {
         row.add_child(icon_button(icon, None, false, action, key, appearance));
     }
-    let count = count.to_string();
-    // A row has no width bound, so the badge's centered text needs an explicit width: the kit's
-    // 16px pill, widened by about 6px per extra digit.
-    let badge_width = (8. + 6. * count.len() as f32).max(16.);
     row.add_child(
-        Container::new(
-            ConstrainedBox::new(
-                Container::new(
-                    Flex::row()
-                        .with_main_axis_size(MainAxisSize::Max)
-                        .with_main_axis_alignment(MainAxisAlignment::Center)
-                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                        .with_child(
-                            Text::new_inline(count, appearance.ui_font_family(), 10.)
-                                .with_color(theme.main_text_color(background).into())
-                                .finish(),
-                        )
-                        .finish(),
-                )
-                .with_background(neutral(theme, 20))
-                .with_corner_radius(radius(8.))
-                .finish(),
-            )
-            .with_width(badge_width)
-            .with_height(16.)
+        Container::new(count_badge(count, appearance))
+            .with_margin_left(4.)
             .finish(),
-        )
-        .with_margin_left(4.)
-        .finish(),
     );
     ConstrainedBox::new(
         Container::new(row.finish())
@@ -557,6 +571,7 @@ fn file_row(
     group: &ChangeGroup,
     conflict: bool,
     operation_pending: bool,
+    open_diff: Option<(&str, bool)>,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
@@ -663,11 +678,14 @@ fn file_row(
     );
     let staged = diff_kind == LocalGitDiffKind::Staged;
     let untracked = diff_kind == LocalGitDiffKind::Untracked;
+    let selected = open_diff == Some((file.path.as_str(), staged));
     Hoverable::new(row_key, move |mouse| {
         let mut container = Container::new(row.finish())
             .with_padding_left(26.)
             .with_padding_right(8.);
-        if mouse.is_mouse_over_element() {
+        if selected {
+            container = container.with_background(fg_overlay(theme, 10));
+        } else if mouse.is_mouse_over_element() {
             container = container.with_background(fg_overlay(theme, 5));
         }
         ConstrainedBox::new(container.finish())
@@ -875,11 +893,8 @@ fn with_alpha(color: ColorU, alpha: u8) -> Fill {
 fn ref_pill(label: &RefLabel, lane: ColorU, appearance: &Appearance) -> Box<dyn Element> {
     let theme = appearance.theme();
     let (background, border, text) = if label.head {
-        (
-            theme.accent(),
-            theme.accent(),
-            theme.font_color(theme.accent().into_solid()),
-        )
+        // The kit's `text-on-accent` is the theme foreground.
+        (theme.accent(), theme.accent(), theme.foreground())
     } else {
         (
             with_alpha(lane, 61),
@@ -1086,33 +1101,41 @@ fn footer(source_control: &SourceControl<'_>, appearance: &Appearance) -> Box<dy
     let theme = appearance.theme();
     let background = theme.surface_1();
     let sub = theme.sub_text_color(background);
+    // The kit's gap is 10px; the app's mono font draws the branch name 1px wider than the kit's.
     let mut row = Flex::row()
         .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
-        .with_spacing(10.);
+        .with_spacing(9.);
     if let Some(status) = source_control.status {
+        let branch = Flex::row()
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_spacing(4.)
+            .with_child(sized_icon(Icon::GitBranch, sub, 12.))
+            .with_child(
+                Shrinkable::new(
+                    1.,
+                    Text::new_inline(
+                        head_name(status).to_owned(),
+                        appearance.monospace_font_family(),
+                        11.,
+                    )
+                    .with_color(sub.into())
+                    .soft_wrap(false)
+                    .with_clip(ClipConfig::ellipsis())
+                    .finish(),
+                )
+                .finish(),
+            )
+            .finish();
+        // Like VS Code's status bar branch: clicking it opens the branch list.
         row.add_child(
             Shrinkable::new(
                 1.,
-                Flex::row()
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_spacing(4.)
-                    .with_child(sized_icon(Icon::GitBranch, sub, 12.))
-                    .with_child(
-                        Shrinkable::new(
-                            1.,
-                            Text::new_inline(
-                                head_name(status).to_owned(),
-                                appearance.monospace_font_family(),
-                                11.,
-                            )
-                            .with_color(sub.into())
-                            .soft_wrap(false)
-                            .with_clip(ClipConfig::ellipsis())
-                            .finish(),
-                        )
-                        .finish(),
-                    )
+                Hoverable::new(mouse_state("git-footer-branch", 0), |_| branch)
+                    .with_cursor(Cursor::PointingHand)
+                    .on_click(|ctx, _, _| {
+                        ctx.dispatch_typed_action(WorkspaceAction::ToggleLocalGitBranches)
+                    })
                     .finish(),
             )
             .finish(),
@@ -1203,9 +1226,10 @@ pub(super) fn small_secondary_button(
         theme,
         key,
         move |ctx| ctx.dispatch_typed_action(action.clone()),
+        // The kit pads 8px around a label the app's UI font draws 2px narrower.
         Container::new(content)
-            .with_padding_left(8.)
-            .with_padding_right(8.)
+            .with_padding_left(9.)
+            .with_padding_right(9.)
             .with_padding_bottom(2.)
             .finish(),
     )
@@ -1285,3 +1309,140 @@ fn discard_confirmation_row(
 #[cfg(test)]
 #[path = "changes_tests.rs"]
 mod tests;
+
+/// VS Code's "Source Control Repositories": every repository in the project folder with its
+/// branch, sync counts and pending changes; clicking one makes it the panel's repository.
+fn repositories_section(
+    source_control: &SourceControl<'_>,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    let background = theme.surface_1();
+    let sub = theme.sub_text_color(background);
+    let mut section = Flex::column()
+        .with_main_axis_size(MainAxisSize::Min)
+        .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
+        .with_child(section_header(
+            "REPOSITÓRIOS",
+            GitPanelSection::Repositories,
+            source_control.panel.repositories_collapsed,
+            Flex::row().finish(),
+            appearance,
+        ));
+    if source_control.panel.repositories_collapsed {
+        return section.finish();
+    }
+    for (index, repository) in source_control.repositories.iter().enumerate() {
+        let name_color = if repository.active {
+            theme.main_text_color(background)
+        } else {
+            sub
+        };
+        let mut row = Flex::row()
+            .with_main_axis_size(MainAxisSize::Max)
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_spacing(6.)
+            .with_child(sized_icon(Icon::Folder, sub, 14.))
+            .with_child(
+                Shrinkable::new(
+                    1.,
+                    Text::new_inline(repository.label.clone(), appearance.ui_font_family(), 12.)
+                        .with_style(if repository.active {
+                            Properties::default().weight(Weight::Semibold)
+                        } else {
+                            Properties::default()
+                        })
+                        .with_color(name_color.into())
+                        .soft_wrap(false)
+                        .with_clip(ClipConfig::ellipsis())
+                        .finish(),
+                )
+                .finish(),
+            );
+        if let Some(branch) = &repository.branch {
+            row.add_child(
+                Flex::row()
+                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                    .with_spacing(3.)
+                    .with_child(sized_icon(Icon::GitBranch, sub, 11.))
+                    .with_child(
+                        Text::new_inline(branch.clone(), appearance.monospace_font_family(), 11.)
+                            .with_color(sub.into())
+                            .soft_wrap(false)
+                            .finish(),
+                    )
+                    .finish(),
+            );
+        }
+        row.add_child(Expanded::new(1., Flex::row().finish()).finish());
+        if repository.ahead > 0 || repository.behind > 0 {
+            row.add_child(
+                Text::new_inline(
+                    format!("↑{} ↓{}", repository.ahead, repository.behind),
+                    appearance.ui_font_family(),
+                    11.,
+                )
+                .with_color(sub.into())
+                .finish(),
+            );
+        }
+        if repository.changes > 0 {
+            row.add_child(count_badge(repository.changes, appearance));
+        }
+        let root = repository.root.clone();
+        let active = repository.active;
+        let state = mouse_state("git-repository", index as i64);
+        section.add_child(
+            Hoverable::new(state, move |mouse| {
+                let mut container = Container::new(row.finish())
+                    .with_padding_left(14.)
+                    .with_padding_right(8.);
+                if active {
+                    container = container.with_background(fg_overlay(theme, 10));
+                } else if mouse.is_mouse_over_element() {
+                    container = container.with_background(fg_overlay(theme, 5));
+                }
+                ConstrainedBox::new(container.finish())
+                    .with_height(FILE_ROW_HEIGHT)
+                    .finish()
+            })
+            .with_cursor(Cursor::PointingHand)
+            .on_click(move |ctx, _, _| {
+                ctx.dispatch_typed_action(WorkspaceAction::SelectLocalGitRepository(root.clone()))
+            })
+            .finish(),
+        );
+    }
+    Container::new(section.finish())
+        .with_padding_bottom(6.)
+        .finish()
+}
+
+/// Kit count badge: a 16px neutral pill.
+fn count_badge(count: usize, appearance: &Appearance) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    let count = count.to_string();
+    // A row has no width bound, so the badge's centered text needs an explicit width: the kit's
+    // 16px pill, widened by about 6px per extra digit.
+    let badge_width = (8. + 6. * count.len() as f32).max(16.);
+    ConstrainedBox::new(
+        Container::new(
+            Flex::row()
+                .with_main_axis_size(MainAxisSize::Max)
+                .with_main_axis_alignment(MainAxisAlignment::Center)
+                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                .with_child(
+                    Text::new_inline(count, appearance.ui_font_family(), 10.)
+                        .with_color(theme.main_text_color(theme.surface_1()).into())
+                        .finish(),
+                )
+                .finish(),
+        )
+        .with_background(neutral(theme, 20))
+        .with_corner_radius(radius(8.))
+        .finish(),
+    )
+    .with_width(badge_width)
+    .with_height(16.)
+    .finish()
+}

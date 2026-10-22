@@ -1,10 +1,16 @@
 use crate::appearance::Appearance;
 use crate::local_git::{DiffLine, DiffLineKind};
 use crate::workspace::action::WorkspaceAction;
+use pathfinder_color::ColorU;
+use warp_core::ui::theme::Fill;
 use warpui::elements::{
-    Container, CrossAxisAlignment, DispatchEventResult, Element, EventHandler, Flex, MainAxisSize,
-    ParentElement, Shrinkable, Text,
+    Border, ConstrainedBox, Container, CrossAxisAlignment, Element, Expanded, Flex, Hoverable,
+    MainAxisSize, ParentElement, Shrinkable, Text,
 };
+use warpui::platform::Cursor;
+use warpui::text_layout::ClipConfig;
+
+use super::super::ws_style::{fg_overlay, mouse_state, radius};
 
 use super::DiffPreview;
 
@@ -64,7 +70,8 @@ pub(super) fn render(
         .with_background(theme.surface_1())
         .with_padding_left(8.)
         .with_padding_right(8.)
-        .with_padding_top(8.)
+        .with_padding_top(6.)
+        .with_padding_bottom(8.)
         .finish()
 }
 
@@ -95,42 +102,54 @@ fn hunk_action(
         staged,
         untracked,
     };
-    let button = Container::new(
-        Text::new_inline(text, appearance.ui_font_family(), 9.)
-            .with_color(theme.font_color(theme.surface_1()).into())
-            .finish(),
-    )
-    .with_background(theme.surface_2())
-    .with_uniform_padding(4.)
-    .finish();
-    if !operation_pending {
-        row.add_child(
-            EventHandler::new(button)
-                .on_left_mouse_up(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(action.clone());
-                    DispatchEventResult::StopPropagation
+    let enabled = !operation_pending;
+    let button = Hoverable::new(mouse_state("git-hunk", index as i64), move |mouse| {
+        let mut button = Container::new(
+            Text::new_inline(text, appearance.ui_font_family(), 11.)
+                .with_color(if enabled {
+                    theme.font_color(theme.surface_1()).into()
+                } else {
+                    theme.disabled_text_color(theme.surface_1()).into()
                 })
                 .finish(),
-        );
+        )
+        .with_padding_left(6.)
+        .with_padding_right(6.)
+        .with_padding_top(2.)
+        .with_padding_bottom(2.)
+        .with_border(Border::all(1.).with_border_fill(theme.outline()))
+        .with_corner_radius(radius(4.));
+        if enabled && mouse.is_mouse_over_element() {
+            button = button.with_background(fg_overlay(theme, 10));
+        }
+        button.finish()
+    });
+    let button = if enabled {
+        button
+            .with_cursor(Cursor::PointingHand)
+            .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
+            .finish()
     } else {
-        row.add_child(button);
-    }
+        button.finish()
+    };
+    row.add_child(button);
     Container::new(row.finish())
         .with_background(theme.surface_1())
-        .with_padding_top(if index == 0 { 5. } else { 2. })
-        .with_padding_bottom(2.)
+        .with_padding_top(if index == 0 { 4. } else { 6. })
+        .with_padding_bottom(4.)
         .finish()
 }
 
 fn label(value: &str, appearance: &Appearance) -> Box<dyn Element> {
     let theme = appearance.theme();
-    Text::new_inline(value.to_owned(), appearance.ui_font_family(), 10.)
+    Text::new_inline(value.to_owned(), appearance.ui_font_family(), 11.)
         .with_color(theme.sub_text_color(theme.surface_1()).into())
+        .soft_wrap(false)
+        .with_clip(ClipConfig::ellipsis())
         .finish()
 }
 
 fn diff_row(line: &DiffLine, appearance: &Appearance) -> Box<dyn Element> {
-    let theme = appearance.theme();
     let old = diff_cell(
         line.old_line,
         line.old_text.as_deref(),
@@ -145,16 +164,17 @@ fn diff_row(line: &DiffLine, appearance: &Appearance) -> Box<dyn Element> {
         false,
         appearance,
     );
-    let mut row = Flex::row()
+    Flex::row()
+        .with_main_axis_size(MainAxisSize::Max)
         .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-        .with_spacing(2.);
-    row.add_child(Shrinkable::new(1., old).finish());
-    row.add_child(Shrinkable::new(1., new).finish());
-    Container::new(row.finish())
-        .with_background(theme.surface_1())
+        .with_spacing(1.)
+        .with_child(Expanded::new(1., old).finish())
+        .with_child(Expanded::new(1., new).finish())
         .finish()
 }
 
+/// One side of a side-by-side diff row: a fixed line-number gutter and the line's text, tinted
+/// red (removed) or green (added) when the line changed.
 fn diff_cell(
     line_number: Option<usize>,
     text: Option<&str>,
@@ -163,26 +183,64 @@ fn diff_cell(
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
-    let content = match (line_number, text) {
-        (Some(number), Some(text)) => format!("{number:>4} {text}"),
-        _ => String::new(),
-    };
-    let color: pathfinder_color::ColorU = match (kind, is_old) {
-        (DiffLineKind::Changed, true) => theme.ui_error_color(),
-        (DiffLineKind::Changed, false) => theme.font_color(theme.surface_1()).into(),
-        (DiffLineKind::Context, _) => theme.sub_text_color(theme.surface_1()).into(),
-    };
-    Container::new(
-        Text::new_inline(content, appearance.ui_font_family(), 9.)
-            .with_color(color)
-            .finish(),
-    )
-    .with_background(if kind == DiffLineKind::Changed {
-        theme.surface_2()
+    let changed = kind == DiffLineKind::Changed && text.is_some();
+    let tint: Option<Fill> = changed.then(|| {
+        let base: ColorU = if is_old {
+            theme.terminal_colors().normal.red.into()
+        } else {
+            theme.terminal_colors().normal.green.into()
+        };
+        Fill::Solid(ColorU::new(base.r, base.g, base.b, 38))
+    });
+    let text_color: ColorU = if changed {
+        theme.font_color(theme.surface_1()).into()
     } else {
-        theme.surface_1()
-    })
-    .with_padding_left(2.)
-    .with_padding_right(2.)
-    .finish()
+        theme.sub_text_color(theme.surface_1()).into()
+    };
+    let gutter = ConstrainedBox::new(
+        Text::new_inline(
+            line_number
+                .map(|number| number.to_string())
+                .unwrap_or_default(),
+            appearance.monospace_font_family(),
+            11.,
+        )
+        .with_color(theme.hint_text_color(theme.surface_1()).into())
+        .soft_wrap(false)
+        .finish(),
+    )
+    .with_width(LINE_NUMBER_WIDTH)
+    .finish();
+    let row = Flex::row()
+        .with_main_axis_size(MainAxisSize::Max)
+        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+        .with_spacing(4.)
+        .with_child(gutter)
+        .with_child(
+            Expanded::new(
+                1.,
+                Text::new_inline(
+                    text.unwrap_or_default().to_owned(),
+                    appearance.monospace_font_family(),
+                    11.,
+                )
+                .with_color(text_color)
+                .soft_wrap(false)
+                .with_clip(ClipConfig::ellipsis())
+                .finish(),
+            )
+            .finish(),
+        )
+        .finish();
+    let mut cell = Container::new(row)
+        .with_padding_left(4.)
+        .with_padding_right(4.)
+        .with_padding_top(1.)
+        .with_padding_bottom(1.);
+    if let Some(tint) = tint {
+        cell = cell.with_background(tint);
+    }
+    cell.finish()
 }
+
+const LINE_NUMBER_WIDTH: f32 = 22.;

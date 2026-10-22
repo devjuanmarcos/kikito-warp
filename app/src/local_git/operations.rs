@@ -308,6 +308,12 @@ pub(super) fn classify_failure(stderr: &[u8]) -> CommandFailure {
         || stderr.contains("no common ancestor")
     {
         CommandFailure::NoCommonHistory
+    } else if stderr.contains("does not appear to be a git repository")
+        || stderr.contains("could not read from remote repository")
+        || stderr.contains("no configured push destination")
+        || stderr.contains("could not resolve host")
+    {
+        CommandFailure::RemoteUnavailable
     } else {
         CommandFailure::Other
     }

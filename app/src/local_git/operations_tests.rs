@@ -1204,3 +1204,48 @@ fn git_output(cwd: &Path, args: &[&str]) -> String {
     );
     String::from_utf8_lossy(&output.stdout).into_owned()
 }
+
+#[test]
+fn missing_remote_is_reported_as_unavailable_remote() {
+    use super::errors::CommandFailure;
+
+    assert_eq!(
+        super::operations::classify_failure(
+            b"fatal: 'origin' does not appear to be a git repository
+fatal: Could not read from remote repository."
+        ),
+        CommandFailure::RemoteUnavailable
+    );
+}
+
+#[test]
+fn nested_repositories_are_found_up_to_two_levels_and_not_inside_each_other() {
+    let root = tempfile::tempdir().unwrap();
+    let make_repo = |relative: &str| {
+        let path = root.path().join(relative);
+        std::fs::create_dir_all(path.join(".git")).unwrap();
+        path
+    };
+    let api = make_repo("api");
+    let web = make_repo("apps/web");
+    make_repo("api/vendored");
+    make_repo("apps/deep/too-far");
+    make_repo("node_modules/package");
+    std::fs::create_dir_all(root.path().join("docs")).unwrap();
+
+    let found = super::repository::find_nested_repositories(root.path(), 2);
+
+    assert_eq!(found, vec![api, web]);
+}
+
+#[test]
+fn same_path_ignores_separators_case_and_trailing_slashes() {
+    assert!(super::same_path(
+        Path::new(r"C:\Projetos\Api\"),
+        Path::new("c:/projetos/api")
+    ));
+    assert!(!super::same_path(
+        Path::new("c:/projetos/api"),
+        Path::new("c:/projetos/web")
+    ));
+}

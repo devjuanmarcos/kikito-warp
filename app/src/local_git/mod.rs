@@ -302,6 +302,37 @@ impl LocalGitService {
     }
 }
 
+/// Repositories for a project folder: the one containing the folder (if any) first, then the
+/// ones nested up to two levels below it.
+pub(crate) async fn discover_repositories(folder: &Path) -> Vec<PathBuf> {
+    let mut repositories = Vec::new();
+    if let Ok(root) = repository::discover_repository(folder).await {
+        repositories.push(root);
+    }
+    let folder = folder.to_path_buf();
+    let nested = repository::find_nested_repositories(&folder, NESTED_REPOSITORY_DEPTH);
+    for root in nested {
+        if !repositories.iter().any(|known| same_path(known, &root)) {
+            repositories.push(root);
+        }
+    }
+    repositories
+}
+
+const NESTED_REPOSITORY_DEPTH: usize = 2;
+
+/// Compares paths the way Git and the file system report them on Windows (separators and case
+/// may differ).
+pub(crate) fn same_path(left: &Path, right: &Path) -> bool {
+    let normalize = |path: &Path| {
+        path.to_string_lossy()
+            .replace('\\', "/")
+            .trim_end_matches('/')
+            .to_lowercase()
+    };
+    normalize(left) == normalize(right)
+}
+
 pub(crate) async fn read_status(path: &Path) -> Result<RepositoryStatus, GitError> {
     LocalGitService::open(path).await?.status().await
 }
