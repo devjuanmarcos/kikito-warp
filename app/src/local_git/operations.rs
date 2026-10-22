@@ -40,6 +40,22 @@ pub(super) enum GitOperation {
     Fetch { remote: String },
     Pull { remote: String, branch: String },
     Push { remote: String, branch: String },
+    RestoreAllWorktree,
+    CleanUntracked,
+    DeleteBranch { branch: String, force: bool },
+    RemoteBranches,
+    CheckoutRemoteBranch { remote_branch: String },
+    MergeBranch { branch: String },
+    MergeAbort,
+    StashPush { include_untracked: bool },
+    StashList,
+    StashApply { index: usize, pop: bool },
+    StashDrop { index: usize },
+    CherryPick { commit: String },
+    RevertCommit { commit: String },
+    CommitFiles { commit: String },
+    ResolveConflict { path: PathBuf, theirs: bool },
+    Init,
 }
 
 impl GitOperation {
@@ -51,7 +67,10 @@ impl GitOperation {
             | Self::ValidateBranchName { .. }
             | Self::ResolveReference { .. }
             | Self::History { .. }
-            | Self::MergeBase { .. } => OperationKind::LocalRead,
+            | Self::MergeBase { .. }
+            | Self::RemoteBranches
+            | Self::StashList
+            | Self::CommitFiles { .. } => OperationKind::LocalRead,
             Self::Diff { .. } => OperationKind::LocalRead,
             Self::Stage { .. }
             | Self::CheckoutBranch { .. }
@@ -63,7 +82,20 @@ impl GitOperation {
             | Self::Commit { .. }
             | Self::UndoLastCommit
             | Self::RevertLastCommit
-            | Self::ApplyCachedPatch { .. } => OperationKind::LocalWrite,
+            | Self::ApplyCachedPatch { .. }
+            | Self::RestoreAllWorktree
+            | Self::CleanUntracked
+            | Self::DeleteBranch { .. }
+            | Self::CheckoutRemoteBranch { .. }
+            | Self::MergeBranch { .. }
+            | Self::MergeAbort
+            | Self::StashPush { .. }
+            | Self::StashApply { .. }
+            | Self::StashDrop { .. }
+            | Self::CherryPick { .. }
+            | Self::RevertCommit { .. }
+            | Self::ResolveConflict { .. }
+            | Self::Init => OperationKind::LocalWrite,
             Self::Fetch { .. } | Self::Pull { .. } | Self::Push { .. } => OperationKind::Remote,
         }
     }
@@ -106,6 +138,8 @@ impl GitOperation {
             ],
             Self::History { limit } => vec![
                 "log".into(),
+                // The stash's internal commits aren't history, like in VS Code's graph.
+                "--exclude=refs/stash".into(),
                 "--all".into(),
                 "--date-order".into(),
                 "--format=%H%x00%P%x00%an%x00%aI%x00%s%x00%D".into(),
@@ -190,6 +224,66 @@ impl GitOperation {
                 // `-u` makes publishing a branch also set its upstream, so status can report sync.
                 vec!["push".into(), "-u".into(), remote.clone(), branch.clone()]
             }
+            Self::RestoreAllWorktree => vec![
+                "restore".into(),
+                "--worktree".into(),
+                "--".into(),
+                ".".into(),
+            ],
+            Self::CleanUntracked => vec!["clean".into(), "-fd".into(), "--".into(), ".".into()],
+            Self::DeleteBranch { branch, force } => vec![
+                "branch".into(),
+                if *force { "-D" } else { "-d" }.into(),
+                branch.clone(),
+            ],
+            Self::RemoteBranches => vec![
+                "for-each-ref".into(),
+                "--format=%(refname:short)%00%(symref)".into(),
+                "refs/remotes".into(),
+            ],
+            Self::CheckoutRemoteBranch { remote_branch } => {
+                vec!["switch".into(), "--track".into(), remote_branch.clone()]
+            }
+            Self::MergeBranch { branch } => vec!["merge".into(), "--no-edit".into(), branch.clone()],
+            Self::MergeAbort => vec!["merge".into(), "--abort".into()],
+            Self::StashPush { include_untracked } => {
+                let mut arguments = vec!["stash".into(), "push".into()];
+                if *include_untracked {
+                    arguments.push("--include-untracked".into());
+                }
+                arguments
+            }
+            Self::StashList => vec![
+                "stash".into(),
+                "list".into(),
+                "--format=%gd%x00%s%x00%cI".into(),
+            ],
+            Self::StashApply { index, pop } => vec![
+                "stash".into(),
+                if *pop { "pop" } else { "apply" }.into(),
+                format!("stash@{{{index}}}"),
+            ],
+            Self::StashDrop { index } => {
+                vec!["stash".into(), "drop".into(), format!("stash@{{{index}}}")]
+            }
+            Self::CherryPick { commit } => vec!["cherry-pick".into(), commit.clone()],
+            Self::RevertCommit { commit } => {
+                vec!["revert".into(), "--no-edit".into(), commit.clone()]
+            }
+            Self::CommitFiles { commit } => vec![
+                "show".into(),
+                "--no-color".into(),
+                "--name-status".into(),
+                "--format=".into(),
+                commit.clone(),
+            ],
+            Self::ResolveConflict { path, theirs } => vec![
+                "checkout".into(),
+                if *theirs { "--theirs" } else { "--ours" }.into(),
+                "--".into(),
+                literal_pathspec(path),
+            ],
+            Self::Init => vec!["init".into()],
         }
     }
 
@@ -217,6 +311,23 @@ impl GitOperation {
             Self::Fetch { .. } => "buscar alterações do remoto",
             Self::Pull { .. } => "integrar alterações do remoto",
             Self::Push { .. } => "enviar alterações ao remoto",
+            Self::RestoreAllWorktree => "descartar as alterações dos arquivos rastreados",
+            Self::CleanUntracked => "remover os arquivos não rastreados",
+            Self::DeleteBranch { .. } => "excluir a branch local",
+            Self::RemoteBranches => "listar as branches remotas",
+            Self::CheckoutRemoteBranch { .. } => "criar a branch local a partir da remota",
+            Self::MergeBranch { .. } => "fazer o merge da branch",
+            Self::MergeAbort => "abortar o merge",
+            Self::StashPush { .. } => "guardar as alterações no stash",
+            Self::StashList => "listar os stashes",
+            Self::StashApply { pop: false, .. } => "aplicar o stash",
+            Self::StashApply { pop: true, .. } => "aplicar e remover o stash",
+            Self::StashDrop { .. } => "descartar o stash",
+            Self::CherryPick { .. } => "aplicar o commit (cherry-pick)",
+            Self::RevertCommit { .. } => "reverter o commit",
+            Self::CommitFiles { .. } => "listar os arquivos do commit",
+            Self::ResolveConflict { .. } => "resolver o conflito do arquivo",
+            Self::Init => "inicializar o repositório",
         }
     }
 }

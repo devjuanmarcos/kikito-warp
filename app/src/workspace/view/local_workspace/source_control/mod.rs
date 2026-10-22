@@ -1,12 +1,13 @@
 mod changes;
 mod commit;
 mod diff;
+mod extras;
 mod graph;
 mod refs;
 
 use crate::appearance::Appearance;
 use crate::editor::EditorView;
-use crate::local_git::{LocalBranch, LocalCommit, RepositoryStatus};
+use crate::local_git::{CommitFile, LocalBranch, LocalCommit, LocalStash, RepositoryStatus};
 use warpui::ViewHandle;
 use warpui::elements::{ClippedScrollStateHandle, Element};
 
@@ -26,7 +27,16 @@ pub(crate) struct DiffPreview {
 pub enum GitPanelSection {
     Repositories,
     Changes,
+    Stashes,
     Graph,
+}
+
+/// Destructive Git actions that wait for a confirmation row in the panel.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum GitConfirmation {
+    DiscardAll,
+    DeleteBranch(String),
+    DropStash(usize),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -41,6 +51,7 @@ pub enum GitRemoteAction {
 pub(crate) struct GitPanelState {
     pub repositories_collapsed: bool,
     pub changes_collapsed: bool,
+    pub stashes_collapsed: bool,
     pub graph_collapsed: bool,
     /// "Só a atual": only commits reachable from HEAD.
     pub graph_current_only: bool,
@@ -75,7 +86,6 @@ pub(crate) struct SourceControl<'a> {
     pub status: Option<&'a RepositoryStatus>,
     pub history: &'a [LocalCommit],
     pub branches: &'a [LocalBranch],
-    pub branch_menu: Option<&'a str>,
     pub create_branch_from: Option<&'a str>,
     pub rename_branch: Option<&'a str>,
     pub branch_name_input: ViewHandle<EditorView>,
@@ -90,6 +100,16 @@ pub(crate) struct SourceControl<'a> {
     pub discard_confirmation: Option<(&'a str, bool)>,
     pub operation_pending: bool,
     pub panel: &'a GitPanelState,
+    pub stashes: &'a [LocalStash],
+    /// Remote-tracking branches without a local branch of the same name.
+    pub remote_branches: &'a [String],
+    /// A merge stopped on conflicts and waits to be concluded or aborted.
+    pub merging: bool,
+    /// Files of the expanded commit, once read.
+    pub commit_files: Option<&'a [CommitFile]>,
+    pub confirmation: Option<&'a GitConfirmation>,
+    /// The project folder has no repository and can be initialized.
+    pub can_init: bool,
     pub scroll_state: ClippedScrollStateHandle,
     /// Panel width, see [`panel_width`].
     pub width: f32,

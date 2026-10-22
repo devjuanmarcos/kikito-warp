@@ -233,6 +233,36 @@ pub enum WorkspaceAction {
     ToggleLocalGitPanelSection(crate::workspace::view::LocalGitPanelSection),
     /// Makes the repository at this root the one the Git panel works on.
     SelectLocalGitRepository(String),
+    RequestLocalGitConfirmation(crate::workspace::view::LocalGitConfirmation),
+    ConfirmLocalGitAction,
+    CancelLocalGitConfirmation,
+    CheckoutRemoteLocalGitBranch(String),
+    MergeLocalGitBranch(String),
+    AbortLocalGitMerge,
+    StashLocalGit {
+        include_untracked: bool,
+    },
+    ApplyLocalGitStash {
+        index: usize,
+        pop: bool,
+    },
+    CherryPickLocalGitCommit(String),
+    RevertLocalGitCommit(String),
+    CopyLocalGitText(String),
+    ResolveLocalGitConflict {
+        path: String,
+        theirs: bool,
+    },
+    InitLocalGitRepository,
+    CommitAndSyncLocalGit,
+    /// Opens a changed file's context menu at the click position.
+    OpenLocalGitFileMenu {
+        path: String,
+        untracked: bool,
+        position: Vector2F,
+    },
+    DismissLocalGitFileMenu,
+    IgnoreLocalGitPath(String),
     ToggleLocalGitGraphFilter,
     ToggleLocalGitCommitMenu,
     ToggleLocalGitBranches,
@@ -1387,6 +1417,23 @@ impl WorkspaceAction {
             | ToggleLocalWorkspaceTabsInSidebar
             | ToggleLocalGitPanelSection(_)
             | SelectLocalGitRepository(_)
+            | RequestLocalGitConfirmation(_)
+            | ConfirmLocalGitAction
+            | CancelLocalGitConfirmation
+            | CheckoutRemoteLocalGitBranch(_)
+            | MergeLocalGitBranch(_)
+            | AbortLocalGitMerge
+            | StashLocalGit { .. }
+            | ApplyLocalGitStash { .. }
+            | CherryPickLocalGitCommit(_)
+            | RevertLocalGitCommit(_)
+            | CopyLocalGitText(_)
+            | ResolveLocalGitConflict { .. }
+            | InitLocalGitRepository
+            | CommitAndSyncLocalGit
+            | OpenLocalGitFileMenu { .. }
+            | DismissLocalGitFileMenu
+            | IgnoreLocalGitPath(_)
             | ToggleLocalGitGraphFilter
             | ToggleLocalGitCommitMenu
             | ToggleLocalGitBranches

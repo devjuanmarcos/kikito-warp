@@ -126,6 +126,9 @@ pub(super) fn render(
         sections.add_child(repositories_section(&source_control, appearance));
     }
     sections.add_child(changes_section(&source_control, appearance));
+    if source_control.status.is_some() {
+        sections.add_child(super::extras::stash_section(&source_control, appearance));
+    }
     sections.add_child(graph_section(&source_control, appearance));
     let scrollable = NewScrollable::vertical(
         SingleAxisConfig::Clipped {
@@ -212,7 +215,7 @@ fn header(source_control: &SourceControl<'_>, appearance: &Appearance) -> Box<dy
 }
 
 /// Collapsible section header: chevron, small caps title and controls on the right.
-fn section_header(
+pub(super) fn section_header(
     title: &'static str,
     section: GitPanelSection,
     collapsed: bool,
@@ -268,7 +271,7 @@ fn section_header(
 
 /// Section title with the kit's `letter-spacing: .04em`, which `Text` can't express: one
 /// glyph per child, spaced by that amount.
-fn tracked_title(title: &'static str, color: Fill, appearance: &Appearance) -> Box<dyn Element> {
+pub(super) fn tracked_title(title: &'static str, color: Fill, appearance: &Appearance) -> Box<dyn Element> {
     let mut letters = Flex::row()
         .with_cross_axis_alignment(CrossAxisAlignment::Center)
         .with_spacing(TITLE_TRACKING);
@@ -286,7 +289,7 @@ fn tracked_title(title: &'static str, color: Fill, appearance: &Appearance) -> B
 const TITLE_TRACKING: f32 = 0.4;
 
 /// Kit `GPIconBtn`: 20px, sub color turning main with a fg-overlay-2 background on hover.
-fn icon_button(
+pub(super) fn icon_button(
     icon: Icon,
     badge: Option<String>,
     busy: bool,
@@ -423,12 +426,26 @@ fn changes_section(
     if panel.branches_open {
         section.add_child(super::refs::render(
             source_control.branches,
-            source_control.branch_menu,
+            source_control.remote_branches,
             source_control.create_branch_from,
             source_control.rename_branch,
             source_control.branch_name_input.clone(),
+            source_control.operation_pending,
             appearance,
         ));
+    }
+    if let Some(
+        confirmation @ (super::GitConfirmation::DiscardAll | super::GitConfirmation::DeleteBranch(_)),
+    ) = source_control.confirmation
+    {
+        section.add_child(super::extras::confirmation_row(
+            confirmation,
+            source_control.operation_pending,
+            appearance,
+        ));
+    }
+    if source_control.merging {
+        section.add_child(super::extras::merge_banner(appearance));
     }
     if let Some((path, untracked)) = source_control.discard_confirmation {
         section.add_child(discard_confirmation_row(
@@ -439,6 +456,10 @@ fn changes_section(
         ));
     }
     let Some(status) = source_control.status else {
+        if source_control.can_init {
+            section.add_child(super::extras::init_prompt(appearance));
+            return section.finish();
+        }
         section.add_child(message(
             source_control
                 .error
@@ -482,6 +503,9 @@ fn changes_section(
             ("git-stage-all", 0),
             appearance,
         ));
+    if !pending && unstaged.files.len() + untracked.files.len() > 0 {
+        changes.add_child(discard_all_row(appearance));
+    }
     for file in &conflicted.files {
         changes.add_child(file_row(
             file,
@@ -639,6 +663,28 @@ fn file_row(
                 appearance,
             ));
         }
+        if conflict && !operation_pending {
+            actions.add_child(super::extras::tool_button(
+                Icon::ArrowLeft,
+                "Aceitar a versão atual (nossa)",
+                WorkspaceAction::ResolveLocalGitConflict {
+                    path: path.clone(),
+                    theirs: false,
+                },
+                ("git-conflict-ours", stable_key(&path, diff_kind)),
+                appearance,
+            ));
+            actions.add_child(super::extras::tool_button(
+                Icon::ArrowRight,
+                "Aceitar a versão recebida (deles)",
+                WorkspaceAction::ResolveLocalGitConflict {
+                    path: path.clone(),
+                    theirs: true,
+                },
+                ("git-conflict-theirs", stable_key(&path, diff_kind)),
+                appearance,
+            ));
+        }
         if let Some(action) = action {
             let (icon, action) = match action {
                 ChangeAction::Stage => {
@@ -679,7 +725,8 @@ fn file_row(
     let staged = diff_kind == LocalGitDiffKind::Staged;
     let untracked = diff_kind == LocalGitDiffKind::Untracked;
     let selected = open_diff == Some((file.path.as_str(), staged));
-    Hoverable::new(row_key, move |mouse| {
+    let menu_path = path.clone();
+    let row = Hoverable::new(row_key, move |mouse| {
         let mut container = Container::new(row.finish())
             .with_padding_left(26.)
             .with_padding_right(8.);
@@ -701,7 +748,18 @@ fn file_row(
             untracked,
         })
     })
-    .finish()
+    .finish();
+    // Right click opens the file's context menu (copy path, .gitignore, discard).
+    warpui::elements::EventHandler::new(row)
+        .on_right_mouse_down(move |ctx, _, position, _| {
+            ctx.dispatch_typed_action(WorkspaceAction::OpenLocalGitFileMenu {
+                path: menu_path.clone(),
+                untracked,
+                position,
+            });
+            warpui::elements::DispatchEventResult::StopPropagation
+        })
+        .finish()
 }
 
 /// Mouse-state key for a file row, stable across frames for the same path and list.
@@ -813,13 +871,14 @@ fn graph_section(source_control: &SourceControl<'_>, appearance: &Appearance) ->
         .with_main_axis_size(MainAxisSize::Min)
         .with_cross_axis_alignment(CrossAxisAlignment::Stretch);
     for (row, commit) in rows.iter().zip(&commits) {
+        let expanded = panel.expanded_commit.as_deref() == Some(commit.hash.as_str());
         list.add_child(graph_row(
             row,
             commit,
             width,
             &colors,
             &local_branches,
-            panel.expanded_commit.as_deref() == Some(commit.hash.as_str()),
+            expanded.then_some(source_control.commit_files),
             appearance,
         ));
     }
@@ -944,7 +1003,8 @@ fn graph_row(
     width: f32,
     colors: &GraphColors,
     local_branches: &HashSet<&str>,
-    expanded: bool,
+    // `Some` when the commit is expanded: its changed files, once read.
+    expanded: Option<Option<&[crate::local_git::CommitFile]>>,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
@@ -1004,7 +1064,7 @@ fn graph_row(
         mouse_state("git-graph-row", stable_key(&hash, LocalGitDiffKind::Staged)),
         move |mouse| {
             let mut container = Container::new(line.finish()).with_padding_right(8.);
-            if expanded {
+            if expanded.is_some() {
                 container = container.with_background(theme.accent().with_opacity(25));
             } else if mouse.is_mouse_over_element() {
                 container = container.with_background(fg_overlay(theme, 5));
@@ -1019,7 +1079,7 @@ fn graph_row(
         ctx.dispatch_typed_action(WorkspaceAction::ToggleLocalGitCommitDetails(hash.clone()))
     })
     .finish();
-    if !expanded {
+    if expanded.is_none() {
         return line;
     }
     let sub = theme.sub_text_color(background);
@@ -1071,6 +1131,10 @@ fn graph_row(
                 .finish(),
         )
         .with_child(meta.finish());
+    details.add_child(super::extras::commit_actions(commit, appearance));
+    if let Some(Some(files)) = expanded {
+        details.add_child(super::extras::commit_files(files, appearance));
+    }
     if !labels.is_empty() {
         let mut pills = Wrap::new(Axis::Horizontal)
             .with_spacing(4.)
@@ -1419,7 +1483,7 @@ fn repositories_section(
 }
 
 /// Kit count badge: a 16px neutral pill.
-fn count_badge(count: usize, appearance: &Appearance) -> Box<dyn Element> {
+pub(super) fn count_badge(count: usize, appearance: &Appearance) -> Box<dyn Element> {
     let theme = appearance.theme();
     let count = count.to_string();
     // A row has no width bound, so the badge's centered text needs an explicit width: the kit's
@@ -1444,5 +1508,41 @@ fn count_badge(count: usize, appearance: &Appearance) -> Box<dyn Element> {
     )
     .with_width(badge_width)
     .with_height(16.)
+    .finish()
+}
+
+/// "Descartar tudo" under the changes header (VS Code shows it on the group's hover).
+fn discard_all_row(appearance: &Appearance) -> Box<dyn Element> {
+    let theme = appearance.theme();
+    let state = mouse_state("git-discard-all", 0);
+    Hoverable::new(state, move |mouse| {
+        let color = if mouse.is_mouse_over_element() {
+            theme.main_text_color(theme.surface_1())
+        } else {
+            theme.hint_text_color(theme.surface_1())
+        };
+        Container::new(
+            Flex::row()
+                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                .with_spacing(4.)
+                .with_child(sized_icon(Icon::Retry, color, 11.))
+                .with_child(
+                    Text::new_inline("Descartar todas as alterações", appearance.ui_font_family(), 11.)
+                        .with_color(color.into())
+                        .finish(),
+                )
+                .finish(),
+        )
+        .with_padding_left(14.)
+        .with_padding_top(2.)
+        .with_padding_bottom(4.)
+        .finish()
+    })
+    .with_cursor(Cursor::PointingHand)
+    .on_click(|ctx, _, _| {
+        ctx.dispatch_typed_action(WorkspaceAction::RequestLocalGitConfirmation(
+            super::GitConfirmation::DiscardAll,
+        ))
+    })
     .finish()
 }

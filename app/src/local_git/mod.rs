@@ -27,6 +27,21 @@ pub(crate) struct LocalBranch {
     pub is_current: bool,
 }
 
+/// An entry of `git stash list`, newest first.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct LocalStash {
+    pub index: usize,
+    pub message: String,
+    pub created_at: String,
+}
+
+/// A file a commit touched, as `git show --name-status` reports it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct CommitFile {
+    pub status: char,
+    pub path: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LocalCommit {
     pub hash: String,
@@ -215,6 +230,11 @@ impl LocalGitService {
         }
         self.stage_all().await?;
         self.commit(message, false).await
+    }
+
+    async fn run(&self, operation: GitOperation) -> Result<(), GitError> {
+        execute(&self.root, operation).await?;
+        Ok(())
     }
 
     async fn undo_last_commit(&self) -> Result<(), GitError> {
@@ -540,3 +560,214 @@ fn parse_history(output: &str) -> Result<Vec<LocalCommit>, GitError> {
 #[cfg(test)]
 #[path = "operations_tests.rs"]
 mod tests;
+
+/// Discards every working-tree change; `remove_untracked` also deletes untracked files.
+pub(crate) async fn discard_all(repository: &Path, remove_untracked: bool) -> Result<(), GitError> {
+    let service = LocalGitService::open(repository).await?;
+    service.run(GitOperation::RestoreAllWorktree).await?;
+    if remove_untracked {
+        service.run(GitOperation::CleanUntracked).await?;
+    }
+    Ok(())
+}
+
+pub(crate) async fn delete_local_branch(
+    repository: &Path,
+    branch: &str,
+    force: bool,
+) -> Result<(), GitError> {
+    operations::validate_reference(branch)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::DeleteBranch {
+            branch: branch.to_owned(),
+            force,
+        })
+        .await
+}
+
+/// Remote-tracking branches, without the remotes' `HEAD` aliases.
+pub(crate) async fn read_remote_branches(repository: &Path) -> Result<Vec<String>, GitError> {
+    let service = LocalGitService::open(repository).await?;
+    let output = execute(service.root(), GitOperation::RemoteBranches).await?;
+    Ok(parse_remote_branches(&output))
+}
+
+pub(crate) async fn checkout_remote_branch(
+    repository: &Path,
+    remote_branch: &str,
+) -> Result<(), GitError> {
+    operations::validate_reference(remote_branch)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::CheckoutRemoteBranch {
+            remote_branch: remote_branch.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn merge_branch(repository: &Path, branch: &str) -> Result<(), GitError> {
+    operations::validate_reference(branch)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::MergeBranch {
+            branch: branch.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn abort_merge(repository: &Path) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::MergeAbort)
+        .await
+}
+
+/// Whether a merge stopped on conflicts and waits to be concluded or aborted.
+pub(crate) async fn merge_in_progress(repository: &Path) -> bool {
+    execute(
+        repository,
+        GitOperation::ResolveReference {
+            reference: "MERGE_HEAD".to_owned(),
+        },
+    )
+    .await
+    .is_ok()
+}
+
+pub(crate) async fn stash_push(repository: &Path, include_untracked: bool) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::StashPush { include_untracked })
+        .await
+}
+
+pub(crate) async fn read_stashes(repository: &Path) -> Result<Vec<LocalStash>, GitError> {
+    let service = LocalGitService::open(repository).await?;
+    let output = execute(service.root(), GitOperation::StashList).await?;
+    parse_stashes(&output)
+}
+
+pub(crate) async fn stash_apply(repository: &Path, index: usize, pop: bool) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::StashApply { index, pop })
+        .await
+}
+
+pub(crate) async fn stash_drop(repository: &Path, index: usize) -> Result<(), GitError> {
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::StashDrop { index })
+        .await
+}
+
+pub(crate) async fn cherry_pick(repository: &Path, commit: &str) -> Result<(), GitError> {
+    operations::validate_reference(commit)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::CherryPick {
+            commit: commit.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn revert_commit(repository: &Path, commit: &str) -> Result<(), GitError> {
+    operations::validate_reference(commit)?;
+    LocalGitService::open(repository)
+        .await?
+        .run(GitOperation::RevertCommit {
+            commit: commit.to_owned(),
+        })
+        .await
+}
+
+pub(crate) async fn read_commit_files(
+    repository: &Path,
+    commit: &str,
+) -> Result<Vec<CommitFile>, GitError> {
+    operations::validate_reference(commit)?;
+    let service = LocalGitService::open(repository).await?;
+    let output = execute(
+        service.root(),
+        GitOperation::CommitFiles {
+            commit: commit.to_owned(),
+        },
+    )
+    .await?;
+    Ok(parse_commit_files(&output))
+}
+
+/// Keeps one side of a conflicted file and stages it, marking the conflict resolved.
+pub(crate) async fn resolve_conflict(
+    repository: &Path,
+    path: &Path,
+    theirs: bool,
+) -> Result<(), GitError> {
+    operations::validate_path(path)?;
+    let service = LocalGitService::open(repository).await?;
+    service
+        .run(GitOperation::ResolveConflict {
+            path: path.to_path_buf(),
+            theirs,
+        })
+        .await?;
+    service.stage(path).await
+}
+
+pub(crate) async fn init_repository(folder: &Path) -> Result<(), GitError> {
+    execute(folder, GitOperation::Init).await?;
+    Ok(())
+}
+
+fn parse_remote_branches(output: &str) -> Vec<String> {
+    output
+        .lines()
+        .filter_map(|line| {
+            let mut fields = line.trim_end_matches('\r').split('\0');
+            let name = fields.next()?.trim();
+            let symref = fields.next().unwrap_or_default();
+            (!name.is_empty() && symref.is_empty() && name.contains('/'))
+                .then(|| name.to_owned())
+        })
+        .collect()
+}
+
+fn parse_stashes(output: &str) -> Result<Vec<LocalStash>, GitError> {
+    output
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(|line| {
+            let mut fields = line.trim_end_matches('\r').split('\0');
+            let reference = fields.next().ok_or(GitError::InvalidOutput)?;
+            let message = fields.next().ok_or(GitError::InvalidOutput)?;
+            let created_at = fields.next().unwrap_or_default();
+            let index = reference
+                .strip_prefix("stash@{")
+                .and_then(|rest| rest.strip_suffix('}'))
+                .and_then(|index| index.parse().ok())
+                .ok_or(GitError::InvalidOutput)?;
+            Ok(LocalStash {
+                index,
+                message: message.to_owned(),
+                created_at: created_at.to_owned(),
+            })
+        })
+        .collect()
+}
+
+fn parse_commit_files(output: &str) -> Vec<CommitFile> {
+    output
+        .lines()
+        .filter_map(|line| {
+            let mut fields = line.trim_end_matches('\r').split('\t');
+            let status = fields.next()?.chars().next()?;
+            // Renames and copies list the old path first; show the new one.
+            let path = fields.last()?;
+            Some(CommitFile {
+                status,
+                path: path.to_owned(),
+            })
+        })
+        .collect()
+}

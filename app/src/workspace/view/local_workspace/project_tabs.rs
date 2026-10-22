@@ -43,6 +43,7 @@ pub(super) fn render(
     source_control_open: bool,
     tabs_in_sidebar: bool,
     mut rename_editor: Option<(i32, Box<dyn Element>)>,
+    git_changes: usize,
 ) -> Option<Box<dyn Element>> {
     let project = model.project(project_id)?;
     let theme = appearance.theme();
@@ -220,7 +221,7 @@ pub(super) fn render(
         .with_spacing(8.);
     bar.add_child(Expanded::new(1., tabs.finish()).finish());
     bar.add_child(search);
-    bar.add_child(naked_icon_button(
+    let git_button = naked_icon_button(
         appearance,
         Icon::GitBranch,
         theme.foreground(),
@@ -228,7 +229,37 @@ pub(super) fn render(
         WorkspaceAction::ToggleLocalWorkspaceSourceControl,
         ("tab-git", 0),
         Some(("Controle de versão", TooltipSide::BelowRight)),
-    ));
+    );
+    // Like VS Code's activity bar badge: how many files have pending changes.
+    if git_changes > 0 {
+        let label = if git_changes > 99 {
+            "99+".to_owned()
+        } else {
+            git_changes.to_string()
+        };
+        let mut stack = warpui::elements::Stack::new().with_child(git_button);
+        stack.add_positioned_child(
+            Container::new(
+                Text::new_inline(label, appearance.ui_font_family(), 9.)
+                    .with_color(theme.foreground().into())
+                    .finish(),
+            )
+            .with_background(theme.accent())
+            .with_corner_radius(radius(6.))
+            .with_padding_left(3.)
+            .with_padding_right(3.)
+            .finish(),
+            warpui::elements::OffsetPositioning::offset_from_parent(
+                pathfinder_geometry::vector::vec2f(4., -3.),
+                warpui::elements::ParentOffsetBounds::WindowByPosition,
+                warpui::elements::ParentAnchor::TopRight,
+                warpui::elements::ChildAnchor::TopRight,
+            ),
+        );
+        bar.add_child(stack.finish());
+    } else {
+        bar.add_child(git_button);
+    }
     bar.add_child(
         SavePosition::new(
             header_button(

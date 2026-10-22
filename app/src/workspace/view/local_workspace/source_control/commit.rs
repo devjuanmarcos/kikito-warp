@@ -245,6 +245,14 @@ fn commit_menu_items(status: &RepositoryStatus, has_staged: bool) -> Vec<MenuIte
             checked: false,
         },
         MenuItem {
+            label: "Commit e sincronizar",
+            icon: Icon::Retry,
+            action: WorkspaceAction::CommitAndSyncLocalGit,
+            danger: false,
+            separator_before: false,
+            checked: false,
+        },
+        MenuItem {
             label: "Preparar tudo",
             icon: Icon::Plus,
             action: WorkspaceAction::StageAllLocalGit,

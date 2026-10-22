@@ -1249,3 +1249,77 @@ fn same_path_ignores_separators_case_and_trailing_slashes() {
         Path::new("c:/projetos/web")
     ));
 }
+
+#[test]
+fn phase_two_operations_build_local_git_commands() {
+    assert_eq!(
+        GitOperation::DeleteBranch {
+            branch: "feature/a".to_owned(),
+            force: false
+        }
+        .arguments(),
+        ["branch", "-d", "feature/a"]
+    );
+    assert_eq!(
+        GitOperation::CheckoutRemoteBranch {
+            remote_branch: "origin/feature/a".to_owned()
+        }
+        .arguments(),
+        ["switch", "--track", "origin/feature/a"]
+    );
+    assert_eq!(
+        GitOperation::StashApply { index: 2, pop: true }.arguments(),
+        ["stash", "pop", "stash@{2}"]
+    );
+    assert_eq!(
+        GitOperation::StashDrop { index: 0 }.arguments(),
+        ["stash", "drop", "stash@{0}"]
+    );
+    assert_eq!(
+        GitOperation::ResolveConflict {
+            path: Path::new("src/a.rs").to_path_buf(),
+            theirs: true
+        }
+        .arguments(),
+        ["checkout", "--theirs", "--", ":(literal)src/a.rs"]
+    );
+    assert_eq!(GitOperation::StashList.kind(), OperationKind::LocalRead);
+    assert_eq!(GitOperation::MergeAbort.kind(), OperationKind::LocalWrite);
+}
+
+#[test]
+fn stash_remote_branch_and_commit_file_parsers() {
+    assert_eq!(
+        super::parse_stashes("stash@{0}\0WIP on main: abc\x002026-10-21T10:00:00-03:00\nstash@{1}\0On main: teste\x00\n")
+            .unwrap(),
+        vec![
+            super::LocalStash {
+                index: 0,
+                message: "WIP on main: abc".to_owned(),
+                created_at: "2026-10-21T10:00:00-03:00".to_owned(),
+            },
+            super::LocalStash {
+                index: 1,
+                message: "On main: teste".to_owned(),
+                created_at: String::new(),
+            },
+        ]
+    );
+    assert_eq!(
+        super::parse_remote_branches("origin/HEAD\0refs/remotes/origin/main\norigin/main\0\norigin\0\n"),
+        vec!["origin/main".to_owned()]
+    );
+    assert_eq!(
+        super::parse_commit_files("M\tsrc/a.rs\nR100\told.rs\tnew.rs\n"),
+        vec![
+            super::CommitFile {
+                status: 'M',
+                path: "src/a.rs".to_owned()
+            },
+            super::CommitFile {
+                status: 'R',
+                path: "new.rs".to_owned()
+            },
+        ]
+    );
+}

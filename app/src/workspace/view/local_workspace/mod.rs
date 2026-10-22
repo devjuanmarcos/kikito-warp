@@ -9,7 +9,8 @@ mod project_tabs;
 mod source_control;
 mod ws_style;
 pub(crate) use source_control::{
-    DiffPreview, GitPanelSection, GitPanelState, GitRemoteAction, RepositoryEntry, SourceControl,
+    DiffPreview, GitConfirmation, GitPanelSection, GitPanelState, GitRemoteAction,
+    RepositoryEntry, SourceControl,
 };
 
 /// Window border (both sides), organization rail and project sidebar, in pixels.
@@ -178,6 +179,7 @@ pub(crate) fn render(
                 source_control.is_some(),
                 tabs_in_sidebar,
                 rename_editor,
+                git_status.map_or(0, |status| status.changed_path_count()),
             )
             .unwrap_or_else(|| Flex::row().finish());
             let has_open_project_tab =
@@ -562,4 +564,57 @@ pub(crate) fn context_menu_overlay(
         ),
     };
     Some((menu, positioning))
+}
+
+/// Context menu of a changed file in the Git panel.
+pub(crate) fn git_file_menu(
+    repository: &std::path::Path,
+    path: &str,
+    untracked: bool,
+    appearance: &Appearance,
+) -> Box<dyn Element> {
+    let absolute = repository.join(path).to_string_lossy().into_owned();
+    context_menu::menu(
+        vec![
+            context_menu::MenuItem {
+                label: "Copiar caminho",
+                icon: Icon::Copy,
+                action: WorkspaceAction::CopyLocalGitText(absolute),
+                danger: false,
+                separator_before: false,
+                checked: false,
+            },
+            context_menu::MenuItem {
+                label: "Copiar caminho relativo",
+                icon: Icon::Copy,
+                action: WorkspaceAction::CopyLocalGitText(path.to_owned()),
+                danger: false,
+                separator_before: false,
+                checked: false,
+            },
+            context_menu::MenuItem {
+                label: "Adicionar ao .gitignore",
+                icon: Icon::Plus,
+                action: WorkspaceAction::IgnoreLocalGitPath(path.to_owned()),
+                danger: false,
+                separator_before: false,
+                checked: false,
+            },
+            context_menu::MenuItem {
+                label: "Descartar alterações",
+                icon: Icon::Retry,
+                action: WorkspaceAction::RequestDiscardLocalGitPath {
+                    path: path.to_owned(),
+                    untracked,
+                },
+                danger: true,
+                separator_before: true,
+                checked: false,
+            },
+        ],
+        None,
+        LOCAL_MENU_WIDTH,
+        WorkspaceAction::DismissLocalGitFileMenu,
+        appearance,
+    )
 }

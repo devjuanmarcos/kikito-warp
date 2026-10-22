@@ -14,7 +14,8 @@ pub(crate) mod launch_modal;
 pub(crate) mod left_panel;
 mod local_workspace;
 pub(crate) use local_workspace::{
-    GitPanelSection as LocalGitPanelSection, GitRemoteAction as LocalGitRemoteAction,
+    GitConfirmation as LocalGitConfirmation, GitPanelSection as LocalGitPanelSection,
+    GitRemoteAction as LocalGitRemoteAction,
 };
 pub(crate) mod onboarding;
 pub(crate) mod openwarp_launch_modal;
@@ -1141,6 +1142,14 @@ pub struct Workspace {
     /// Repository chosen in each project folder.
     local_workspace_git_active_repositories: HashMap<String, PathBuf>,
     local_workspace_git_discovery: Option<SpawnedFutureHandle>,
+    local_workspace_git_stashes: Vec<crate::local_git::LocalStash>,
+    local_workspace_git_remote_branches: Vec<String>,
+    local_workspace_git_merging: bool,
+    local_workspace_git_confirmation: Option<local_workspace::GitConfirmation>,
+    /// Files of the expanded graph commit, keyed by its hash.
+    local_workspace_git_commit_files: Option<(String, Vec<crate::local_git::CommitFile>)>,
+    /// Changed file whose context menu is open: path, untracked, click position.
+    local_workspace_git_file_menu: Option<(String, bool, Vector2F)>,
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     local_workspace_git_generation: u64,
     local_workspace_source_control_open: bool,
@@ -2467,6 +2476,189 @@ impl Workspace {
         ));
     }
 
+    /// Runs a Git write operation on the panel's repository, then rereads the repository so the
+    /// panel shows the result; a failure is reported in the panel.
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_task<Fut>(
+        &mut self,
+        note: &'static str,
+        task: impl FnOnce(PathBuf) -> Fut,
+        ctx: &mut ViewContext<Self>,
+    ) where
+        Fut: std::future::Future<Output = Result<(), crate::local_git::GitError>> + Send + 'static,
+    {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        let generation = self.local_workspace_git_generation;
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        self.local_workspace_git_panel.note = None;
+        self.local_workspace_git_confirmation = None;
+        if let Some(refresh) = self.local_workspace_git_refresh.take() {
+            refresh.abort();
+        }
+        ctx.notify();
+        let operation = task(repository_path.clone());
+        self.local_workspace_git_operation = Some(ctx.spawn(
+            async move {
+                let outcome = operation.await;
+                let snapshot = read_local_git_snapshot(&repository_path).await;
+                (outcome, snapshot)
+            },
+            move |workspace, (outcome, snapshot), ctx| {
+                workspace.local_workspace_git_operation = None;
+                workspace.local_workspace_git_operation_pending = false;
+                if workspace.local_workspace_git_generation != generation {
+                    ctx.notify();
+                    return;
+                }
+                if let Ok(snapshot) = snapshot {
+                    workspace.apply_local_git_snapshot(snapshot, ctx);
+                }
+                match outcome {
+                    Ok(()) => workspace.local_workspace_git_panel.note = Some(note.to_owned()),
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        ));
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn apply_local_git_snapshot(&mut self, snapshot: LocalGitSnapshot, ctx: &mut ViewContext<Self>) {
+        let LocalGitSnapshot {
+            status,
+            branches,
+            history,
+            stashes,
+            remote_branches,
+            merging,
+        } = snapshot;
+        if let Some(active) = self.local_workspace_git_path.as_deref().map(Path::new)
+            && let Some((_, listed)) = self
+                .local_workspace_git_repositories
+                .iter_mut()
+                .find(|(root, _)| crate::local_git::same_path(root, active))
+        {
+            *listed = Some(status.clone());
+        }
+        self.local_workspace_git_status = Some(status);
+        self.local_workspace_git_branches = branches;
+        self.local_workspace_git_history = history;
+        self.local_workspace_git_stashes = stashes;
+        self.local_workspace_git_remote_branches = remote_branches;
+        self.local_workspace_git_merging = merging;
+        self.refresh_local_workspace_commit_placeholder(ctx);
+    }
+
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn load_local_workspace_commit_files(&mut self, hash: String, ctx: &mut ViewContext<Self>) {
+        let Some(repository_path) = self.local_workspace_git_path.as_deref().map(PathBuf::from)
+        else {
+            return;
+        };
+        if self
+            .local_workspace_git_commit_files
+            .as_ref()
+            .is_some_and(|(loaded, _)| *loaded == hash)
+        {
+            return;
+        }
+        let _ = ctx.spawn(
+            async move {
+                let files = crate::local_git::read_commit_files(&repository_path, &hash)
+                    .await
+                    .unwrap_or_default();
+                (hash, files)
+            },
+            |workspace, (hash, files), ctx| {
+                workspace.local_workspace_git_commit_files = Some((hash, files));
+                ctx.notify();
+            },
+        );
+    }
+
+    /// `git init` in the project folder, then lists the new repository.
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn init_local_workspace_git_repository(&mut self, ctx: &mut ViewContext<Self>) {
+        let Some(folder) = self.local_workspace_git_project_path.clone() else {
+            return;
+        };
+        if self.local_workspace_git_operation_pending {
+            return;
+        }
+        self.local_workspace_git_operation_pending = true;
+        self.local_workspace_git_error = None;
+        ctx.notify();
+        let _ = ctx.spawn(
+            async move { crate::local_git::init_repository(Path::new(&folder)).await },
+            |workspace, result, ctx| {
+                workspace.local_workspace_git_operation_pending = false;
+                match result {
+                    Ok(()) => {
+                        workspace.local_workspace_git_panel.note =
+                            Some("Repositório inicializado".to_owned());
+                        // Forget the folder so the next refresh rediscovers its repositories.
+                        workspace.local_workspace_git_project_path = None;
+                        workspace.refresh_selected_local_workspace_git(ctx);
+                    }
+                    Err(error) => workspace.local_workspace_git_error = Some(error.to_string()),
+                }
+                ctx.notify();
+            },
+        );
+    }
+
+    /// Commits, then pulls and pushes the branch, like VS Code's "Commit & Sync".
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn run_local_workspace_git_commit_and_sync(&mut self, ctx: &mut ViewContext<Self>) {
+        let message = self
+            .local_workspace_commit_input
+            .as_ref(ctx)
+            .buffer_text(ctx)
+            .trim()
+            .to_owned();
+        if message.is_empty() {
+            self.local_workspace_git_error =
+                Some(crate::local_git::GitError::EmptyCommitMessage.to_string());
+            ctx.notify();
+            return;
+        }
+        let Some(HeadState::Branch(branch)) = self
+            .local_workspace_git_status
+            .as_ref()
+            .map(|status| status.head.clone())
+        else {
+            self.local_workspace_git_error =
+                Some("Faça checkout de uma branch para sincronizar.".to_owned());
+            ctx.notify();
+            return;
+        };
+        let remote = self.local_workspace_git_remote();
+        let commit_all = !self.local_workspace_has_staged_changes();
+        self.local_workspace_commit_input.update(ctx, |editor, ctx| {
+            editor.clear_buffer_and_reset_undo_stack(ctx);
+        });
+        self.run_local_workspace_git_task(
+            "Commit sincronizado com o remoto",
+            move |repository| async move {
+                if commit_all {
+                    crate::local_git::commit_all(&repository, &message).await?;
+                } else {
+                    crate::local_git::commit(&repository, &message, false).await?;
+                }
+                crate::local_git::pull_branch(&repository, &remote, &branch).await?;
+                crate::local_git::push_branch(&repository, &remote, &branch).await
+            },
+            ctx,
+        );
+    }
+
     /// Points the Git panel at `repository_path` and starts watching it.
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     fn activate_local_workspace_git_repository(
@@ -2486,6 +2678,12 @@ impl Workspace {
         drop(self.local_workspace_git_watcher.take());
         self.local_workspace_git_status = None;
         self.local_workspace_git_branches.clear();
+        self.local_workspace_git_stashes.clear();
+        self.local_workspace_git_remote_branches.clear();
+        self.local_workspace_git_merging = false;
+        self.local_workspace_git_confirmation = None;
+        self.local_workspace_git_commit_files = None;
+        self.local_workspace_git_file_menu = None;
         self.local_workspace_git_branch_menu = None;
         self.local_workspace_git_create_branch_from = None;
         self.local_workspace_git_rename_branch = None;
@@ -2575,12 +2773,7 @@ impl Workspace {
         let repository_root = path.clone();
         self.local_workspace_git_refresh = Some(ctx.spawn(
             async move {
-                let status = crate::local_git::read_status(&path).await?;
-                let branches = crate::local_git::read_local_branches(&path).await?;
-                let history = crate::local_git::read_history(&path, GIT_HISTORY_LIMIT)
-                    .await
-                    .unwrap_or_default();
-                Ok::<_, crate::local_git::GitError>((status, branches, history))
+                read_local_git_snapshot(&path).await
             },
             move |workspace, result, ctx| {
                 if workspace.local_workspace_git_generation != generation {
@@ -2588,7 +2781,18 @@ impl Workspace {
                 }
                 workspace.local_workspace_git_refresh = None;
                 match result {
-                    Ok((status, branches, history)) => {
+                    Ok(snapshot) => {
+                        let LocalGitSnapshot {
+                            status,
+                            branches,
+                            history,
+                            stashes,
+                            remote_branches,
+                            merging,
+                        } = snapshot;
+                        workspace.local_workspace_git_stashes = stashes;
+                        workspace.local_workspace_git_remote_branches = remote_branches;
+                        workspace.local_workspace_git_merging = merging;
                         if let Some((_, listed)) = workspace
                             .local_workspace_git_repositories
                             .iter_mut()
@@ -5838,6 +6042,12 @@ impl Workspace {
             local_workspace_git_repositories: Vec::new(),
             local_workspace_git_active_repositories: HashMap::new(),
             local_workspace_git_discovery: None,
+            local_workspace_git_stashes: Vec::new(),
+            local_workspace_git_remote_branches: Vec::new(),
+            local_workspace_git_merging: false,
+            local_workspace_git_confirmation: None,
+            local_workspace_git_commit_files: None,
+            local_workspace_git_file_menu: None,
             #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
             local_workspace_git_generation: 0,
             local_workspace_source_control_open: false,
@@ -27001,11 +27211,191 @@ impl TypedActionView for Workspace {
                     local_workspace::GitPanelSection::Changes => {
                         panel.changes_collapsed = !panel.changes_collapsed
                     }
+                    local_workspace::GitPanelSection::Stashes => {
+                        panel.stashes_collapsed = !panel.stashes_collapsed
+                    }
                     local_workspace::GitPanelSection::Graph => {
                         panel.graph_collapsed = !panel.graph_collapsed
                     }
                 }
                 ctx.notify();
+            }
+            RequestLocalGitConfirmation(confirmation) => {
+                self.local_workspace_git_confirmation = Some(confirmation.clone());
+                self.local_workspace_git_file_menu = None;
+                ctx.notify();
+            }
+            CancelLocalGitConfirmation => {
+                self.local_workspace_git_confirmation = None;
+                ctx.notify();
+            }
+            ConfirmLocalGitAction => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                if let Some(confirmation) = self.local_workspace_git_confirmation.take() {
+                    match confirmation {
+                        local_workspace::GitConfirmation::DiscardAll => {
+                            self.run_local_workspace_git_task(
+                                "Alterações descartadas",
+                                |repository| async move {
+                                    crate::local_git::discard_all(&repository, true).await
+                                },
+                                ctx,
+                            )
+                        }
+                        local_workspace::GitConfirmation::DeleteBranch(branch) => self
+                            .run_local_workspace_git_task(
+                                "Branch excluída",
+                                move |repository| async move {
+                                    crate::local_git::delete_local_branch(
+                                        &repository,
+                                        &branch,
+                                        false,
+                                    )
+                                    .await
+                                },
+                                ctx,
+                            ),
+                        local_workspace::GitConfirmation::DropStash(index) => self
+                            .run_local_workspace_git_task(
+                                "Stash descartado",
+                                move |repository| async move {
+                                    crate::local_git::stash_drop(&repository, index).await
+                                },
+                                ctx,
+                            ),
+                    }
+                }
+            }
+            CheckoutRemoteLocalGitBranch(remote_branch) => {
+                let remote_branch = remote_branch.clone();
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    "Branch criada a partir da remota",
+                    move |repository| async move {
+                        crate::local_git::checkout_remote_branch(&repository, &remote_branch).await
+                    },
+                    ctx,
+                );
+            }
+            MergeLocalGitBranch(branch) => {
+                let branch = branch.clone();
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    "Merge concluído",
+                    move |repository| async move {
+                        crate::local_git::merge_branch(&repository, &branch).await
+                    },
+                    ctx,
+                );
+            }
+            AbortLocalGitMerge => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    "Merge abortado",
+                    |repository| async move { crate::local_git::abort_merge(&repository).await },
+                    ctx,
+                );
+            }
+            StashLocalGit { include_untracked } => {
+                let include_untracked = *include_untracked;
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    "Alterações guardadas no stash",
+                    move |repository| async move {
+                        crate::local_git::stash_push(&repository, include_untracked).await
+                    },
+                    ctx,
+                );
+            }
+            ApplyLocalGitStash { index, pop } => {
+                let (index, pop) = (*index, *pop);
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    if pop {
+                        "Stash aplicado e removido"
+                    } else {
+                        "Stash aplicado"
+                    },
+                    move |repository| async move {
+                        crate::local_git::stash_apply(&repository, index, pop).await
+                    },
+                    ctx,
+                );
+            }
+            CherryPickLocalGitCommit(commit) => {
+                let commit = commit.clone();
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    "Commit aplicado na branch atual",
+                    move |repository| async move {
+                        crate::local_git::cherry_pick(&repository, &commit).await
+                    },
+                    ctx,
+                );
+            }
+            RevertLocalGitCommit(commit) => {
+                let commit = commit.clone();
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    "Commit revertido",
+                    move |repository| async move {
+                        crate::local_git::revert_commit(&repository, &commit).await
+                    },
+                    ctx,
+                );
+            }
+            CopyLocalGitText(text) => {
+                ctx.clipboard()
+                    .write(ClipboardContent::plain_text(text.clone()));
+                self.local_workspace_git_file_menu = None;
+                self.local_workspace_git_panel.note = Some("Copiado".to_owned());
+                ctx.notify();
+            }
+            ResolveLocalGitConflict { path, theirs } => {
+                let (path, theirs) = (PathBuf::from(path), *theirs);
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_task(
+                    "Conflito resolvido",
+                    move |repository| async move {
+                        crate::local_git::resolve_conflict(&repository, &path, theirs).await
+                    },
+                    ctx,
+                );
+            }
+            InitLocalGitRepository => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.init_local_workspace_git_repository(ctx);
+            }
+            CommitAndSyncLocalGit => {
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                self.run_local_workspace_git_commit_and_sync(ctx);
+            }
+            OpenLocalGitFileMenu {
+                path,
+                untracked,
+                position,
+            } => {
+                self.local_workspace_git_file_menu = Some((path.clone(), *untracked, *position));
+                ctx.notify();
+            }
+            DismissLocalGitFileMenu => {
+                self.local_workspace_git_file_menu = None;
+                ctx.notify();
+            }
+            IgnoreLocalGitPath(path) => {
+                self.local_workspace_git_file_menu = None;
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                {
+                    let path = path.clone();
+                    self.run_local_workspace_git_task(
+                        "Adicionado ao .gitignore",
+                        move |repository| async move {
+                            append_to_gitignore(&repository, &path)
+                                .map_err(|_| crate::local_git::GitError::InvalidOutput)
+                        },
+                        ctx,
+                    );
+                }
             }
             SelectLocalGitRepository(root) => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -27041,6 +27431,10 @@ impl TypedActionView for Workspace {
             ToggleLocalGitCommitDetails(hash) => {
                 let expanded = &mut self.local_workspace_git_panel.expanded_commit;
                 *expanded = (expanded.as_deref() != Some(hash.as_str())).then(|| hash.clone());
+                #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+                if self.local_workspace_git_panel.expanded_commit.is_some() {
+                    self.load_local_workspace_commit_files(hash.clone(), ctx);
+                }
                 ctx.notify();
             }
             RunLocalGitRemote(remote_action) => {
@@ -27100,6 +27494,7 @@ impl TypedActionView for Workspace {
                 ctx.notify();
             }
             RequestDiscardLocalGitPath { path, untracked } => {
+                self.local_workspace_git_file_menu = None;
                 self.local_workspace_git_discard_confirmation = Some((path.clone(), *untracked));
                 ctx.notify();
             }
@@ -30206,6 +30601,34 @@ impl View for Workspace {
                 .map(|project| project.name.as_str())
                 .unwrap_or_default();
             let repositories = self.local_workspace_repository_entries();
+            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+            let git_stashes = self.local_workspace_git_stashes.as_slice();
+            #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
+            let git_stashes: &[crate::local_git::LocalStash] = &[];
+            let remote_branches: Vec<String> = self
+                .local_workspace_git_remote_branches
+                .iter()
+                .filter(|remote| {
+                    let local = remote.split_once('/').map_or(remote.as_str(), |(_, name)| name);
+                    !self
+                        .local_workspace_git_branches
+                        .iter()
+                        .any(|branch| branch.name == local)
+                })
+                .cloned()
+                .collect();
+            let git_merging = self.local_workspace_git_merging;
+            let commit_files = self
+                .local_workspace_git_commit_files
+                .as_ref()
+                .filter(|(hash, _)| {
+                    self.local_workspace_git_panel.expanded_commit.as_deref() == Some(hash.as_str())
+                })
+                .map(|(_, files)| files.as_slice());
+            let git_can_init = self.local_workspace_git_status.is_none()
+                && self.local_workspace_git_repositories.is_empty()
+                && self.local_workspace_git_discovery.is_none()
+                && self.local_workspace_git_project_path.is_some();
             let source_control =
                 self.local_workspace_source_control_open
                     .then(|| local_workspace::SourceControl {
@@ -30214,7 +30637,6 @@ impl View for Workspace {
                         status: git_status,
                         history: git_history,
                         branches: git_branches,
-                        branch_menu: self.local_workspace_git_branch_menu.as_deref(),
                         create_branch_from: self.local_workspace_git_create_branch_from.as_deref(),
                         rename_branch: self.local_workspace_git_rename_branch.as_deref(),
                         branch_name_input: self.local_workspace_git_branch_name_input.clone(),
@@ -30237,6 +30659,12 @@ impl View for Workspace {
                             .map(|(path, untracked)| (path.as_str(), *untracked)),
                         operation_pending: git_operation_pending,
                         panel: &self.local_workspace_git_panel,
+                        stashes: git_stashes,
+                        remote_branches: &remote_branches,
+                        merging: git_merging,
+                        commit_files: commit_files,
+                        confirmation: self.local_workspace_git_confirmation.as_ref(),
+                        can_init: git_can_init,
                         scroll_state: self.local_workspace_source_control_scroll.clone(),
                         width: local_workspace::source_control_width(
                             local_workspace_model,
@@ -31493,6 +31921,20 @@ impl View for Workspace {
             local_workspace::context_menu_overlay(self.local_workspace.as_ref(app), appearance)
         {
             stack.add_positioned_overlay_child(menu, positioning);
+        }
+        if let (Some((path, untracked, position)), Some(repository)) = (
+            &self.local_workspace_git_file_menu,
+            self.local_workspace_git_path.as_deref(),
+        ) {
+            stack.add_positioned_overlay_child(
+                local_workspace::git_file_menu(Path::new(repository), path, *untracked, appearance),
+                OffsetPositioning::offset_from_parent(
+                    *position,
+                    ParentOffsetBounds::WindowByPosition,
+                    ParentAnchor::TopLeft,
+                    ChildAnchor::TopLeft,
+                ),
+            );
         }
         if let Some((tab_id, position)) = self.local_workspace_tab_menu {
             stack.add_positioned_overlay_child(
@@ -33421,4 +33863,58 @@ fn without_cross_project_close_items(
         kept.pop();
     }
     kept
+}
+
+/// Everything the Git panel reads from the active repository in one pass.
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+struct LocalGitSnapshot {
+    status: RepositoryStatus,
+    branches: Vec<LocalBranch>,
+    history: Vec<crate::local_git::LocalCommit>,
+    stashes: Vec<crate::local_git::LocalStash>,
+    remote_branches: Vec<String>,
+    merging: bool,
+}
+
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+async fn read_local_git_snapshot(
+    path: &Path,
+) -> Result<LocalGitSnapshot, crate::local_git::GitError> {
+    let status = crate::local_git::read_status(path).await?;
+    let branches = crate::local_git::read_local_branches(path).await?;
+    let history = crate::local_git::read_history(path, GIT_HISTORY_LIMIT)
+        .await
+        .unwrap_or_default();
+    let stashes = crate::local_git::read_stashes(path).await.unwrap_or_default();
+    let remote_branches = crate::local_git::read_remote_branches(path)
+        .await
+        .unwrap_or_default();
+    let merging = crate::local_git::merge_in_progress(path).await;
+    Ok(LocalGitSnapshot {
+        status,
+        branches,
+        history,
+        stashes,
+        remote_branches,
+        merging,
+    })
+}
+
+/// Appends `path` (relative to the repository root) to the repository's `.gitignore`.
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+fn append_to_gitignore(repository: &Path, path: &str) -> std::io::Result<()> {
+    use std::io::Write as _;
+
+    let gitignore = repository.join(".gitignore");
+    let needs_newline = std::fs::read(&gitignore)
+        .map(|contents| !contents.is_empty() && !contents.ends_with(b"\n"))
+        .unwrap_or(false);
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(gitignore)?;
+    if needs_newline {
+        writeln!(file)?;
+    }
+    writeln!(file, "{path}")
 }
