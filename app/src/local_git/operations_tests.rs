@@ -1288,7 +1288,14 @@ fn phase_two_operations_build_local_git_commands() {
         ["checkout", "--theirs", "--", ":(literal)src/a.rs"]
     );
     assert_eq!(GitOperation::StashList.kind(), OperationKind::LocalRead);
-    assert_eq!(GitOperation::MergeAbort.kind(), OperationKind::LocalWrite);
+    assert_eq!(
+        GitOperation::AbortPending(super::PendingOperation::CherryPick).arguments(),
+        ["cherry-pick", "--abort"]
+    );
+    assert_eq!(
+        super::operations::classify_failure(b"The previous cherry-pick is now empty"),
+        super::errors::CommandFailure::NothingToApply
+    );
 }
 
 #[test]

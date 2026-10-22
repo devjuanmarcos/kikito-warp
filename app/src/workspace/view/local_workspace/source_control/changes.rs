@@ -449,8 +449,8 @@ fn changes_section(
             appearance,
         ));
     }
-    if source_control.merging {
-        section.add_child(super::extras::merge_banner(appearance));
+    if let Some(pending) = source_control.merging {
+        section.add_child(super::extras::merge_banner(pending, appearance));
     }
     if let Some((path, untracked)) = source_control.discard_confirmation {
         section.add_child(discard_confirmation_row(
@@ -1413,8 +1413,9 @@ fn repositories_section(
             .with_spacing(6.)
             .with_child(sized_icon(Icon::Folder, sub, 14.))
             .with_child(
+                // The name keeps its room; a long branch name is what gets cut.
                 Shrinkable::new(
-                    1.,
+                    3.,
                     Text::new_inline(repository.label.clone(), appearance.ui_font_family(), 12.)
                         .with_style(if repository.active {
                             Properties::default().weight(Weight::Semibold)
@@ -1430,17 +1431,30 @@ fn repositories_section(
             );
         if let Some(branch) = &repository.branch {
             row.add_child(
-                Flex::row()
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_spacing(3.)
-                    .with_child(sized_icon(Icon::GitBranch, sub, 11.))
-                    .with_child(
-                        Text::new_inline(branch.clone(), appearance.monospace_font_family(), 11.)
-                            .with_color(sub.into())
-                            .soft_wrap(false)
+                Shrinkable::new(
+                    1.,
+                    Flex::row()
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_spacing(3.)
+                        .with_child(sized_icon(Icon::GitBranch, sub, 11.))
+                        .with_child(
+                            Shrinkable::new(
+                                1.,
+                                Text::new_inline(
+                                    branch.clone(),
+                                    appearance.monospace_font_family(),
+                                    11.,
+                                )
+                                .with_color(sub.into())
+                                .soft_wrap(false)
+                                .with_clip(ClipConfig::ellipsis())
+                                .finish(),
+                            )
                             .finish(),
-                    )
-                    .finish(),
+                        )
+                        .finish(),
+                )
+                .finish(),
             );
         }
         row.add_child(Expanded::new(1., Flex::row().finish()).finish());

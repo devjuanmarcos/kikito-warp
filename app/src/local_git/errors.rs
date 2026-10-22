@@ -26,6 +26,7 @@ pub(crate) enum CommandFailure {
     PermissionDenied,
     NoCommonHistory,
     RemoteUnavailable,
+    NothingToApply,
     Other,
 }
 
@@ -71,6 +72,9 @@ impl fmt::Display for GitError {
                     }
                     CommandFailure::RemoteUnavailable => {
                         " O repositório não tem um remoto configurado ou ele está inacessível."
+                    }
+                    CommandFailure::NothingToApply => {
+                        " As alterações desse commit já estão na branch atual."
                     }
                     CommandFailure::Other => "",
                 };

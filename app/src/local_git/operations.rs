@@ -16,6 +16,33 @@ pub(crate) enum DiffKind {
     Untracked,
 }
 
+/// A multi-step operation Git stopped in the middle of (on conflicts or an empty change).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum PendingOperation {
+    Merge,
+    CherryPick,
+    Revert,
+}
+
+impl PendingOperation {
+    /// The ref Git keeps while the operation is pending.
+    pub(super) fn head_ref(self) -> &'static str {
+        match self {
+            Self::Merge => "MERGE_HEAD",
+            Self::CherryPick => "CHERRY_PICK_HEAD",
+            Self::Revert => "REVERT_HEAD",
+        }
+    }
+
+    fn command(self) -> &'static str {
+        match self {
+            Self::Merge => "merge",
+            Self::CherryPick => "cherry-pick",
+            Self::Revert => "revert",
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) enum GitOperation {
     Status,
@@ -46,7 +73,7 @@ pub(super) enum GitOperation {
     RemoteBranches,
     CheckoutRemoteBranch { remote_branch: String },
     MergeBranch { branch: String },
-    MergeAbort,
+    AbortPending(PendingOperation),
     StashPush { include_untracked: bool },
     StashList,
     StashApply { index: usize, pop: bool },
@@ -88,7 +115,7 @@ impl GitOperation {
             | Self::DeleteBranch { .. }
             | Self::CheckoutRemoteBranch { .. }
             | Self::MergeBranch { .. }
-            | Self::MergeAbort
+            | Self::AbortPending(_)
             | Self::StashPush { .. }
             | Self::StashApply { .. }
             | Self::StashDrop { .. }
@@ -247,7 +274,7 @@ impl GitOperation {
             Self::MergeBranch { branch } => {
                 vec!["merge".into(), "--no-edit".into(), branch.clone()]
             }
-            Self::MergeAbort => vec!["merge".into(), "--abort".into()],
+            Self::AbortPending(pending) => vec![pending.command().into(), "--abort".into()],
             Self::StashPush { include_untracked } => {
                 let mut arguments = vec!["stash".into(), "push".into()];
                 if *include_untracked {
@@ -319,7 +346,9 @@ impl GitOperation {
             Self::RemoteBranches => "listar as branches remotas",
             Self::CheckoutRemoteBranch { .. } => "criar a branch local a partir da remota",
             Self::MergeBranch { .. } => "fazer o merge da branch",
-            Self::MergeAbort => "abortar o merge",
+            Self::AbortPending(PendingOperation::Merge) => "abortar o merge",
+            Self::AbortPending(PendingOperation::CherryPick) => "abortar o cherry-pick",
+            Self::AbortPending(PendingOperation::Revert) => "abortar a reversão",
             Self::StashPush { .. } => "guardar as alterações no stash",
             Self::StashList => "listar os stashes",
             Self::StashApply { pop: false, .. } => "aplicar o stash",
@@ -421,6 +450,8 @@ pub(super) fn classify_failure(stderr: &[u8]) -> CommandFailure {
         || stderr.contains("no common ancestor")
     {
         CommandFailure::NoCommonHistory
+    } else if stderr.contains("is now empty") || stderr.contains("nothing to commit") {
+        CommandFailure::NothingToApply
     } else if stderr.contains("does not appear to be a git repository")
         || stderr.contains("could not read from remote repository")
         || stderr.contains("no configured push destination")

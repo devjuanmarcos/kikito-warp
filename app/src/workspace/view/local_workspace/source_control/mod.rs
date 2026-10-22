@@ -103,8 +103,8 @@ pub(crate) struct SourceControl<'a> {
     pub stashes: &'a [LocalStash],
     /// Remote-tracking branches without a local branch of the same name.
     pub remote_branches: &'a [String],
-    /// A merge stopped on conflicts and waits to be concluded or aborted.
-    pub merging: bool,
+    /// The merge, cherry-pick or revert waiting to be concluded or aborted.
+    pub merging: Option<crate::local_git::PendingOperation>,
     /// Files of the expanded commit, once read.
     pub commit_files: Option<&'a [CommitFile]>,
     pub confirmation: Option<&'a GitConfirmation>,

@@ -12,7 +12,7 @@ use warpui::text_layout::ClipConfig;
 use super::changes::{count_badge, section_header, small_secondary_button};
 use super::{GitConfirmation, GitPanelSection, SourceControl};
 use crate::appearance::Appearance;
-use crate::local_git::{CommitFile, LocalCommit, LocalStash};
+use crate::local_git::{CommitFile, LocalCommit, LocalStash, PendingOperation};
 use crate::workspace::action::WorkspaceAction;
 use crate::workspace::view::local_workspace::ws_style::{
     TooltipSide, fg_overlay, mouse_state, radius, sized_icon, tooltip, with_tooltip,
@@ -122,24 +122,34 @@ pub(super) fn confirmation_row(
     .finish()
 }
 
-/// Banner of a merge that stopped on conflicts.
-pub(super) fn merge_banner(appearance: &Appearance) -> Box<dyn Element> {
+/// Banner of a merge, cherry-pick or revert Git stopped in the middle of.
+pub(super) fn merge_banner(pending: PendingOperation, appearance: &Appearance) -> Box<dyn Element> {
     let theme = appearance.theme();
+    let (message, abort_label) = match pending {
+        PendingOperation::Merge => (
+            "Merge em andamento. Resolva os conflitos (aceite um lado ou edite o arquivo e prepare) e faça o commit, ou aborte o merge.",
+            "Abortar merge",
+        ),
+        PendingOperation::CherryPick => (
+            "Cherry-pick em andamento. Resolva os conflitos e faça o commit, ou aborte o cherry-pick.",
+            "Abortar cherry-pick",
+        ),
+        PendingOperation::Revert => (
+            "Reversão em andamento. Resolva os conflitos e faça o commit, ou aborte a reversão.",
+            "Abortar reversão",
+        ),
+    };
     Container::new(
         Flex::column()
             .with_spacing(6.)
             .with_child(
-                Text::new(
-                    "Merge em andamento. Resolva os conflitos (aceite um lado ou edite o arquivo e prepare) e faça o commit, ou aborte o merge.",
-                    appearance.ui_font_family(),
-                    11.,
-                )
-                .with_color(theme.ui_yellow_color())
-                .finish(),
+                Text::new(message, appearance.ui_font_family(), 11.)
+                    .with_color(theme.ui_yellow_color())
+                    .finish(),
             )
             .with_child(small_secondary_button(
                 Icon::X,
-                "Abortar merge",
+                abort_label,
                 WorkspaceAction::AbortLocalGitMerge,
                 ("git-merge-abort", 0),
                 appearance,

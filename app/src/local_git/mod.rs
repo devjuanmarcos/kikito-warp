@@ -8,8 +8,10 @@ use std::path::{Path, PathBuf};
 
 pub(crate) use diff::{DiffLine, DiffLineKind};
 pub(crate) use diff::{parse_diff_hunks, parse_unified_diff};
+use errors::CommandFailure;
 pub(crate) use errors::GitError;
 pub(crate) use operations::DiffKind as LocalGitDiffKind;
+pub(crate) use operations::PendingOperation;
 use operations::{DiffKind, GitOperation, execute};
 use status::read;
 pub(crate) use status::{ChangedFile, HeadState, RepositoryStatus};
@@ -616,23 +618,36 @@ pub(crate) async fn merge_branch(repository: &Path, branch: &str) -> Result<(), 
         .await
 }
 
-pub(crate) async fn abort_merge(repository: &Path) -> Result<(), GitError> {
+pub(crate) async fn abort_pending(
+    repository: &Path,
+    pending: PendingOperation,
+) -> Result<(), GitError> {
     LocalGitService::open(repository)
         .await?
-        .run(GitOperation::MergeAbort)
+        .run(GitOperation::AbortPending(pending))
         .await
 }
 
-/// Whether a merge stopped on conflicts and waits to be concluded or aborted.
-pub(crate) async fn merge_in_progress(repository: &Path) -> bool {
-    execute(
-        repository,
-        GitOperation::ResolveReference {
-            reference: "MERGE_HEAD".to_owned(),
-        },
-    )
-    .await
-    .is_ok()
+/// The operation Git stopped in the middle of, waiting to be concluded or aborted.
+pub(crate) async fn pending_operation(repository: &Path) -> Option<PendingOperation> {
+    for pending in [
+        PendingOperation::Merge,
+        PendingOperation::CherryPick,
+        PendingOperation::Revert,
+    ] {
+        let found = execute(
+            repository,
+            GitOperation::ResolveReference {
+                reference: pending.head_ref().to_owned(),
+            },
+        )
+        .await
+        .is_ok();
+        if found {
+            return Some(pending);
+        }
+    }
+    None
 }
 
 pub(crate) async fn stash_push(repository: &Path, include_untracked: bool) -> Result<(), GitError> {
@@ -666,14 +681,26 @@ pub(crate) async fn stash_drop(repository: &Path, index: usize) -> Result<(), Gi
         .await
 }
 
+/// Applies `commit` on the current branch. A commit whose changes are already there leaves
+/// nothing to apply, so that cherry-pick is aborted instead of left pending.
 pub(crate) async fn cherry_pick(repository: &Path, commit: &str) -> Result<(), GitError> {
     operations::validate_reference(commit)?;
-    LocalGitService::open(repository)
-        .await?
+    let service = LocalGitService::open(repository).await?;
+    let result = service
         .run(GitOperation::CherryPick {
             commit: commit.to_owned(),
         })
-        .await
+        .await;
+    if let Err(GitError::CommandFailed {
+        failure: CommandFailure::NothingToApply,
+        ..
+    }) = &result
+    {
+        let _ = service
+            .run(GitOperation::AbortPending(PendingOperation::CherryPick))
+            .await;
+    }
+    result
 }
 
 pub(crate) async fn revert_commit(repository: &Path, commit: &str) -> Result<(), GitError> {
