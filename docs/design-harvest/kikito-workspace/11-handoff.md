@@ -186,3 +186,13 @@ Instalado: `v0.2026.10.21.09.03.oss_00` (commit `17ca14277`) em `D:\Program File
 - "Terminais sem projeto" removido da Home.
 
 Pendências: teste completo do fluxo no app (perfil `parity`), menu de clique direito do painel vertical ainda é o do Warp ("Fechar outras abas" afeta outros projetos), clippy, format, commit, push, novo instalador.
+
+## 14. Painel Git: paridade com o VS Code (21/10/2026, noite)
+
+- Paridade visual do painel Git aceita pelo Marcos em 94,0% (média por região, `git_compare.py`); o resto é rasterização de texto.
+- Mapeamento completo dos fluxos do VS Code: `12-git-flows-vscode.md` (fases 1–3).
+- **Fase 1 (commit `7a9755239`)**: vários repositórios por projeto (varredura até 2 níveis), seção "REPOSITÓRIOS", troca do ativo, branch do rodapé abre a lista de branches.
+- **Fase 2 (checkpoint `113e33df4`, wip)**: backend com testes (`discard_all`, `delete_local_branch`, `read_remote_branches`, `checkout_remote_branch`, `merge_branch`, `abort_merge`, `merge_in_progress`, stash push/list/apply/pop/drop, `cherry_pick`, `revert_commit`, `read_commit_files`, `resolve_conflict`, `init_repository`); UI em `source_control/extras.rs` e `refs.rs` (lista de branches refeita com ações no hover e branches remotas), "Descartar todas as alterações" com confirmação, seção STASHES, faixa de merge com "Abortar merge", aceitar nossa/deles em conflitos, menu de contexto do arquivo (copiar caminho, .gitignore, descartar), ações e arquivos do commit no grafo, "Commit e sincronizar", "Inicializar repositório", badge de alterações no botão Git; executor genérico `run_local_workspace_git_task` + `read_local_git_snapshot`.
+- Testado no app (perfil `parity`, monorepo/svc-pagamentos): badge, stash guardar/pop, lista de branches, merge limpo (fast-forward). Faltam testar: merge com conflito (stash antes; o clique do merge em feature-conflito não pegou), aceitar lado, abortar, excluir branch, checkout remoto, cherry-pick/reverter, menu do arquivo, descartar tudo, init, commit e sincronizar.
+- Pendências: lembrar o repositório ativo entre reinícios (hoje só em memória); grafo exclui `refs/stash` (feito, falta build).
+- Fixture: `scratchpad/repos/monorepo/{svc-pagamentos,apps/painel}`; svc-pagamentos tem branches `feature-x` (já mesclada) e `feature-conflito` (conflita no README).
