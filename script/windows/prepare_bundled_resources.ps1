@@ -171,7 +171,7 @@ if ($env:SKIP_SETTINGS_SCHEMA -ne '1') {
         Write-Output "Generating settings schema at $SchemaOutput"
         $Process = Start-Process `
             -FilePath $env:SETTINGS_SCHEMA_EXECUTABLE `
-            -ArgumentList @('dump-settings-schema', $SchemaOutput) `
+            -ArgumentList @('dump-settings-schema', "`"$SchemaOutput`"") `
             -NoNewWindow `
             -PassThru `
             -Wait
